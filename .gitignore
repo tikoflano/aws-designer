@@ -4,3 +4,5 @@ dist
 .DS_Store
 coverage
 .vite
+cdk.out
+cdk.out.test

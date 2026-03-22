@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "kind": "aws-designer-graph",
+  "nodes": [
+    {
+      "id": "s1",
+      "serviceId": "s3",
+      "serviceVersion": "1.0.0",
+      "position": { "x": 0, "y": 0 },
+      "config": {}
+    },
+    {
+      "id": "l1",
+      "serviceId": "lambda",
+      "serviceVersion": "1.0.0",
+      "position": { "x": 0, "y": 0 },
+      "config": { "functionName": "demoFn" }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "sourceNodeId": "l1",
+      "targetNodeId": "s1",
+      "relationshipId": "lambda_reads_s3",
+      "relationshipVersion": "1.0.0",
+      "config": {}
+    }
+  ]
+}

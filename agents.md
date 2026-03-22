@@ -38,14 +38,14 @@ If the repository already uses different but equivalent libraries, **follow the 
 Prefer clarity over deep nesting:
 
 - `packages/` or `apps/` monorepo layout if UI and compiler deploy separately; otherwise a single `src/` with bounded modules.
-- Suggested logical modules (names illustrative): `graph/`, `registry/` (services + relationships), `compile/` (graph → CDK source), `emit/cdk/` (CDK text helpers), `ui/`.
+- Suggested logical modules (names illustrative): `graph/` (JSON file format), `registry/` (services + relationships), `compile/` (shared validation), `compiler/` (Node: graph → real CDK `App` + `synth()`), `ui/`.
 - **Barrel files** (`index.ts`): use sparingly; avoid circular imports.
 
 ## Code quality practices
 
 - **Types**: explicit public APIs; avoid `any`; use `unknown` + narrowing at boundaries (JSON, config).
 - **Immutability**: treat graph updates as immutable snapshots or use explicit update helpers; easier undo/redo and debugging.
-- **Pure functions** for graph validation and CDK source generation; side effects only at UI boundaries, file I/O, or CDK synthesis entrypoints.
+- **Pure functions** for graph validation in the web bundle; the Node **compiler** may call `aws-cdk-lib` and `app.synth()` (filesystem output under `cdk.out/`).
 - **Errors**: use typed errors or Result-style outcomes for compile/validation failures; include node id, edge id, and relationship id in messages.
 - **Versioning**: respect pinned **semver** on nodes and relationships; never silently change meaning of stored graph data.
 - **Security**: no secrets in graph JSON; use placeholders and environment/credential resolution at deploy time.
@@ -66,7 +66,7 @@ Prefer clarity over deep nesting:
 ## What agents should avoid
 
 - New custom graph engines, ad-hoc schema DSLs, or CSS frameworks parallel to the chosen UI system.
-- Generating CloudFormation JSON by ad-hoc string concatenation from the graph; prefer a single **graph → CDK source** pipeline (or structured template builder) that stays testable.
+- Generating CloudFormation by ad-hoc string concatenation from the graph; prefer **real CDK constructs** in Node (`compiler/`) plus `Template.fromStack` tests where useful.
 - Dropping versioning from persisted nodes or edges.
 
 ---

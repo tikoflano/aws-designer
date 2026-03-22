@@ -5,9 +5,8 @@ export type CompileIssue = {
   nodeId?: string;
 };
 
-/** Result of validating the graph and generating CDK TypeScript source (no separate IR). */
-export type GenerateCdkResult = {
+/** Result of graph validation (UI + compiler preflight). */
+export type ValidateGraphResult = {
   ok: boolean;
-  cdkSource: string;
   issues: CompileIssue[];
 };
