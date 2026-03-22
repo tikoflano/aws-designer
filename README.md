@@ -6,8 +6,8 @@ Visual AWS infrastructure builder (early MVP).
 
 1. **Author in the UI** — place S3/Lambda nodes, connect them with curated relationships, set configs in the inspector.
 2. **Export graph JSON** — downloads a versioned document (`formatVersion`, `kind: "aws-designer-graph"`) that fully describes nodes, edges, positions, and configs. **Import graph JSON** restores the canvas from that file.
-3. **Compile** — merges service bases + relationship fragments into an internal **IR** (resources, IAM policies, links). You can preview that IR in the app.
-4. **Download CDK stack (.ts)** — compiles the current graph and emits a `GeneratedGraphStack` TypeScript file (`aws-cdk-lib` + `CfnResource` / `Fn.*` intrinsics).
+3. **Compile** — validates the graph and generates **CDK TypeScript** in one step (no separate IR). You can preview the generated stack source in the app.
+4. **Download CDK stack (.ts)** — same generator as compile; saves `GeneratedGraphStack` (`aws-cdk-lib` + `CfnResource` / `Fn.*` intrinsics).
 5. **CDK → CloudFormation** — in a CDK app that depends on `aws-cdk-lib`, add the generated stack, then run `cdk synth`. CDK writes **CloudFormation templates and assets** under `cdk.out/`. **AWS CloudFormation** (not CloudFront) executes those templates when you deploy.
 
 ## MVP scope

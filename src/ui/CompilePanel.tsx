@@ -8,7 +8,7 @@ export function CompilePanel() {
     <div className="border-t border-slate-200 bg-slate-50 px-3 py-2">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Compile (IR preview)
+          Compile (CDK preview)
         </div>
         <button
           type="button"
@@ -20,16 +20,16 @@ export function CompilePanel() {
       </div>
       {!lastCompile && (
         <p className="text-xs text-slate-600">
-          Run compile to merge node bases and relationship fragments into one IR.
-          Use <strong>Export graph JSON</strong> in the header to persist the
-          canvas; <strong>Download CDK stack</strong> turns the same graph into
-          TypeScript for <code className="rounded bg-slate-100 px-1">cdk synth</code>{" "}
-          (CloudFormation templates in <code className="rounded bg-slate-100 px-1">cdk.out/</code>
-          ).
+          Run compile to validate the graph and generate CDK TypeScript (same
+          path as <strong>Download CDK stack</strong>). Use{" "}
+          <strong>Export graph JSON</strong> to persist the canvas; run{" "}
+          <code className="rounded bg-slate-100 px-1">cdk synth</code> in a CDK
+          app for CloudFormation templates under{" "}
+          <code className="rounded bg-slate-100 px-1">cdk.out/</code>.
         </p>
       )}
       {lastCompile && (
-        <div className="flex max-h-48 flex-col gap-2">
+        <div className="flex max-h-56 flex-col gap-2">
           <div
             className={`text-xs font-medium ${
               lastCompile.ok ? "text-emerald-700" : "text-amber-800"
@@ -50,11 +50,9 @@ export function CompilePanel() {
               ))}
             </ul>
           )}
-          {lastCompile.ir && (
-            <pre className="max-h-32 overflow-auto rounded border border-slate-200 bg-white p-2 text-[10px] leading-snug text-slate-800">
-              {JSON.stringify(lastCompile.ir, null, 2)}
-            </pre>
-          )}
+          <pre className="max-h-40 overflow-auto rounded border border-slate-200 bg-white p-2 text-[10px] leading-snug text-slate-800">
+            {lastCompile.cdkSource}
+          </pre>
         </div>
       )}
     </div>

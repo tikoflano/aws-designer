@@ -1,7 +1,6 @@
 import { useCallback, useRef, type ChangeEvent } from "react";
 
-import { compileGraph } from "../compile/compileGraph";
-import { emitCdkStackSource } from "../emit/cdk/emitGraphStack";
+import { generateCdkFromGraph } from "../compile/generateCdkFromGraph";
 import {
   graphDocumentToFile,
   graphFileToDocument,
@@ -63,16 +62,15 @@ export function GraphToolbar() {
   );
 
   const exportCdkStack = useCallback(() => {
-    const result = compileGraph({ nodes, edges });
-    if (!result.ok || !result.ir) {
+    const result = generateCdkFromGraph({ nodes, edges });
+    if (!result.ok) {
       const lines = result.issues.map((i) => `• ${i.message}`).join("\n");
       window.alert(`Compile failed. Fix issues before exporting CDK.\n\n${lines}`);
       return;
     }
-    const source = emitCdkStackSource(result.ir, "GeneratedGraphStack");
     downloadTextFile(
       "GeneratedGraphStack.ts",
-      source,
+      result.cdkSource,
       "text/typescript;charset=utf-8",
     );
   }, [nodes, edges]);

@@ -1,9 +1,9 @@
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 
-import { compileGraph } from "../compile/compileGraph";
+import { generateCdkFromGraph } from "../compile/generateCdkFromGraph";
+import type { GenerateCdkResult } from "../compile/types";
 import type { GraphDocument, GraphEdge, GraphNode, ServiceId } from "../domain/types";
-import type { CompileResult } from "../ir/types";
 import { getRelationship, RELATIONSHIP_VERSION } from "../registry/relationships";
 import { SERVICE_VERSION } from "../registry/services";
 
@@ -21,7 +21,7 @@ type GraphState = {
   edges: GraphEdge[];
   selection: Selection | null;
   pendingConnection: PendingConnection | null;
-  lastCompile: CompileResult | null;
+  lastCompile: GenerateCdkResult | null;
   addNode: (serviceId: ServiceId, position: { x: number; y: number }) => void;
   updateNode: (
     id: string,
@@ -154,7 +154,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
 
   runCompile: () => {
     const { nodes, edges } = get();
-    const result = compileGraph({ nodes, edges });
+    const result = generateCdkFromGraph({ nodes, edges });
     set({ lastCompile: result });
   },
 

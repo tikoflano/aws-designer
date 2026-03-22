@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-import type { GraphNode, ServiceId } from "../domain/types";
-import type { InfrastructureFragment } from "../ir/types";
+import type { ServiceId } from "../domain/types";
 
 export const SERVICE_VERSION = "1.0.0";
 
@@ -40,7 +39,6 @@ export type ServiceDefinition = {
   displayName: string;
   description: string;
   configSchema: z.ZodType<Record<string, unknown>>;
-  expandBase: (node: GraphNode) => InfrastructureFragment;
 };
 
 export function logicalBucketId(nodeId: string): string {
@@ -70,38 +68,6 @@ const s3Service: ServiceDefinition = {
   displayName: "S3 bucket",
   description: "Amazon S3 bucket for object storage.",
   configSchema: s3NodeConfigSchema,
-  expandBase: (node): InfrastructureFragment => {
-    const cfg = s3NodeConfigSchema.parse(node.config);
-    const bucketId = logicalBucketId(node.id);
-    const properties: Record<string, unknown> = {};
-    if (cfg.bucketName) properties.BucketName = cfg.bucketName;
-    if (cfg.enforceEncryption) {
-      properties.BucketEncryption = {
-        ServerSideEncryptionConfiguration: [
-          {
-            ServerSideEncryptionByDefault: { SSEAlgorithm: "AES256" },
-          },
-        ],
-      };
-    }
-    return {
-      resources: [
-        {
-          logicalId: bucketId,
-          type: "AWS::S3::Bucket",
-          properties,
-        },
-      ],
-      iamPolicies: [],
-      links: [
-        {
-          id: `svc-link-s3-${node.id}`,
-          kind: "service_node",
-          metadata: { serviceId: "s3", nodeId: node.id },
-        },
-      ],
-    };
-  },
 };
 
 const lambdaService: ServiceDefinition = {
@@ -110,57 +76,6 @@ const lambdaService: ServiceDefinition = {
   displayName: "Lambda function",
   description: "AWS Lambda function with an execution role.",
   configSchema: lambdaNodeConfigSchema,
-  expandBase: (node): InfrastructureFragment => {
-    const cfg = lambdaNodeConfigSchema.parse(node.config);
-    const fnId = logicalLambdaId(node.id);
-    const roleId = logicalLambdaRoleId(node.id);
-    return {
-      resources: [
-        {
-          logicalId: roleId,
-          type: "AWS::IAM::Role",
-          properties: {
-            AssumeRolePolicyDocument: {
-              Version: "2012-10-17",
-              Statement: [
-                {
-                  Effect: "Allow",
-                  Principal: { Service: "lambda.amazonaws.com" },
-                  Action: "sts:AssumeRole",
-                },
-              ],
-            },
-            ManagedPolicyArns: [
-              "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-            ],
-          },
-        },
-        {
-          logicalId: fnId,
-          type: "AWS::Lambda::Function",
-          properties: {
-            FunctionName: cfg.functionName,
-            Handler: cfg.handler,
-            Runtime: cfg.runtime,
-            Role: { "Fn::GetAtt": [roleId, "Arn"] },
-            Code: {
-              ZipFile:
-                'exports.handler = async () => ({ statusCode: 200, body: "ok" });',
-            },
-          },
-          dependsOn: [roleId],
-        },
-      ],
-      iamPolicies: [],
-      links: [
-        {
-          id: `svc-link-lambda-${node.id}`,
-          kind: "service_node",
-          metadata: { serviceId: "lambda", nodeId: node.id },
-        },
-      ],
-    };
-  },
 };
 
 const SERVICES: ServiceDefinition[] = [s3Service, lambdaService];
