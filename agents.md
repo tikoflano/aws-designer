@@ -38,7 +38,7 @@ If the repository already uses different but equivalent libraries, **follow the 
 Prefer clarity over deep nesting:
 
 - `packages/` or `apps/` monorepo layout if UI and compiler deploy separately; otherwise a single `src/` with bounded modules.
-- Suggested logical modules (names illustrative): `graph/` (JSON file format), `registry/` (services + relationships), `compile/` (shared validation), `compiler/` (Node: graph → real CDK `App` + `synth()`), `ui/`.
+- Suggested logical modules (names illustrative): `graph/` (JSON file format), `registry/` (services + relationships), `compile/` (shared validation), `compiler/` (Node: graph → real CDK `App` + `synth()`), `server/` (Fastify + SQLite API), `ui/`.
 - **Barrel files** (`index.ts`): use sparingly; avoid circular imports.
 
 ## Code quality practices

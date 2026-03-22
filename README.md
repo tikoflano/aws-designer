@@ -40,12 +40,23 @@ The compiler loads [`compiler/graphCompilerStack.ts`](./compiler/graphCompilerSt
 
 ```bash
 npm install
-npm run dev           # http://localhost:5173
+npm run dev           # UI — http://localhost:5173 (proxies /api → :8787)
+npm run server:dev    # API + SQLite — http://localhost:8787 (run in a second terminal)
 npm run build
 npm test
 npm run lint
 npm run compiler:synth -- compiler/fixtures/lambda-reads-s3.json
 ```
+
+Graphs are stored in **`server/data/graphs.sqlite`** (gitignored). If you change the schema during development, delete that file and restart the server.
+
+Full **API** reference: [docs/API.md](./docs/API.md).
+
+### UI + API flow
+
+- Edits are **autosaved to `localStorage`**; **Save to server** runs `POST /api/graph` (first time) then `PUT /api/graph/:id` (each save appends a new version in SQLite).
+- **Load graph id** fetches `GET /api/graph/:id` (latest version).
+- **Download cdk.out (zip)** opens `GET /api/graph/:id/compiled` (synthesizes latest graph with CDK).
 
 ## Docs for contributors / agents
 

@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 
+import * as graphApi from "../api/graphApi";
 import type { ValidateGraphResult } from "../compile/types";
 import { validateGraph } from "../compile/validateGraph";
 import type { GraphDocument, GraphEdge, GraphNode, ServiceId } from "../domain/types";
@@ -16,12 +17,29 @@ export type PendingConnection = {
   targetNodeId: string;
 };
 
-type GraphState = {
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+const DRAFT_KEY = "aws-designer-draft-v1";
+
+type DraftSnapshot = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  serverGraphId: string | null;
+  serverUpdatedAt: string | null;
+  serverVersion: number | null;
+};
+
+type GraphStateInner = {
   nodes: GraphNode[];
   edges: GraphEdge[];
   selection: Selection | null;
   pendingConnection: PendingConnection | null;
   lastCompile: ValidateGraphResult | null;
+  serverGraphId: string | null;
+  serverUpdatedAt: string | null;
+  serverVersion: number | null;
+  saveStatus: SaveStatus;
+  saveError: string | null;
   addNode: (serviceId: ServiceId, position: { x: number; y: number }) => void;
   updateNode: (
     id: string,
@@ -39,7 +57,81 @@ type GraphState = {
   removeEdge: (edgeId: string) => void;
   runCompile: () => void;
   replaceFromGraphDocument: (doc: GraphDocument) => void;
+  setServerMeta: (
+    id: string | null,
+    updatedAt: string | null,
+    version: number | null,
+  ) => void;
+  saveToServer: () => Promise<void>;
+  loadFromServer: (id: string) => Promise<void>;
+  newLocalGraph: () => void;
 };
+
+export type GraphState = GraphStateInner;
+
+type GraphStateForDraft = Pick<
+  GraphStateInner,
+  "nodes" | "edges" | "serverGraphId" | "serverUpdatedAt" | "serverVersion"
+>;
+
+function readDraftFromStorage(): DraftSnapshot | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<DraftSnapshot>;
+    return {
+      nodes: Array.isArray(p.nodes) ? p.nodes : [],
+      edges: Array.isArray(p.edges) ? p.edges : [],
+      serverGraphId:
+        typeof p.serverGraphId === "string" ? p.serverGraphId : null,
+      serverUpdatedAt:
+        typeof p.serverUpdatedAt === "string" ? p.serverUpdatedAt : null,
+      serverVersion:
+        typeof p.serverVersion === "number" ? p.serverVersion : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeDraftToStorage(s: DraftSnapshot) {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(s));
+}
+
+let lastPersistedJson = "";
+
+export function persistDraftIfChanged(state: GraphStateForDraft) {
+  const snap: DraftSnapshot = {
+    nodes: state.nodes,
+    edges: state.edges,
+    serverGraphId: state.serverGraphId,
+    serverUpdatedAt: state.serverUpdatedAt,
+    serverVersion: state.serverVersion,
+  };
+  const json = JSON.stringify(snap);
+  if (json === lastPersistedJson) return;
+  lastPersistedJson = json;
+  writeDraftToStorage(snap);
+}
+
+export function hydrateDraftFromStorage(): Partial<GraphStateInner> | null {
+  const d = readDraftFromStorage();
+  if (!d) return null;
+  lastPersistedJson = JSON.stringify({
+    nodes: d.nodes,
+    edges: d.edges,
+    serverGraphId: d.serverGraphId,
+    serverUpdatedAt: d.serverUpdatedAt,
+    serverVersion: d.serverVersion,
+  });
+  return {
+    nodes: d.nodes,
+    edges: d.edges,
+    serverGraphId: d.serverGraphId,
+    serverUpdatedAt: d.serverUpdatedAt,
+    serverVersion: d.serverVersion,
+  };
+}
 
 function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
   if (serviceId === "lambda") {
@@ -48,12 +140,17 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
   return {};
 }
 
-export const useGraphStore = create<GraphState>((set, get) => ({
+export const useGraphStore = create<GraphStateInner>((set, get) => ({
   nodes: [],
   edges: [],
   selection: null,
   pendingConnection: null,
   lastCompile: null,
+  serverGraphId: null,
+  serverUpdatedAt: null,
+  serverVersion: null,
+  saveStatus: "idle",
+  saveError: null,
 
   addNode: (serviceId, position) => {
     const id = nanoid(10);
@@ -167,4 +264,75 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       lastCompile: null,
     });
   },
+
+  setServerMeta: (id, updatedAt, version) => {
+    set({
+      serverGraphId: id,
+      serverUpdatedAt: updatedAt,
+      serverVersion: version,
+    });
+  },
+
+  saveToServer: async () => {
+    set({ saveStatus: "saving", saveError: null });
+    try {
+      const { nodes, edges, serverGraphId } = get();
+      const graph: GraphDocument = { nodes, edges };
+      let record: graphApi.GraphRecord;
+      if (!serverGraphId) {
+        const created = await graphApi.postGraph();
+        record = await graphApi.putGraph(created.id, graph);
+      } else {
+        record = await graphApi.putGraph(serverGraphId, graph);
+      }
+      set({
+        serverGraphId: record.id,
+        serverUpdatedAt: record.updatedAt,
+        serverVersion: record.version,
+        saveStatus: "saved",
+        saveError: null,
+      });
+    } catch (e) {
+      set({
+        saveStatus: "error",
+        saveError: e instanceof Error ? e.message : String(e),
+      });
+    }
+  },
+
+  loadFromServer: async (id) => {
+    set({ saveStatus: "idle", saveError: null });
+    const record = await graphApi.getGraph(id);
+    set({
+      nodes: record.graph.nodes,
+      edges: record.graph.edges,
+      selection: null,
+      pendingConnection: null,
+      lastCompile: null,
+      serverGraphId: record.id,
+      serverUpdatedAt: record.updatedAt,
+      serverVersion: record.version,
+    });
+  },
+
+  newLocalGraph: () => {
+    lastPersistedJson = "";
+    localStorage.removeItem(DRAFT_KEY);
+    set({
+      nodes: [],
+      edges: [],
+      selection: null,
+      pendingConnection: null,
+      lastCompile: null,
+      serverGraphId: null,
+      serverUpdatedAt: null,
+      serverVersion: null,
+      saveStatus: "idle",
+      saveError: null,
+    });
+  },
 }));
+
+useGraphStore.subscribe((state) => {
+  persistDraftIfChanged(state);
+});

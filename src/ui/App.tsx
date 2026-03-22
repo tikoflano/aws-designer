@@ -31,9 +31,9 @@ export function App() {
         <div>
           <h1 className="text-sm font-semibold">AWS Designer · MVP</h1>
           <p className="text-xs text-slate-600">
-            S3 and Lambda only — three curated relationships. Export graph JSON,
-            then run <code className="rounded bg-slate-100 px-1">npx tsx compiler/synth.ts</code>{" "}
-            to synthesize real CDK constructs into <code className="rounded bg-slate-100 px-1">cdk.out</code>.
+            S3 and Lambda — three relationships. Run <code className="rounded bg-slate-100 px-1">npm run server:dev</code>{" "}
+            for the API; the UI proxies <code className="rounded bg-slate-100 px-1">/api</code>. Draft edits
+            stay in local storage; <strong>Save to server</strong> syncs to SQLite (versioned).
           </p>
         </div>
         <GraphToolbar />
