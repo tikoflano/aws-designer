@@ -3,7 +3,8 @@ import * as net from "node:net";
 
 const tunnel = process.env.VITE_DEV_TUNNEL?.trim();
 const port = Number(process.env.VITE_DEV_SERVER_PORT || 5173);
-const host = "127.0.0.1";
+// Vite defaults to IPv6 loopback only (::1); use localhost so connect + cloudflared reach the dev server.
+const host = process.env.VITE_DEV_TUNNEL_HOST || "localhost";
 
 function spawnVite() {
   return spawn("vite", [], {
