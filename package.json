@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/run-dev.mjs",
+    "dev": "vite",
+    "tunnel": "cloudflared tunnel run --token \"$VITE_DEV_TUNNEL\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
