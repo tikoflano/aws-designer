@@ -6,3 +6,4 @@ coverage
 .vite
 cdk.out
 cdk.out.test
+server/data/
