@@ -1,9 +1,12 @@
 import { spawn } from "node:child_process";
 import * as net from "node:net";
 
-const tunnel = process.env.VITE_DEV_TUNNEL?.trim();
+// Remotely managed tunnel: token carries tunnel identity; hostname/service URL come from Zero Trust.
+// Prefer CLOUDFLARE_TUNNEL_TOKEN for secrets (not exposed via Vite client env). VITE_DEV_TUNNEL is supported for the name you chose.
+const tunnelToken =
+  process.env.CLOUDFLARE_TUNNEL_TOKEN?.trim() || process.env.VITE_DEV_TUNNEL?.trim();
 const port = Number(process.env.VITE_DEV_SERVER_PORT || 5173);
-// Vite defaults to IPv6 loopback only (::1); use localhost so connect + cloudflared reach the dev server.
+// Vite defaults to IPv6 loopback only (::1); use localhost so TCP wait matches where cloudflared reaches the dev server.
 const host = process.env.VITE_DEV_TUNNEL_HOST || "localhost";
 
 function spawnVite() {
@@ -14,7 +17,7 @@ function spawnVite() {
   });
 }
 
-/** Reject if something is already listening (avoids tunneling to a stale dev server). */
+/** Reject if something is already listening (avoids a stale server on the port your tunnel routes to). */
 function assertDevPortFree() {
   return /** @type {Promise<void>} */ (
     new Promise((resolve, reject) => {
@@ -57,11 +60,6 @@ function waitForPort(maxMs = 60_000) {
   );
 }
 
-function isQuickTunnel(value) {
-  const v = value.toLowerCase();
-  return v === "quick" || v === "1" || v === "true" || v === "yes";
-}
-
 const children = [];
 
 function cleanup() {
@@ -74,7 +72,8 @@ process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 
 async function main() {
-  const useTunnel = tunnel && tunnel !== "0" && tunnel !== "false";
+  const useTunnel =
+    Boolean(tunnelToken) && tunnelToken !== "0" && tunnelToken.toLowerCase() !== "false";
 
   if (useTunnel) {
     try {
@@ -106,11 +105,9 @@ async function main() {
   }
 
   const cloudflaredBin = process.env.CLOUDFLARED_PATH || "cloudflared";
-  const args = isQuickTunnel(tunnel)
-    ? ["tunnel", "--url", `http://${host}:${port}`]
-    : ["tunnel", "run", tunnel];
-
-  const cf = spawn(cloudflaredBin, args, { stdio: "inherit" });
+  const cf = spawn(cloudflaredBin, ["tunnel", "run", "--token", tunnelToken], {
+    stdio: "inherit",
+  });
   children.push(cf);
 
   cf.on("exit", (code) => {
