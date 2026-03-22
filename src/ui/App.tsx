@@ -2,6 +2,7 @@ import { useGraphStore } from "../state/graphStore";
 import { listRelationships } from "../registry/relationships";
 import { CompilePanel } from "./CompilePanel";
 import { FlowCanvas } from "./flow/FlowCanvas";
+import { GraphToolbar } from "./GraphToolbar";
 import { InspectorPanel } from "./inspector/InspectorPanel";
 import { ServicePalette } from "./palette/ServicePalette";
 import { RelationshipPicker } from "./relationship/RelationshipPicker";
@@ -26,13 +27,17 @@ export function App() {
 
   return (
     <div className="flex h-full flex-col bg-white text-slate-900">
-      <header className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-2">
         <div>
           <h1 className="text-sm font-semibold">AWS Designer · MVP</h1>
           <p className="text-xs text-slate-600">
-            S3 and Lambda only — three curated relationships.
+            S3 and Lambda only — three curated relationships. Export graph JSON
+            to reload the canvas; download CDK stack source, then run{" "}
+            <code className="rounded bg-slate-100 px-1">cdk synth</code> for
+            CloudFormation templates.
           </p>
         </div>
+        <GraphToolbar />
       </header>
       <div className="flex min-h-0 flex-1 flex-row">
         <ServicePalette />

@@ -2,6 +2,14 @@
 
 Visual AWS infrastructure builder (early MVP).
 
+## End-to-end flow
+
+1. **Author in the UI** — place S3/Lambda nodes, connect them with curated relationships, set configs in the inspector.
+2. **Export graph JSON** — downloads a versioned document (`formatVersion`, `kind: "aws-designer-graph"`) that fully describes nodes, edges, positions, and configs. **Import graph JSON** restores the canvas from that file.
+3. **Compile** — merges service bases + relationship fragments into an internal **IR** (resources, IAM policies, links). You can preview that IR in the app.
+4. **Download CDK stack (.ts)** — compiles the current graph and emits a `GeneratedGraphStack` TypeScript file (`aws-cdk-lib` + `CfnResource` / `Fn.*` intrinsics).
+5. **CDK → CloudFormation** — in a CDK app that depends on `aws-cdk-lib`, add the generated stack, then run `cdk synth`. CDK writes **CloudFormation templates and assets** under `cdk.out/`. **AWS CloudFormation** (not CloudFront) executes those templates when you deploy.
+
 ## MVP scope
 
 - **Nodes:** Amazon S3, AWS Lambda (versioned service definitions, `1.0.0`).
@@ -9,7 +17,7 @@ Visual AWS infrastructure builder (early MVP).
   - `lambda_reads_s3` — Lambda → S3 (read IAM).
   - `lambda_writes_s3` — Lambda → S3 (write IAM).
   - `s3_triggers_lambda` — S3 → Lambda (bucket notifications + invoke permission).
-- **UI:** React + Vite + Tailwind, infinite-style canvas with [@xyflow/react](https://reactflow.dev/), drag services from the palette, connect handles to pick a relationship, edit node/edge config in the inspector, **Compile graph** to preview merged **IR** (resources + IAM + links).
+- **UI:** React + Vite + Tailwind, infinite-style canvas with [@xyflow/react](https://reactflow.dev/), drag services from the palette, connect handles to pick a relationship, edit node/edge config in the inspector.
 
 ## Scripts
 

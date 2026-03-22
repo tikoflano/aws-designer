@@ -55,8 +55,13 @@ export function logicalLambdaRoleId(nodeId: string): string {
   return `lambda-role-${sanitizeId(nodeId)}`;
 }
 
-function sanitizeId(nodeId: string): string {
+/** Strips non-alphanumeric characters so IDs are safe as CFN logical ID segments. */
+export function sanitizeNodeIdForLogical(nodeId: string): string {
   return nodeId.replace(/[^a-zA-Z0-9]/g, "");
+}
+
+function sanitizeId(nodeId: string): string {
+  return sanitizeNodeIdForLogical(nodeId);
 }
 
 const s3Service: ServiceDefinition = {
