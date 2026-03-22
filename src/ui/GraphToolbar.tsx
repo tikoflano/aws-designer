@@ -1,6 +1,5 @@
 import { useCallback, useRef, type ChangeEvent } from "react";
 
-import { generateCdkFromGraph } from "../compile/generateCdkFromGraph";
 import {
   graphDocumentToFile,
   graphFileToDocument,
@@ -61,20 +60,6 @@ export function GraphToolbar() {
     [importGraphFromText],
   );
 
-  const exportCdkStack = useCallback(() => {
-    const result = generateCdkFromGraph({ nodes, edges });
-    if (!result.ok) {
-      const lines = result.issues.map((i) => `• ${i.message}`).join("\n");
-      window.alert(`Compile failed. Fix issues before exporting CDK.\n\n${lines}`);
-      return;
-    }
-    downloadTextFile(
-      "GeneratedGraphStack.ts",
-      result.cdkSource,
-      "text/typescript;charset=utf-8",
-    );
-  }, [nodes, edges]);
-
   return (
     <div className="flex flex-wrap items-center gap-2">
       <input
@@ -97,13 +82,6 @@ export function GraphToolbar() {
         onClick={onImportButtonClick}
       >
         Import graph JSON
-      </button>
-      <button
-        type="button"
-        className="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-800 hover:bg-slate-50"
-        onClick={exportCdkStack}
-      >
-        Download CDK stack (.ts)
       </button>
     </div>
   );
