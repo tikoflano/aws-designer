@@ -40,6 +40,9 @@ type GraphStateInner = {
   serverVersion: number | null;
   saveStatus: SaveStatus;
   saveError: string | null;
+  /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
+  palettePlacement: ServiceId | null;
+  setPalettePlacement: (serviceId: ServiceId | null) => void;
   addNode: (serviceId: ServiceId, position: { x: number; y: number }) => void;
   updateNode: (
     id: string,
@@ -151,6 +154,9 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   serverVersion: null,
   saveStatus: "idle",
   saveError: null,
+  palettePlacement: null,
+
+  setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
 
   addNode: (serviceId, position) => {
     const id = nanoid(10);
@@ -161,7 +167,11 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       position,
       config: defaultNodeConfig(serviceId),
     };
-    set((s) => ({ nodes: [...s.nodes, node], selection: { kind: "node", id } }));
+    set((s) => ({
+      nodes: [...s.nodes, node],
+      selection: { kind: "node", id },
+      palettePlacement: null,
+    }));
   },
 
   updateNode: (id, patch) => {
@@ -261,6 +271,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       edges: doc.edges,
       selection: null,
       pendingConnection: null,
+      palettePlacement: null,
       lastCompile: null,
     });
   },
@@ -308,6 +319,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       edges: record.graph.edges,
       selection: null,
       pendingConnection: null,
+      palettePlacement: null,
       lastCompile: null,
       serverGraphId: record.id,
       serverUpdatedAt: record.updatedAt,
@@ -323,6 +335,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       edges: [],
       selection: null,
       pendingConnection: null,
+      palettePlacement: null,
       lastCompile: null,
       serverGraphId: null,
       serverUpdatedAt: null,

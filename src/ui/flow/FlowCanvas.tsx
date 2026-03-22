@@ -154,12 +154,28 @@ function FlowCanvasBody() {
     [select],
   );
 
-  const onPaneClick = useCallback(() => {
-    select(null);
-  }, [select]);
+  const onPaneClick = useCallback(
+    (e: MouseEvent) => {
+      const placement = useGraphStore.getState().palettePlacement;
+      if (placement) {
+        const position = screenToFlowPosition({
+          x: e.clientX,
+          y: e.clientY,
+        });
+        addNode(placement, position);
+        return;
+      }
+      select(null);
+    },
+    [addNode, screenToFlowPosition, select],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        useGraphStore.getState().setPalettePlacement(null);
+        return;
+      }
       if (e.key !== "Backspace" && e.key !== "Delete") return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
