@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-import type { GraphEdge, GraphNode, ServiceId } from "../domain/types";
-import type { InfrastructureFragment } from "../ir/types";
-
-import { logicalBucketId, logicalLambdaId } from "./services";
+import type { ServiceId } from "../domain/types";
 
 export const RELATIONSHIP_VERSION = "1.0.0";
 
@@ -33,22 +30,7 @@ export type RelationshipDefinition = {
   source: ServiceId;
   target: ServiceId;
   configSchema: z.ZodType<Record<string, unknown>>;
-  expand: (input: {
-    edge: GraphEdge;
-    sourceNode: GraphNode;
-    targetNode: GraphNode;
-  }) => InfrastructureFragment;
 };
-
-function objectArnForBucket(bucketLogicalId: string): unknown {
-  return {
-    "Fn::Join": ["", ["arn:aws:s3:::", { Ref: bucketLogicalId }, "/*"]],
-  };
-}
-
-function bucketArnForList(bucketLogicalId: string): unknown {
-  return { "Fn::Join": ["", ["arn:aws:s3:::", { Ref: bucketLogicalId }]] };
-}
 
 export const lambdaReadsS3: RelationshipDefinition = {
   id: "lambda_reads_s3",
@@ -59,68 +41,6 @@ export const lambdaReadsS3: RelationshipDefinition = {
   source: "lambda",
   target: "s3",
   configSchema: lambdaReadsS3ConfigSchema,
-  expand: ({ edge, sourceNode, targetNode }): InfrastructureFragment => {
-    const cfg = lambdaReadsS3ConfigSchema.parse(edge.config);
-    const bucketId = logicalBucketId(targetNode.id);
-    const prefix = cfg.objectKeyPrefix ?? "";
-    const objectResource =
-      prefix.length > 0
-        ? {
-            "Fn::Sub": [
-              `arn:aws:s3:::\${Bucket}/${prefix.replace(/\/$/, "")}/*`,
-              { Bucket: { Ref: bucketId } },
-            ],
-          }
-        : objectArnForBucket(bucketId);
-    const statements = [
-      {
-        Effect: "Allow" as const,
-        Action: "s3:GetObject",
-        Resource: objectResource,
-      },
-    ];
-    if (cfg.includeListBucket) {
-      statements.push({
-        Effect: "Allow" as const,
-        Action: "s3:ListBucket",
-        Resource: bucketArnForList(bucketId),
-        ...(prefix
-          ? {
-              Condition: {
-                StringLike: {
-                  "s3:prefix": [`${prefix.replace(/\/$/, "")}*`],
-                },
-              },
-            }
-          : {}),
-      });
-    }
-    return {
-      resources: [],
-      iamPolicies: [
-        {
-          id: `iam-${edge.id}-read`,
-          attachment: {
-            kind: "lambda_execution_role",
-            lambdaNodeId: sourceNode.id,
-          },
-          statements,
-        },
-      ],
-      links: [
-        {
-          id: `link-${edge.id}`,
-          kind: "lambda_reads_s3",
-          metadata: {
-            edgeId: edge.id,
-            lambdaNodeId: sourceNode.id,
-            bucketNodeId: targetNode.id,
-            objectKeyPrefix: prefix,
-          },
-        },
-      ],
-    };
-  },
 };
 
 export const lambdaWritesS3: RelationshipDefinition = {
@@ -132,51 +52,6 @@ export const lambdaWritesS3: RelationshipDefinition = {
   source: "lambda",
   target: "s3",
   configSchema: lambdaWritesS3ConfigSchema,
-  expand: ({ edge, sourceNode, targetNode }): InfrastructureFragment => {
-    const cfg = lambdaWritesS3ConfigSchema.parse(edge.config);
-    const bucketId = logicalBucketId(targetNode.id);
-    const prefix = cfg.objectKeyPrefix ?? "";
-    const objectResource =
-      prefix.length > 0
-        ? {
-            "Fn::Sub": [
-              `arn:aws:s3:::\${Bucket}/${prefix.replace(/\/$/, "")}/*`,
-              { Bucket: { Ref: bucketId } },
-            ],
-          }
-        : objectArnForBucket(bucketId);
-    return {
-      resources: [],
-      iamPolicies: [
-        {
-          id: `iam-${edge.id}-write`,
-          attachment: {
-            kind: "lambda_execution_role",
-            lambdaNodeId: sourceNode.id,
-          },
-          statements: [
-            {
-              Effect: "Allow",
-              Action: ["s3:PutObject", "s3:PutObjectAcl"],
-              Resource: objectResource,
-            },
-          ],
-        },
-      ],
-      links: [
-        {
-          id: `link-${edge.id}`,
-          kind: "lambda_writes_s3",
-          metadata: {
-            edgeId: edge.id,
-            lambdaNodeId: sourceNode.id,
-            bucketNodeId: targetNode.id,
-            objectKeyPrefix: prefix,
-          },
-        },
-      ],
-    };
-  },
 };
 
 export const s3TriggersLambda: RelationshipDefinition = {
@@ -188,64 +63,6 @@ export const s3TriggersLambda: RelationshipDefinition = {
   source: "s3",
   target: "lambda",
   configSchema: s3TriggersLambdaConfigSchema,
-  expand: ({ edge, sourceNode, targetNode }): InfrastructureFragment => {
-    const cfg = s3TriggersLambdaConfigSchema.parse(edge.config);
-    const bucketId = logicalBucketId(sourceNode.id);
-    const fnId = logicalLambdaId(targetNode.id);
-    const permissionId = `lambda-permission-s3-${edge.id}`;
-    const filterRules: { Name: string; Value: string }[] = [];
-    if (cfg.prefix) filterRules.push({ Name: "prefix", Value: cfg.prefix });
-    if (cfg.suffix) filterRules.push({ Name: "suffix", Value: cfg.suffix });
-    const lambdaConfigurations = cfg.events.map((event) => {
-      const entry: Record<string, unknown> = {
-        Event: event,
-        Function: { "Fn::GetAtt": [fnId, "Arn"] },
-      };
-      if (filterRules.length > 0) {
-        entry.Filter = { S3Key: { Rules: filterRules } };
-      }
-      return entry;
-    });
-    return {
-      resources: [
-        {
-          logicalId: bucketId,
-          type: "AWS::S3::Bucket",
-          properties: {
-            NotificationConfiguration: {
-              LambdaConfigurations: lambdaConfigurations,
-            },
-          },
-        },
-        {
-          logicalId: permissionId,
-          type: "AWS::Lambda::Permission",
-          properties: {
-            Action: "lambda:InvokeFunction",
-            FunctionName: { Ref: fnId },
-            Principal: "s3.amazonaws.com",
-            SourceArn: { "Fn::GetAtt": [bucketId, "Arn"] },
-            SourceAccount: { Ref: "AWS::AccountId" },
-          },
-        },
-      ],
-      iamPolicies: [],
-      links: [
-        {
-          id: `link-${edge.id}`,
-          kind: "s3_triggers_lambda",
-          metadata: {
-            edgeId: edge.id,
-            bucketNodeId: sourceNode.id,
-            lambdaNodeId: targetNode.id,
-            events: cfg.events,
-            prefix: cfg.prefix,
-            suffix: cfg.suffix,
-          },
-        },
-      ],
-    };
-  },
 };
 
 const ALL: RelationshipDefinition[] = [

@@ -1,5 +1,5 @@
 /**
- * Turns IR values (including CloudFormation-style intrinsics) into TypeScript
+ * Turns CloudFormation-style JSON values (including intrinsics) into TypeScript
  * expressions using `aws-cdk-lib` helpers.
  */
 export function cdkExpressionFromValue(value: unknown, depth = 0): string {
