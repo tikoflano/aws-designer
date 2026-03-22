@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { create } from "zustand";
 
 import { compileGraph } from "../compile/compileGraph";
-import type { GraphEdge, GraphNode, ServiceId } from "../domain/types";
+import type { GraphDocument, GraphEdge, GraphNode, ServiceId } from "../domain/types";
 import type { CompileResult } from "../ir/types";
 import { getRelationship, RELATIONSHIP_VERSION } from "../registry/relationships";
 import { SERVICE_VERSION } from "../registry/services";
@@ -38,6 +38,7 @@ type GraphState = {
   updateEdgeConfig: (edgeId: string, config: Record<string, unknown>) => void;
   removeEdge: (edgeId: string) => void;
   runCompile: () => void;
+  replaceFromGraphDocument: (doc: GraphDocument) => void;
 };
 
 function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
@@ -155,5 +156,15 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     const { nodes, edges } = get();
     const result = compileGraph({ nodes, edges });
     set({ lastCompile: result });
+  },
+
+  replaceFromGraphDocument: (doc) => {
+    set({
+      nodes: doc.nodes,
+      edges: doc.edges,
+      selection: null,
+      pendingConnection: null,
+      lastCompile: null,
+    });
   },
 }));

@@ -21,6 +21,11 @@ export function CompilePanel() {
       {!lastCompile && (
         <p className="text-xs text-slate-600">
           Run compile to merge node bases and relationship fragments into one IR.
+          Use <strong>Export graph JSON</strong> in the header to persist the
+          canvas; <strong>Download CDK stack</strong> turns the same graph into
+          TypeScript for <code className="rounded bg-slate-100 px-1">cdk synth</code>{" "}
+          (CloudFormation templates in <code className="rounded bg-slate-100 px-1">cdk.out/</code>
+          ).
         </p>
       )}
       {lastCompile && (
