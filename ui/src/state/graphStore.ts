@@ -214,7 +214,11 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
     };
   }
   if (serviceId === "sns") {
-    return { name: `topic-${s3BucketNameSuffix()}.fifo` };
+    return {
+      name: `topic-${s3BucketNameSuffix()}.fifo`,
+      topicType: "fifo",
+      fifoThroughputScope: "message_group",
+    };
   }
   return {};
 }

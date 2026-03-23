@@ -167,7 +167,11 @@ describe("GraphCompilerStack", () => {
           serviceId: "sns",
           serviceVersion: "1.0.0",
           position: { x: 0, y: 0 },
-          config: { name: "fixture-events.fifo" },
+          config: {
+            name: "fixture-events.fifo",
+            topicType: "fifo",
+            fifoThroughputScope: "topic",
+          },
         },
       ],
       edges: [],
@@ -185,5 +189,34 @@ describe("GraphCompilerStack", () => {
     expect(json).toContain('"ContentBasedDeduplication":true');
     expect(json).toContain("FifoThroughputScope");
     expect(json).toContain("Topic");
+  });
+
+  it("synthesizes standard SNS topic without FIFO attributes", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "n1",
+          serviceId: "sns",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-standard", topicType: "standard" },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsStdStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Topic", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("fixture-standard");
+    expect(json).toContain('"FifoTopic":false');
+    expect(json).not.toContain("FifoThroughputScope");
+    expect(json).not.toContain("ContentBasedDeduplication");
   });
 });
