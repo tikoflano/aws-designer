@@ -63,6 +63,8 @@ export class GraphCompilerStack extends cdk.Stack {
       functions: new Map<string, lambda.Function>(),
       distributions: new Map<string, cloudfront.Distribution>(),
       secrets: new Map<string, secretsmanager.ISecret>(),
+      snsTopics: new Map(),
+      sqsQueues: new Map(),
     };
 
     for (const node of graph.nodes) {

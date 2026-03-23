@@ -14,7 +14,7 @@ import {
 export class SnsStandardNodeHandler implements NodeServiceHandler {
   public readonly definition = snsStandardServiceDefinition;
 
-  public apply(stack: cdk.Stack, _ctx: GraphCompileContext, node: GraphNode): void {
+  public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {
     const cfg = snsStandardTopicNodeConfigSchema.parse(node.config);
     const topicName = cfg.name.trim();
 
@@ -24,10 +24,11 @@ export class SnsStandardNodeHandler implements NodeServiceHandler {
       "alias/aws/sns",
     );
 
-    new sns.Topic(stack, NodeIds.cfnId("SnsTopic", node.id), {
+    const topic = new sns.Topic(stack, NodeIds.cfnId("SnsTopic", node.id), {
       topicName,
       fifo: false,
       masterKey: snsKey,
     });
+    ctx.snsTopics.set(node.id, topic);
   }
 }

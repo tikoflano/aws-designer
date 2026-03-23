@@ -5,6 +5,7 @@ import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts
 import { RELATIONSHIP_VERSION } from "./domain/catalogTypes.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
 import { logicalBucketId } from "./nodeHandlers/s3/s3Service.definition.ts";
+import { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/sqsService.definition.ts";
 import { domainInHostedZone } from "./nodeHandlers/route53/route53Service.definition.ts";
 import { getService } from "./nodeHandlers/servicesCatalog.ts";
 
@@ -21,6 +22,7 @@ function nodeById(doc: GraphDocument, id: string) {
  */
 const LAMBDA_READS_SECRETSMANAGER = "lambda_reads_secretsmanager";
 const LAMBDA_WRITES_SECRETSMANAGER = "lambda_writes_secretsmanager";
+const SQS_SUBSCRIBES_SNS_FIFO = "sqs_subscribes_sns_fifo";
 
 export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   const issues: CompileIssue[] = [];
@@ -112,6 +114,18 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
             code: "lambda_secret_edge_without_secret",
             message: `Lambda–Secrets Manager edge targets node "${targetNode.id}" but that node is not a valid Secrets Manager node (missing or invalid config).`,
             edgeId: edge.id,
+          });
+        }
+      }
+      if (rel.id === SQS_SUBSCRIBES_SNS_FIFO) {
+        const q = sqsQueueNodeConfigSchema.safeParse(sourceNode.config);
+        if (q.success && q.data.queueType !== "fifo") {
+          issues.push({
+            code: "sns_fifo_sqs_requires_fifo_queue",
+            message:
+              "Subscribing to a FIFO SNS topic requires a FIFO SQS queue (set queue type to FIFO on the SQS node).",
+            edgeId: edge.id,
+            nodeId: sourceNode.id,
           });
         }
       }

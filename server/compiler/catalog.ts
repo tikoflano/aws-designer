@@ -48,3 +48,6 @@ export { lambdaWritesSecretsManagerConfigSchema } from "./edgeHandlers/lambda-to
 export { s3TriggersLambdaConfigSchema } from "./edgeHandlers/s3-to-lambda/s3TriggersLambda.definition.ts";
 export { cloudfrontOriginS3ConfigSchema } from "./edgeHandlers/cloudfront-to-s3/cloudfrontOriginS3.definition.ts";
 export { route53AliasCloudFrontConfigSchema } from "./edgeHandlers/route53-to-cloudfront/route53AliasCloudFront.definition.ts";
+export { lambdaSubscribesSnsStandardConfigSchema } from "./edgeHandlers/sns-to-lambda/snsStandardToLambdaSubscription.definition.ts";
+export { sqsSubscribesSnsFifoConfigSchema } from "./edgeHandlers/sns-to-sqs/snsFifoToSqsSubscription.definition.ts";
+export { sqsSubscribesSnsStandardConfigSchema } from "./edgeHandlers/sns-to-sqs/snsStandardToSqsSubscription.definition.ts";
