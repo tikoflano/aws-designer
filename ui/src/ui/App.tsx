@@ -172,6 +172,12 @@ function GraphHeaderTitle() {
 export function App() {
   const [servicePaletteOpen, setServicePaletteOpen] = useState(true);
 
+  const graphTitle = useGraphStore((s) => s.graphTitle);
+  useEffect(() => {
+    const display = graphTitle.trim() || "Untitled";
+    document.title = `AWS Designer — ${display}`;
+  }, [graphTitle]);
+
   const pendingConnection = useGraphStore((s) => s.pendingConnection);
   const nodes = useGraphStore((s) => s.nodes);
   const cancelPendingConnection = useGraphStore((s) => s.cancelPendingConnection);
