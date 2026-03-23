@@ -1,5 +1,6 @@
 import type { RelationshipDefinition } from "@compiler/catalog.ts";
-import { useEffect, useRef, useState } from "react";
+
+import { HelpInfoPopover } from "../common/HelpInfoPopover";
 
 type Props = {
   open: boolean;
@@ -15,62 +16,6 @@ function formatServiceLabel(id: string): string {
   if (id === "s3") return "S3";
   if (id === "lambda") return "Lambda";
   return id;
-}
-
-function InfoPopover() {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const el = wrapRef.current;
-      if (el && !el.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  return (
-    <div className="relative" ref={wrapRef}>
-      <button
-        type="button"
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-orange-900 hover:bg-orange-200 hover:text-orange-950"
-        aria-expanded={open}
-        aria-controls="relationship-picker-how-it-works"
-        aria-label="How relationships work"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <svg
-          className="h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden
-        >
-          <path
-            fillRule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
-      {open ? (
-        <div
-          id="relationship-picker-how-it-works"
-          role="note"
-          className="absolute right-0 top-full z-60 mt-1 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-orange-300 bg-linear-to-b from-amber-50 to-orange-100 p-3 text-sm leading-snug text-slate-700 shadow-lg"
-        >
-          <p className="font-medium text-orange-950">How relationships work</p>
-          <p className="mt-2">
-            Relationships follow the order you picked: first node → second node.
-            To connect S3 to Lambda instead, cancel and click the S3 node first.
-          </p>
-        </div>
-      ) : null}
-    </div>
-  );
 }
 
 export function RelationshipPicker({
@@ -110,7 +55,17 @@ export function RelationshipPicker({
               </p>
             ) : null}
           </div>
-          <InfoPopover />
+          <HelpInfoPopover
+            ariaLabel="How relationships work"
+            title="How relationships work"
+            variant="warm"
+          >
+            <p>
+              Relationships follow the order you picked: first node → second
+              node. To connect S3 to Lambda instead, cancel and click the S3
+              node first.
+            </p>
+          </HelpInfoPopover>
         </div>
         {relationships.length === 0 ? (
           <div className="bg-amber-50 px-4 py-6 text-sm text-slate-700">

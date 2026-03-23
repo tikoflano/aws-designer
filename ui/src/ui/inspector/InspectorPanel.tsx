@@ -4,14 +4,33 @@ import { useForm, type UseFormReturn } from "react-hook-form";
 
 import type { GraphEdge, GraphNode } from "../../domain/types";
 import {
+  defaultInlineSourceForRuntime,
   getRelationship,
   getService,
+  type LambdaRuntime,
   type RelationshipDefinition,
   type ServiceDefinition,
 } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
 
+import { HelpInfoPopover } from "../common/HelpInfoPopover";
+import { LambdaInlineSourceField } from "./LambdaInlineSourceField";
+
 type FormValues = Record<string, unknown>;
+
+function nodeInspectorFormDefaults(
+  node: GraphNode,
+  svc: ServiceDefinition,
+): FormValues {
+  const parsed = svc.configSchema.parse(node.config) as FormValues;
+  if (node.serviceId !== "lambda") return parsed;
+  return {
+    ...parsed,
+    inlineSource:
+      (parsed.inlineSource as string | undefined) ??
+      defaultInlineSourceForRuntime(parsed.runtime as LambdaRuntime),
+  };
+}
 
 function fieldErrorId(baseId: string, field: string) {
   return `${baseId}-${field}-err`;
@@ -164,7 +183,7 @@ function NodeInspectorForm({
   onRemove: () => void;
 }) {
   const formId = useId();
-  const defaults = svc.configSchema.parse(node.config) as FormValues;
+  const defaults = nodeInspectorFormDefaults(node, svc);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(svc.configSchema),
@@ -173,12 +192,15 @@ function NodeInspectorForm({
 
   const {
     register,
+    control,
+    getValues,
+    setValue,
     formState: { errors },
   } = form;
 
   useEffect(() => {
-    form.reset(svc.configSchema.parse(node.config) as FormValues);
-  }, [node.id, node.serviceVersion, node.config, svc, form]);
+    form.reset(nodeInspectorFormDefaults(node, svc));
+  }, [node.id, node.serviceVersion, node.config, svc, form]); // eslint-disable-line react-hooks/exhaustive-deps -- omit full `node` so drag updates do not reset the form
 
   return (
     <form
@@ -298,6 +320,13 @@ function NodeInspectorForm({
               message={errors.runtime?.message}
             />
           </label>
+          <LambdaInlineSourceField
+            control={control}
+            getValues={getValues}
+            setValue={setValue}
+            errors={errors}
+            formId={formId}
+          />
         </>
       )}
 
@@ -453,6 +482,45 @@ function EdgeInspectorForm({
               baseId={formId}
               eventsError={errors.events?.message}
             />
+          </div>
+          <div className="flex items-center gap-1.5 text-sm">
+            <span className="font-medium text-slate-700">
+              Prefix and suffix filters
+            </span>
+            <HelpInfoPopover
+              ariaLabel="About S3 prefix and suffix filters"
+              title="S3 notification filters"
+            >
+              <p>
+                Optional limits on which object keys trigger Lambda for the
+                events you selected. Leave both blank to react to any key in the
+                bucket.
+              </p>
+              <p>
+                <span className="font-medium text-slate-800">Prefix</span> —
+                only keys that{" "}
+                <span className="font-medium text-slate-800">start</span> with
+                this value. Example:{" "}
+                <code className="rounded bg-slate-100 px-1 font-mono text-xs">
+                  uploads/
+                </code>{" "}
+                for objects under that path.
+              </p>
+              <p>
+                <span className="font-medium text-slate-800">Suffix</span> —
+                only keys that{" "}
+                <span className="font-medium text-slate-800">end</span> with
+                this value. Example:{" "}
+                <code className="rounded bg-slate-100 px-1 font-mono text-xs">
+                  .json
+                </code>
+                .
+              </p>
+              <p>
+                If both are set, the key must match both. That matches
+                AWS S3 event notification filter behavior.
+              </p>
+            </HelpInfoPopover>
           </div>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Prefix filter</span>

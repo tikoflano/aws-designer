@@ -51,6 +51,20 @@ The canvas app uses a **warm orange / amber** palette for overlays and primary w
 
 Co-locate repeated class strings in a small constant block at the top of the component when it keeps the modal consistent and easier to update.
 
+### Contextual help: info (`i`) popovers
+
+For **short explanations** next to inspector fields, form labels, or modal headers (not full documentation), use a **click-to-open popover** tied to a circular **information** icon—not a second modal on top of a modal unless unavoidable.
+
+| Aspect | Convention |
+|--------|------------|
+| **Component** | Prefer [`ui/src/ui/common/HelpInfoPopover.tsx`](ui/src/ui/common/HelpInfoPopover.tsx): toggle on button click, dismiss on **outside pointer down** and **Escape**, `aria-expanded` / `aria-controls` / `aria-label` on the trigger. |
+| **Icon** | Hero-style filled “i” in circle (same SVG as in `HelpInfoPopover`); `aria-hidden` on the graphic, meaning on the button via `aria-label`. |
+| **Variants** | `neutral` (slate/white panel, compact control) for **inspector** and secondary surfaces; `warm` (amber/orange panel, larger hit target) for **modal chrome** such as [`RelationshipPicker`](ui/src/ui/relationship/RelationshipPicker.tsx). |
+| **Content** | `title` + a few short paragraphs or bullets; mention AWS behavior when the field maps to a real API (e.g. S3 notification prefix/suffix filters). Keep copy concise. |
+| **Placement** | The panel is rendered with `createPortal(..., document.body)` and **`position: fixed`** (right edge aligned to the trigger’s right, below the trigger) so it is not clipped by inspector `overflow-auto` and stacks above React Flow. Reposition on window resize and `scroll` (capture). `z-index` ~`10000` so it sits above canvas chrome. |
+
+Reuse this pattern whenever users need a **one-tap explanation** without leaving the form; add new instances with `HelpInfoPopover` rather than one-off popover state.
+
 ## Project structure (guidance)
 
 Prefer clarity over deep nesting:
