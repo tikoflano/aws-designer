@@ -125,8 +125,12 @@ function TouchAwareHandle({
       {showOverlay ? (
         <div
           className={`react-flow__handle react-flow__handle-${posKey} nodrag nopan z-[3] flex !h-11 !w-11 !min-h-[44px] !min-w-[44px] touch-manipulation items-center justify-center !bg-transparent`}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
           onPointerDown={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
             startRef.current = { x: e.clientX, y: e.clientY };
             movedRef.current = false;
@@ -140,6 +144,7 @@ function TouchAwareHandle({
             }
           }}
           onPointerUp={(e) => {
+            e.stopPropagation();
             try {
               (e.currentTarget as HTMLElement).releasePointerCapture(
                 e.pointerId,
