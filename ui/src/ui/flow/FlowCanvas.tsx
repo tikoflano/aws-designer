@@ -3,6 +3,7 @@ import {
   Controls,
   ConnectionMode,
   MiniMap,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   applyNodeChanges,
@@ -28,6 +29,8 @@ import type { ServiceId } from "../../domain/types";
 import { getRelationship } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
 import { PALETTE_DRAG_MIME } from "../palette/ServicePalette";
+import { CanvasGraphMenu } from "./CanvasGraphMenu";
+import { CanvasPaletteToggle } from "./CanvasPaletteToggle";
 import { LambdaCanvasNode } from "./nodes/LambdaCanvasNode";
 import { S3CanvasNode } from "./nodes/S3CanvasNode";
 
@@ -78,7 +81,15 @@ function toFlowEdges(
   });
 }
 
-function FlowCanvasBody() {
+export type FlowCanvasProps = {
+  servicePaletteOpen: boolean;
+  onToggleServicePalette: () => void;
+};
+
+function FlowCanvasBody({
+  servicePaletteOpen,
+  onToggleServicePalette,
+}: FlowCanvasProps) {
   const { screenToFlowPosition } = useReactFlow();
   const rfStore = useStoreApi();
   const nodes = useGraphStore((s) => s.nodes);
@@ -238,6 +249,15 @@ function FlowCanvasBody() {
       proOptions={{ hideAttribution: true }}
     >
       <Background />
+      <Panel position="top-left" className="m-3">
+        <CanvasPaletteToggle
+          paletteOpen={servicePaletteOpen}
+          onToggle={onToggleServicePalette}
+        />
+      </Panel>
+      <Panel position="top-right" className="m-3">
+        <CanvasGraphMenu />
+      </Panel>
       <Controls />
       <MiniMap
         pannable
@@ -248,11 +268,11 @@ function FlowCanvasBody() {
   );
 }
 
-export function FlowCanvas() {
+export function FlowCanvas(props: FlowCanvasProps) {
   return (
     <div className="h-full min-h-0 min-w-0 flex-1">
       <ReactFlowProvider>
-        <FlowCanvasBody />
+        <FlowCanvasBody {...props} />
       </ReactFlowProvider>
     </div>
   );

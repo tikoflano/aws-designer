@@ -48,7 +48,7 @@ type GraphStateInner = {
   /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
   palettePlacement: ServiceId | null;
   setPalettePlacement: (serviceId: ServiceId | null) => void;
-  /** Desktop: hide inspector column until user selects again. Clears selection. */
+  /** Desktop: when true, inspector column is hidden. Starts true on load; cleared when selecting a node or edge. */
   inspectorDismissed: boolean;
   dismissInspector: () => void;
   addNode: (serviceId: ServiceId, position: { x: number; y: number }) => void;
@@ -166,7 +166,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveStatus: "idle",
   saveError: null,
   palettePlacement: null,
-  inspectorDismissed: false,
+  inspectorDismissed: true,
 
   setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
 
@@ -303,7 +303,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
-      inspectorDismissed: false,
+      inspectorDismissed: true,
     });
   },
 
@@ -351,7 +351,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
-      inspectorDismissed: false,
+      inspectorDismissed: true,
       serverGraphId: record.id,
       serverUpdatedAt: record.updatedAt,
       serverVersion: record.version,
@@ -367,7 +367,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
-      inspectorDismissed: false,
+      inspectorDismissed: true,
       serverGraphId: null,
       serverUpdatedAt: null,
       serverVersion: null,

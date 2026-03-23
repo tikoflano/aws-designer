@@ -4,11 +4,15 @@ export function downloadTextFile(
   mimeType: string,
 ): void {
   const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
+  downloadBlobFile(filename, blob);
+}
+
+export function downloadBlobFile(filename: string, blob: Blob): void {
+  const objectUrl = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
-  anchor.href = url;
+  anchor.href = objectUrl;
   anchor.download = filename;
   anchor.rel = "noopener";
   anchor.click();
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(objectUrl);
 }

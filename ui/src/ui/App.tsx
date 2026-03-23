@@ -1,12 +1,15 @@
+import { useState } from "react";
+
 import { useGraphStore } from "../state/graphStore";
 import { listRelationships } from "@compiler/catalog.ts";
 import { FlowCanvas } from "./flow/FlowCanvas";
-import { GraphToolbar } from "./GraphToolbar";
 import { InspectorPanel } from "./inspector/InspectorPanel";
 import { ServicePalette } from "./palette/ServicePalette";
 import { RelationshipPicker } from "./relationship/RelationshipPicker";
 
 export function App() {
+  const [servicePaletteOpen, setServicePaletteOpen] = useState(true);
+
   const pendingConnection = useGraphStore((s) => s.pendingConnection);
   const nodes = useGraphStore((s) => s.nodes);
   const cancelPendingConnection = useGraphStore((s) => s.cancelPendingConnection);
@@ -26,21 +29,19 @@ export function App() {
 
   return (
     <div className="flex h-full flex-col bg-white text-slate-900">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-2">
-        <div>
-          <h1 className="text-sm font-semibold">AWS Designer · MVP</h1>
-          <p className="hidden text-xs text-slate-600 md:block">
-            S3 and Lambda — three relationships. Run <code className="rounded bg-slate-100 px-1">npm run dev</code>{" "}
-            for UI + API (or <code className="rounded bg-slate-100 px-1">npm run dev:server</code> for API only); the UI proxies{" "}
-            <code className="rounded bg-slate-100 px-1">/api</code>. Draft edits
-            stay in local storage; <strong>Save to server</strong> syncs to SQLite (versioned).
-          </p>
-        </div>
-        <GraphToolbar />
+      <header className="border-b-2 border-orange-400 bg-linear-to-r from-orange-300 to-amber-200 px-4 py-2.5 shadow-sm">
+        <h1 className="text-sm font-semibold text-orange-950">
+          AWS Designer - Untitled
+        </h1>
       </header>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col md:flex-row">
-        <ServicePalette />
-        <FlowCanvas />
+        {servicePaletteOpen ? <ServicePalette /> : null}
+        <FlowCanvas
+          servicePaletteOpen={servicePaletteOpen}
+          onToggleServicePalette={() =>
+            setServicePaletteOpen((open) => !open)
+          }
+        />
         <InspectorPanel />
       </div>
       <RelationshipPicker
