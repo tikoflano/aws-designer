@@ -210,6 +210,7 @@ function FlowCanvasBody() {
       onPaneClick={onPaneClick}
       onDrop={onDrop}
       onDragOver={onDragOver}
+      connectOnClick
       fitView
       proOptions={{ hideAttribution: true }}
     >
