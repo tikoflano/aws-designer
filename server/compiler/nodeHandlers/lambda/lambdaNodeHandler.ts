@@ -7,6 +7,7 @@ import type { GraphCompileContext } from "../../graphCompileContext.ts";
 import { NodeIds } from "../nodeIds.ts";
 import type { NodeServiceHandler } from "../types.ts";
 import {
+  defaultInlineSourceForRuntime,
   lambdaNodeConfigSchema,
   lambdaServiceDefinition,
 } from "./lambdaService.definition.ts";
@@ -20,11 +21,16 @@ export class LambdaNodeHandler implements NodeServiceHandler {
     const handler = cfg.runtime.startsWith("python")
       ? "lambda_function.lambda_handler"
       : cfg.handler;
+    const inline = cfg.inlineSource?.trim();
+    const source =
+      inline && inline.length > 0
+        ? inline
+        : defaultInlineSourceForRuntime(cfg.runtime);
     const fn = new lambda.Function(stack, NodeIds.cfnId("Fn", node.id), {
       functionName: cfg.functionName,
       runtime: rt,
       handler,
-      code: lambdaInlineCode(rt),
+      code: lambda.Code.fromInline(source),
     });
     fn.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
@@ -44,18 +50,4 @@ function mapRuntime(runtime: string): lambda.Runtime {
     "python3.13": lambda.Runtime.PYTHON_3_13,
   };
   return m[runtime] ?? lambda.Runtime.NODEJS_20_X;
-}
-
-function lambdaInlineCode(runtime: lambda.Runtime): lambda.Code {
-  if (
-    runtime === lambda.Runtime.PYTHON_3_12 ||
-    runtime === lambda.Runtime.PYTHON_3_13
-  ) {
-    return lambda.Code.fromInline(
-      "def lambda_handler(event, context):\n    return {}\n",
-    );
-  }
-  return lambda.Code.fromInline(
-    'exports.handler = async () => ({ statusCode: 200, body: "ok" });',
-  );
 }

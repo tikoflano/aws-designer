@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { App } from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { graphFileToDocument, parseGraphFileJson } from "../../ui/src/graph/graphFile.ts";
 import { GraphCompilerStack } from "./graphCompilerStack.ts";
@@ -25,5 +25,34 @@ describe("GraphCompilerStack", () => {
     template.resourceCountIs("AWS::S3::Bucket", 1);
     template.resourceCountIs("AWS::Lambda::Function", 1);
     template.resourceCountIs("AWS::IAM::Policy", 1);
+  });
+
+  it("embeds custom lambda inlineSource in the synthesized template", () => {
+    const marker = "exports.handler = async () => ({ statusCode: 418 });";
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: {
+            functionName: "customInlineFn",
+            inlineSource: marker,
+          },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "InlineSourceStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("418");
   });
 });

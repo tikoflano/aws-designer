@@ -7,6 +7,30 @@ import {
 import type { ServiceId } from "../../domain/serviceId.ts";
 import { NodeIds } from "../nodeIds.ts";
 
+/** CloudFormation inline ZipFile limit is 4096 bytes; stay under for safety. */
+export const LAMBDA_INLINE_SOURCE_MAX = 4000 as const;
+
+const lambdaRuntimeSchema = z.enum([
+  "nodejs18.x",
+  "nodejs20.x",
+  "nodejs22.x",
+  "python3.12",
+  "python3.13",
+]);
+
+export type LambdaRuntime = z.infer<typeof lambdaRuntimeSchema>;
+
+const DEFAULT_INLINE_NODE =
+  'exports.handler = async () => ({ statusCode: 200, body: "ok" });';
+
+const DEFAULT_INLINE_PYTHON = `def lambda_handler(event, context):
+    return {}
+`;
+
+export function defaultInlineSourceForRuntime(runtime: LambdaRuntime): string {
+  return runtime.startsWith("python") ? DEFAULT_INLINE_PYTHON : DEFAULT_INLINE_NODE;
+}
+
 export const lambdaNodeConfigSchema = z.object({
   functionName: z
     .string()
@@ -20,15 +44,13 @@ export const lambdaNodeConfigSchema = z.object({
     .string()
     .min(1, { message: "Handler is required (e.g. index.handler)." })
     .default("index.handler"),
-  runtime: z
-    .enum([
-      "nodejs18.x",
-      "nodejs20.x",
-      "nodejs22.x",
-      "python3.12",
-      "python3.13",
-    ])
-    .default("nodejs20.x"),
+  runtime: lambdaRuntimeSchema.default("nodejs20.x"),
+  inlineSource: z
+    .string()
+    .max(LAMBDA_INLINE_SOURCE_MAX, {
+      message: `Inline source must be at most ${LAMBDA_INLINE_SOURCE_MAX} characters (CloudFormation inline limit).`,
+    })
+    .optional(),
 });
 
 export function logicalLambdaId(nodeId: string): string {

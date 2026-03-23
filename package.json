@@ -15,10 +15,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "aws-react-icons": "^3.3.0",
     "@hookform/resolvers": "^3.9.1",
+    "@monaco-editor/react": "^4.7.0",
     "@xyflow/react": "^12.4.4",
     "@xyflow/system": "^0.0.75",
+    "aws-react-icons": "^3.3.0",
+    "monaco-editor": "^0.52.2",
     "nanoid": "^5.1.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -51,6 +53,7 @@
     "typescript": "~5.7.3",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
+    "vite-plugin-monaco-editor": "^1.1.0",
     "vitest": "^3.0.7"
   },
   "engines": {

@@ -21,7 +21,12 @@ export { getService, listServices } from "./nodeHandlers/servicesCatalog.ts";
 
 export { NodeIds } from "./nodeHandlers/nodeIds.ts";
 
-export { lambdaNodeConfigSchema } from "./nodeHandlers/lambda/lambdaService.definition.ts";
+export {
+  defaultInlineSourceForRuntime,
+  lambdaNodeConfigSchema,
+  LAMBDA_INLINE_SOURCE_MAX,
+} from "./nodeHandlers/lambda/lambdaService.definition.ts";
+export type { LambdaRuntime } from "./nodeHandlers/lambda/lambdaService.definition.ts";
 export { logicalBucketId, s3NodeConfigSchema } from "./nodeHandlers/s3/s3Service.definition.ts";
 
 export { lambdaReadsS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaReadsS3.definition.ts";

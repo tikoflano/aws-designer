@@ -1,9 +1,14 @@
 import path from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
+
+const require = createRequire(import.meta.url);
+const monacoEditorPlugin = require("vite-plugin-monaco-editor")
+  .default as (opts?: object) => Plugin;
 
 const repoRoot = path.dirname(fileURLToPath(import.meta.url));
 
@@ -19,7 +24,12 @@ export default defineConfig({
     outDir: "../dist",
     emptyOutDir: true,
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    // Bundles/serves Monaco web workers (loaded via createRequire — package default export is CJS).
+    monacoEditorPlugin({ languageWorkers: ["editorWorkerService", "typescript"] }),
+  ],
   server: {
     allowedHosts: ["vite.tikoflano.work"],
     proxy: {
