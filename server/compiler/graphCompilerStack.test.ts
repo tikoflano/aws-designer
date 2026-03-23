@@ -219,4 +219,65 @@ describe("GraphCompilerStack", () => {
     expect(json).not.toContain("FifoThroughputScope");
     expect(json).not.toContain("ContentBasedDeduplication");
   });
+
+  it("synthesizes standard SQS queue with DLQ and resolver defaults", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-work", queueType: "standard" },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SqsStdStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SQS::Queue", 2);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("fixture-work");
+    expect(json).toContain("fixture-work-dlq");
+    expect(json).toContain('"VisibilityTimeout":30');
+    expect(json).toContain('"MessageRetentionPeriod":345600');
+    expect(json).toContain('"MaximumMessageSize":1048576');
+    expect(json).toContain('"SqsManagedSseEnabled":true');
+    expect(json).toContain('"maxReceiveCount":10');
+    expect(json).not.toContain('"FifoQueue":true');
+  });
+
+  it("synthesizes FIFO SQS queue and FIFO DLQ", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-jobs.fifo", queueType: "fifo" },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SqsFifoStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SQS::Queue", 2);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("fixture-jobs.fifo");
+    expect(json).toContain("fixture-jobs-dlq.fifo");
+    expect(json).toContain('"FifoQueue":true');
+  });
 });

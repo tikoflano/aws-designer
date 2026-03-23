@@ -4,4 +4,5 @@ export type ServiceId =
   | "cloudfront"
   | "route53"
   | "secretsmanager"
-  | "sns";
+  | "sns"
+  | "sqs";

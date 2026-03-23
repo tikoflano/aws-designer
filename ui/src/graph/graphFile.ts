@@ -20,6 +20,7 @@ const graphNodeSchema = z.object({
     "route53",
     "secretsmanager",
     "sns",
+    "sqs",
   ]),
   serviceVersion: z.string().min(1),
   position: positionSchema,
