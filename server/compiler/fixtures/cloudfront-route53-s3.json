@@ -23,6 +23,7 @@
       "position": { "x": 200, "y": 0 },
       "config": {
         "name": "example.com",
+        "hostedZoneId": "Z1234567890ABC",
         "type": "public"
       }
     }
@@ -43,9 +44,7 @@
       "relationshipId": "route53_alias_cloudfront",
       "relationshipVersion": "1.0.0",
       "config": {
-        "domainName": "www.example.com",
-        "hostedZoneId": "Z1234567890ABC",
-        "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+        "domainName": "www.example.com"
       }
     }
   ]
