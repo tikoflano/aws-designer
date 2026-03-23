@@ -104,3 +104,24 @@ Prefer clarity over deep nesting:
 ---
 
 Update this file when the team adopts concrete package versions or replaces a default library so agents stay aligned with the repo.
+
+## Cursor Cloud specific instructions
+
+### Services
+
+| Service | Command | Port | Notes |
+|---------|---------|------|-------|
+| Vite UI | `npm run dev:ui` | 5173 | Proxies `/api` to the API server |
+| Fastify API | `npm run dev:server` | 8787 | Auto-creates SQLite DB at `server/data/graphs.sqlite` |
+| Both (recommended) | `npm run dev` | 5173 + 8787 | Uses `concurrently` to run both |
+
+### Running commands
+
+Standard commands are documented in `README.md` under **Scripts**. Key ones: `npm run dev`, `npm test`, `npm run lint`, `npm run build`.
+
+### Non-obvious caveats
+
+- `better-sqlite3` is a native Node.js addon. If `npm ci` fails with compilation errors, ensure `python3`, `make`, and `g++` are available (they are pre-installed in the Cloud Agent VM).
+- The API wire format for nodes/edges is **flat** (not nested under React Flow's `type`/`data` keys). See `shared/api/schemas.ts` for the Zod schemas (`graphNodeSchema`, `graphEdgeSchema`).
+- Deleting `server/data/graphs.sqlite` resets all graph data; the file is auto-created on server start.
+- The Vite dev server deprecation warning (`fs.rmdir` with `recursive`) is harmless and comes from a transitive dependency.
