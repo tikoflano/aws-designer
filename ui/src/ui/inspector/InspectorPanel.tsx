@@ -465,6 +465,33 @@ function NodeInspectorForm({
         </>
       )}
 
+      {node.serviceId === "sns" && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-slate-700">Topic name</span>
+          <span className="text-xs text-slate-500">
+            FIFO topic: letters, numbers, hyphens, underscores. If the name does
+            not end with <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code>, it is appended. Uses topic-scope
+            throughput, content-based deduplication, and AWS-managed KMS
+            (alias/aws/sns).
+          </span>
+          <input
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.name ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={
+              errors.name?.message ? fieldErrorId(formId, "name") : undefined
+            }
+            {...register("name")}
+          />
+          <FieldError
+            baseId={formId}
+            field="name"
+            message={errors.name?.message}
+          />
+        </label>
+      )}
+
       {node.serviceId === "secretsmanager" && (
         <>
           <label className="flex flex-col gap-1 text-sm">

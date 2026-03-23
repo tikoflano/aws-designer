@@ -19,6 +19,7 @@ const graphNodeSchema = z.object({
     "cloudfront",
     "route53",
     "secretsmanager",
+    "sns",
   ]),
   serviceVersion: z.string().min(1),
   position: positionSchema,

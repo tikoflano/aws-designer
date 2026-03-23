@@ -3,4 +3,5 @@ export type ServiceId =
   | "lambda"
   | "cloudfront"
   | "route53"
-  | "secretsmanager";
+  | "secretsmanager"
+  | "sns";

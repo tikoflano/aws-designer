@@ -156,4 +156,34 @@ describe("GraphCompilerStack", () => {
     expect(json).toContain("secretsmanager:GetSecretValue");
     expect(json).toContain("secretsmanager:PutSecretValue");
   });
+
+  it("synthesizes FIFO SNS topic with encryption and deduplication", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "n1",
+          serviceId: "sns",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-events.fifo" },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Topic", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("fixture-events.fifo");
+    expect(json).toContain('"FifoTopic":true');
+    expect(json).toContain('"ContentBasedDeduplication":true');
+    expect(json).toContain("FifoThroughputScope");
+    expect(json).toContain("Topic");
+  });
 });
