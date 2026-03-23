@@ -279,4 +279,129 @@ describe("GraphCompilerStack", () => {
     expect(json).toContain("fixture-jobs-dlq.fifo");
     expect(json).toContain('"FifoQueue":true');
   });
+
+  it("creates SNS subscription from standard topic to SQS queue", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-sub-q", queueType: "standard" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-sub-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "q1",
+          targetNodeId: "t1",
+          relationshipId: "sqs_subscribes_sns_standard",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsSqsSubStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Subscription", 1);
+  });
+
+  it("creates SNS subscription from standard topic to Lambda", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsSubFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-lambda-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: "lambda_subscribes_sns_standard",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsLambdaSubStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Subscription", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("lambda:InvokeFunction");
+  });
+
+  it("creates SNS subscription from FIFO topic to FIFO queue", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-fifo-q.fifo", queueType: "fifo" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_fifo",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture-fifo-topic.fifo",
+            fifoThroughputScope: "message_group",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "q1",
+          targetNodeId: "t1",
+          relationshipId: "sqs_subscribes_sns_fifo",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsFifoSqsSubStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Subscription", 1);
+  });
 });

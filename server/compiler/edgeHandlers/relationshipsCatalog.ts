@@ -8,6 +8,9 @@ import { lambdaReadsS3Definition } from "./lambda-to-s3/lambdaReadsS3.definition
 import { lambdaWritesS3Definition } from "./lambda-to-s3/lambdaWritesS3.definition.ts";
 import { route53AliasCloudFrontDefinition } from "./route53-to-cloudfront/route53AliasCloudFront.definition.ts";
 import { s3TriggersLambdaDefinition } from "./s3-to-lambda/s3TriggersLambda.definition.ts";
+import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/snsStandardToLambdaSubscription.definition.ts";
+import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/snsFifoToSqsSubscription.definition.ts";
+import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/snsStandardToSqsSubscription.definition.ts";
 
 export const ALL_RELATIONSHIPS = [
   lambdaReadsS3Definition,
@@ -17,6 +20,9 @@ export const ALL_RELATIONSHIPS = [
   s3TriggersLambdaDefinition,
   cloudfrontOriginS3Definition,
   route53AliasCloudFrontDefinition,
+  sqsSubscribesSnsFifoDefinition,
+  sqsSubscribesSnsStandardDefinition,
+  lambdaSubscribesSnsStandardDefinition,
 ];
 
 export function listRelationships(source: ServiceId, target: ServiceId) {

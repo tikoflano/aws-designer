@@ -6,6 +6,9 @@ import { LambdaReadsS3Handler } from "./lambda-to-s3/lambdaReadsS3Handler.ts";
 import { LambdaWritesS3Handler } from "./lambda-to-s3/lambdaWritesS3Handler.ts";
 import { Route53AliasCloudFrontHandler } from "./route53-to-cloudfront/route53AliasCloudFrontHandler.ts";
 import { S3TriggersLambdaHandler } from "./s3-to-lambda/s3TriggersLambdaHandler.ts";
+import { LambdaSubscribesSnsStandardHandler } from "./sns-to-lambda/snsStandardToLambdaSubscriptionHandler.ts";
+import { SqsSubscribesSnsFifoHandler } from "./sns-to-sqs/snsFifoToSqsSubscriptionHandler.ts";
+import { SqsSubscribesSnsStandardHandler } from "./sns-to-sqs/snsStandardToSqsSubscriptionHandler.ts";
 import type { EdgeRelationshipHandler } from "./types.ts";
 
 const ALL_HANDLERS: EdgeRelationshipHandler[] = [
@@ -16,6 +19,9 @@ const ALL_HANDLERS: EdgeRelationshipHandler[] = [
   new S3TriggersLambdaHandler(),
   new CloudFrontOriginS3Handler(),
   new Route53AliasCloudFrontHandler(),
+  new SqsSubscribesSnsFifoHandler(),
+  new SqsSubscribesSnsStandardHandler(),
+  new LambdaSubscribesSnsStandardHandler(),
 ];
 
 export const edgeRelationshipHandlers: Record<string, EdgeRelationshipHandler> =

@@ -17,7 +17,7 @@ function stripFifoSuffix(name: string): string {
 export class SqsNodeHandler implements NodeServiceHandler {
   public readonly definition = sqsServiceDefinition;
 
-  public apply(stack: cdk.Stack, _ctx: GraphCompileContext, node: GraphNode): void {
+  public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {
     const cfg = sqsQueueNodeConfigSchema.parse(node.config);
     const base = cfg.name.trim();
     const fifo = cfg.queueType === "fifo";
@@ -45,7 +45,7 @@ export class SqsNodeHandler implements NodeServiceHandler {
       fifo,
     });
 
-    new sqs.Queue(stack, NodeIds.cfnId("SqsQueue", node.id), {
+    const queue = new sqs.Queue(stack, NodeIds.cfnId("SqsQueue", node.id), {
       ...queueProps,
       queueName,
       fifo,
@@ -54,5 +54,6 @@ export class SqsNodeHandler implements NodeServiceHandler {
         maxReceiveCount: 10,
       },
     });
+    ctx.sqsQueues.set(node.id, queue);
   }
 }

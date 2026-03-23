@@ -416,4 +416,71 @@ describe("validateGraph", () => {
       result.issues.some((i) => i.code === "lambda_secret_edge_without_secret"),
     ).toBe(true);
   });
+
+  it("rejects sqs_subscribes_sns_fifo when the queue is not FIFO", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { name: "std-q", queueType: "standard" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_fifo",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { name: "ev.fifo", fifoThroughputScope: "message_group" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "q1",
+          targetNodeId: "t1",
+          relationshipId: "sqs_subscribes_sns_fifo",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some((i) => i.code === "sns_fifo_sqs_requires_fifo_queue"),
+    ).toBe(true);
+  });
+
+  it("accepts sqs_subscribes_sns_fifo with a FIFO queue", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { name: "jobs.fifo", queueType: "fifo" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_fifo",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { name: "ev.fifo", fifoThroughputScope: "message_group" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "q1",
+          targetNodeId: "t1",
+          relationshipId: "sqs_subscribes_sns_fifo",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+  });
 });

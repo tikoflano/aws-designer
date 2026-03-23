@@ -14,7 +14,7 @@ import {
 export class SnsFifoNodeHandler implements NodeServiceHandler {
   public readonly definition = snsFifoServiceDefinition;
 
-  public apply(stack: cdk.Stack, _ctx: GraphCompileContext, node: GraphNode): void {
+  public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {
     const cfg = snsFifoTopicNodeConfigSchema.parse(node.config);
     const base = cfg.name.trim();
     const topicName = base.endsWith(".fifo") ? base : `${base}.fifo`;
@@ -30,12 +30,13 @@ export class SnsFifoNodeHandler implements NodeServiceHandler {
         ? sns.FifoThroughputScope.TOPIC
         : sns.FifoThroughputScope.MESSAGE_GROUP;
 
-    new sns.Topic(stack, NodeIds.cfnId("SnsTopic", node.id), {
+    const topic = new sns.Topic(stack, NodeIds.cfnId("SnsTopic", node.id), {
       topicName,
       fifo: true,
       fifoThroughputScope,
       contentBasedDeduplication: true,
       masterKey: snsKey,
     });
+    ctx.snsTopics.set(node.id, topic);
   }
 }
