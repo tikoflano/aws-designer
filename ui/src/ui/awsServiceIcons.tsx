@@ -61,7 +61,8 @@ export function AwsServiceArchitectureIcon({
           aria-hidden
         />
       );
-    case "sns":
+    case "sns_standard":
+    case "sns_fifo":
       return (
         <ArchitectureServiceAmazonSimpleNotificationService
           size={size}

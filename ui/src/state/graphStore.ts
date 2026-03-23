@@ -213,10 +213,12 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
       secretValue: "",
     };
   }
-  if (serviceId === "sns") {
+  if (serviceId === "sns_standard") {
+    return { name: `topic-${s3BucketNameSuffix()}` };
+  }
+  if (serviceId === "sns_fifo") {
     return {
       name: `topic-${s3BucketNameSuffix()}.fifo`,
-      topicType: "fifo",
       fifoThroughputScope: "message_group",
     };
   }

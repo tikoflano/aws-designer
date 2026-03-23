@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 import type { GraphDocument, GraphEdge, GraphNode } from "../domain/types";
 
 export const GRAPH_FILE_FORMAT_VERSION = 1 as const;
@@ -11,17 +12,21 @@ const positionSchema = z.object({
   y: z.number(),
 });
 
+const serviceIdSchemaV1 = z.enum([
+  "s3",
+  "lambda",
+  "cloudfront",
+  "route53",
+  "secretsmanager",
+  "sns",
+  "sns_standard",
+  "sns_fifo",
+  "sqs",
+]);
+
 const graphNodeSchema = z.object({
   id: z.string().min(1),
-  serviceId: z.enum([
-    "s3",
-    "lambda",
-    "cloudfront",
-    "route53",
-    "secretsmanager",
-    "sns",
-    "sqs",
-  ]),
+  serviceId: serviceIdSchemaV1,
   serviceVersion: z.string().min(1),
   position: positionSchema,
   config: z.record(z.string(), z.unknown()),
@@ -63,11 +68,22 @@ export function graphDocumentToFile(
 }
 
 export function graphFileToDocument(file: GraphFileV1): GraphDocument {
-  return { nodes: file.nodes, edges: file.edges };
+  return migrateLegacyGraphDocument({
+    nodes: file.nodes as GraphNode[],
+    edges: file.edges,
+  });
 }
 
 export function parseGraphFileJson(raw: unknown): GraphFileV1 {
-  return graphFileSchema.parse(raw);
+  const parsed = graphFileSchema.parse(raw);
+  const migrated = migrateLegacyGraphDocument({
+    nodes: parsed.nodes as GraphNode[],
+    edges: parsed.edges,
+  });
+  return {
+    ...parsed,
+    nodes: migrated.nodes as GraphFileV1["nodes"],
+  };
 }
 
 export function serializeGraphFile(file: GraphFileV1): string {

@@ -4,9 +4,10 @@ import type { ServiceId } from "../domain/serviceId.ts";
 import { cloudfrontServiceDefinition } from "./cloudfront/cloudfrontService.definition.ts";
 import { lambdaServiceDefinition } from "./lambda/lambdaService.definition.ts";
 import { route53ServiceDefinition } from "./route53/route53Service.definition.ts";
+import { snsFifoServiceDefinition } from "./sns/snsFifoService.definition.ts";
+import { snsStandardServiceDefinition } from "./sns/snsStandardService.definition.ts";
 import { secretsManagerServiceDefinition } from "./secretsmanager/secretsManagerService.definition.ts";
 import { s3ServiceDefinition } from "./s3/s3Service.definition.ts";
-import { snsServiceDefinition } from "./sns/snsService.definition.ts";
 import { sqsServiceDefinition } from "./sqs/sqsService.definition.ts";
 
 const SERVICE_ORDER: ServiceId[] = [
@@ -15,7 +16,8 @@ const SERVICE_ORDER: ServiceId[] = [
   "cloudfront",
   "route53",
   "secretsmanager",
-  "sns",
+  "sns_standard",
+  "sns_fifo",
   "sqs",
 ];
 
@@ -25,7 +27,8 @@ const BY_ID: Record<ServiceId, ServiceDefinition> = {
   cloudfront: cloudfrontServiceDefinition,
   route53: route53ServiceDefinition,
   secretsmanager: secretsManagerServiceDefinition,
-  sns: snsServiceDefinition,
+  sns_standard: snsStandardServiceDefinition,
+  sns_fifo: snsFifoServiceDefinition,
   sqs: sqsServiceDefinition,
 };
 

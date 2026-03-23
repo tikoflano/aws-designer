@@ -6,6 +6,7 @@ import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
 
 import type { GraphDocument } from "@shared/domain/graph.ts";
+import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 import { edgeRelationshipHandlers } from "./edgeHandlers/registry.ts";
 import type { GraphCompileContext } from "./graphCompileContext.ts";
 import { nodeServiceHandlers } from "./nodeHandlers/registry.ts";
@@ -40,7 +41,8 @@ export type GraphCompilerStackProps = cdk.StackProps & {
  */
 export class GraphCompilerStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props: GraphCompilerStackProps) {
-    const { graph, ...stackProps } = props;
+    const { graph: rawGraph, ...stackProps } = props;
+    const graph = migrateLegacyGraphDocument(rawGraph);
     super(scope, id, {
       ...stackProps,
       env:

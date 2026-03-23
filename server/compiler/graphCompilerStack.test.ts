@@ -164,12 +164,11 @@ describe("GraphCompilerStack", () => {
       nodes: [
         {
           id: "n1",
-          serviceId: "sns",
+          serviceId: "sns_fifo",
           serviceVersion: "1.0.0",
           position: { x: 0, y: 0 },
           config: {
             name: "fixture-events.fifo",
-            topicType: "fifo",
             fifoThroughputScope: "topic",
           },
         },
@@ -198,10 +197,10 @@ describe("GraphCompilerStack", () => {
       nodes: [
         {
           id: "n1",
-          serviceId: "sns",
+          serviceId: "sns_standard",
           serviceVersion: "1.0.0",
           position: { x: 0, y: 0 },
-          config: { name: "fixture-standard", topicType: "standard" },
+          config: { name: "fixture-standard" },
         },
       ],
       edges: [],
