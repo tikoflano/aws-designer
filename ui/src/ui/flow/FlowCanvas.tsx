@@ -65,7 +65,6 @@ const nodeTypes: NodeTypes = {
 function toFlowNodes(
   nodes: ReturnType<typeof useGraphStore.getState>["nodes"],
   selection: ReturnType<typeof useGraphStore.getState>["selection"],
-  useServiceIcons: boolean,
   connectingMode: boolean,
 ): Node[] {
   return nodes.map((n) => {
@@ -108,7 +107,7 @@ function toFlowNodes(
       id: n.id,
       type: n.serviceId,
       position: n.position,
-      data: { title, useServiceIcons, serviceDisplayName },
+      data: { title, serviceDisplayName },
       selected: selection?.kind === "node" && selection.id === n.id,
       draggable: !connectingMode,
     };
@@ -159,7 +158,6 @@ function FlowCanvasBody({
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
   const selection = useGraphStore((s) => s.selection);
-  const useServiceIcons = useGraphStore((s) => s.useServiceIcons);
   const connectingMode = useGraphStore((s) => s.connectingMode);
   const setConnectingMode = useGraphStore((s) => s.setConnectingMode);
   const setConnectionOriginNodeId = useGraphStore(
@@ -173,8 +171,8 @@ function FlowCanvasBody({
   const removeEdge = useGraphStore((s) => s.removeEdge);
 
   const flowNodes = useMemo(
-    () => toFlowNodes(nodes, selection, useServiceIcons, connectingMode),
-    [nodes, selection, useServiceIcons, connectingMode],
+    () => toFlowNodes(nodes, selection, connectingMode),
+    [nodes, selection, connectingMode],
   );
   const flowEdges = useMemo(
     () => toFlowEdges(edges, selection),
@@ -183,9 +181,9 @@ function FlowCanvasBody({
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      const { nodes: domainNodes, selection: sel, useServiceIcons: icons, connectingMode: cm } =
+      const { nodes: domainNodes, selection: sel, connectingMode: cm } =
         useGraphStore.getState();
-      const current = toFlowNodes(domainNodes, sel, icons, cm);
+      const current = toFlowNodes(domainNodes, sel, cm);
       const next = applyNodeChanges(changes, current);
       next.forEach((n) => {
         const dom = domainNodes.find((g) => g.id === n.id);
