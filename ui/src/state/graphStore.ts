@@ -220,6 +220,12 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
       fifoThroughputScope: "message_group",
     };
   }
+  if (serviceId === "sqs") {
+    return {
+      name: `q-${s3BucketNameSuffix()}`,
+      queueType: "standard",
+    };
+  }
   return {};
 }
 

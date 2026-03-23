@@ -3,6 +3,7 @@ import ArchitectureServiceAmazonRoute53 from "aws-react-icons/icons/Architecture
 import ArchitectureServiceAmazonSimpleStorageService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleStorageService";
 import ArchitectureServiceAWSLambda from "aws-react-icons/icons/ArchitectureServiceAWSLambda";
 import ArchitectureServiceAmazonSimpleNotificationService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleNotificationService";
+import ArchitectureServiceAmazonSimpleQueueService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleQueueService";
 import ArchitectureServiceAWSSecretsManager from "aws-react-icons/icons/ArchitectureServiceAWSSecretsManager";
 
 import type { ServiceId } from "../domain/types";
@@ -63,6 +64,14 @@ export function AwsServiceArchitectureIcon({
     case "sns":
       return (
         <ArchitectureServiceAmazonSimpleNotificationService
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+    case "sqs":
+      return (
+        <ArchitectureServiceAmazonSimpleQueueService
           size={size}
           className={svgClass}
           aria-hidden

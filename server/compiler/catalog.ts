@@ -37,6 +37,7 @@ export {
 } from "./nodeHandlers/route53/route53Service.definition.ts";
 export { secretsManagerNodeConfigSchema } from "./nodeHandlers/secretsmanager/secretsManagerService.definition.ts";
 export { snsTopicNodeConfigSchema } from "./nodeHandlers/sns/snsService.definition.ts";
+export { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/sqsService.definition.ts";
 
 export { lambdaReadsS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaReadsS3.definition.ts";
 export { lambdaWritesS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaWritesS3.definition.ts";

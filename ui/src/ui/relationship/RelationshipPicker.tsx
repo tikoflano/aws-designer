@@ -21,6 +21,7 @@ function formatServiceLabel(id: string): string {
   if (id === "route53") return "Route 53";
   if (id === "secretsmanager") return "Secrets Manager";
   if (id === "sns") return "SNS";
+  if (id === "sqs") return "SQS";
   return id;
 }
 
