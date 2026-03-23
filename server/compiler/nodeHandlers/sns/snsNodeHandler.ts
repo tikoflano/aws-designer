@@ -13,7 +13,7 @@ export class SnsNodeHandler implements NodeServiceHandler {
 
   public apply(stack: cdk.Stack, _ctx: GraphCompileContext, node: GraphNode): void {
     const cfg = snsTopicNodeConfigSchema.parse(node.config);
-    const topicName = cfg.name.endsWith(".fifo") ? cfg.name : `${cfg.name}.fifo`;
+    const base = cfg.name.trim();
 
     const snsKey = kms.Alias.fromAliasName(
       stack,
@@ -21,10 +21,25 @@ export class SnsNodeHandler implements NodeServiceHandler {
       "alias/aws/sns",
     );
 
+    if (cfg.topicType === "standard") {
+      new sns.Topic(stack, NodeIds.cfnId("SnsTopic", node.id), {
+        topicName: base,
+        fifo: false,
+        masterKey: snsKey,
+      });
+      return;
+    }
+
+    const topicName = base.endsWith(".fifo") ? base : `${base}.fifo`;
+    const fifoThroughputScope =
+      cfg.fifoThroughputScope === "topic"
+        ? sns.FifoThroughputScope.TOPIC
+        : sns.FifoThroughputScope.MESSAGE_GROUP;
+
     new sns.Topic(stack, NodeIds.cfnId("SnsTopic", node.id), {
       topicName,
       fifo: true,
-      fifoThroughputScope: sns.FifoThroughputScope.TOPIC,
+      fifoThroughputScope,
       contentBasedDeduplication: true,
       masterKey: snsKey,
     });
