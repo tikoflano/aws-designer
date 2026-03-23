@@ -52,6 +52,7 @@ function toFlowNodes(
   nodes: ReturnType<typeof useGraphStore.getState>["nodes"],
   selection: ReturnType<typeof useGraphStore.getState>["selection"],
   useServiceIcons: boolean,
+  connectingMode: boolean,
 ): Node[] {
   return nodes.map((n) => {
     const title =
@@ -61,7 +62,7 @@ function toFlowNodes(
           ? String(n.config.functionName ?? "Lambda")
           : n.serviceId === "route53"
             ? String(
-                (n.config.domainName as string | undefined)?.trim() || "DNS",
+                (n.config.name as string | undefined)?.trim() || "DNS",
               )
             : n.serviceId === "cloudfront"
               ? String(
@@ -77,6 +78,7 @@ function toFlowNodes(
       position: n.position,
       data: { title, useServiceIcons, serviceDisplayName },
       selected: selection?.kind === "node" && selection.id === n.id,
+      draggable: !connectingMode,
     };
   });
 }
@@ -126,6 +128,8 @@ function FlowCanvasBody({
   const edges = useGraphStore((s) => s.edges);
   const selection = useGraphStore((s) => s.selection);
   const useServiceIcons = useGraphStore((s) => s.useServiceIcons);
+  const connectingMode = useGraphStore((s) => s.connectingMode);
+  const setConnectingMode = useGraphStore((s) => s.setConnectingMode);
   const addNode = useGraphStore((s) => s.addNode);
   const select = useGraphStore((s) => s.select);
   const beginConnection = useGraphStore((s) => s.beginConnection);
@@ -134,8 +138,8 @@ function FlowCanvasBody({
   const removeEdge = useGraphStore((s) => s.removeEdge);
 
   const flowNodes = useMemo(
-    () => toFlowNodes(nodes, selection, useServiceIcons),
-    [nodes, selection, useServiceIcons],
+    () => toFlowNodes(nodes, selection, useServiceIcons, connectingMode),
+    [nodes, selection, useServiceIcons, connectingMode],
   );
   const flowEdges = useMemo(
     () => toFlowEdges(edges, selection),
@@ -144,9 +148,9 @@ function FlowCanvasBody({
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      const { nodes: domainNodes, selection: sel, useServiceIcons: icons } =
+      const { nodes: domainNodes, selection: sel, useServiceIcons: icons, connectingMode: cm } =
         useGraphStore.getState();
-      const current = toFlowNodes(domainNodes, sel, icons);
+      const current = toFlowNodes(domainNodes, sel, icons, cm);
       const next = applyNodeChanges(changes, current);
       next.forEach((n) => {
         const dom = domainNodes.find((g) => g.id === n.id);
@@ -171,12 +175,13 @@ function FlowCanvasBody({
   const onConnect = useCallback(
     (c: Connection) => {
       if (!c.source || !c.target) return;
+      setConnectingMode(false);
       beginConnection(c.source, c.target, {
         sourceHandleId: c.sourceHandle ?? undefined,
         targetHandleId: c.targetHandle ?? undefined,
       });
     },
-    [beginConnection],
+    [beginConnection, setConnectingMode],
   );
 
   const clearClickConnectIntent = useCallback(() => {
@@ -219,6 +224,7 @@ function FlowCanvasBody({
   const onPaneClick = useCallback(
     (e: MouseEvent) => {
       clearClickConnectIntent();
+      setConnectingMode(false);
       const placement = useGraphStore.getState().palettePlacement;
       if (placement) {
         const position = screenToFlowPosition({
@@ -230,13 +236,14 @@ function FlowCanvasBody({
       }
       select(null);
     },
-    [addNode, clearClickConnectIntent, screenToFlowPosition, select],
+    [addNode, clearClickConnectIntent, setConnectingMode, screenToFlowPosition, select],
   );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         clearClickConnectIntent();
+        setConnectingMode(false);
         useGraphStore.getState().setPalettePlacement(null);
         return;
       }
@@ -259,7 +266,7 @@ function FlowCanvasBody({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [removeNode, removeEdge, clearClickConnectIntent]);
+  }, [removeNode, removeEdge, clearClickConnectIntent, setConnectingMode]);
 
   return (
     <ReactFlow

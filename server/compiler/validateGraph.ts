@@ -155,11 +155,12 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
 
     const r53Source = nodeById(doc, edge.sourceNodeId);
     if (r53Source?.serviceId === "route53") {
-      const c = r53Source.config as Record<string, unknown>;
-      const domainName = String(c.domainName ?? "").trim();
-      const zoneName = String(c.zoneName ?? "").trim();
-      const hostedZoneId = String(c.hostedZoneId ?? "").trim();
-      const certificateArn = String(c.certificateArn ?? "").trim();
+      const nc = r53Source.config as Record<string, unknown>;
+      const zoneName = String(nc.name ?? "").trim();
+      const ec = edge.config as Record<string, unknown>;
+      const domainName = String(ec.domainName ?? "").trim();
+      const hostedZoneId = String(ec.hostedZoneId ?? "").trim();
+      const certificateArn = String(ec.certificateArn ?? "").trim();
       if (
         domainName === "" ||
         zoneName === "" ||
@@ -168,7 +169,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
       ) {
         issues.push({
           code: "route53_alias_incomplete_dns",
-          message: `Route 53 node "${r53Source.id}" must have domain name, zone name, hosted zone ID, and ACM certificate ARN set before this alias edge can be compiled.`,
+          message: `Route 53 alias edge "${edge.id}" requires: zone name on the Route 53 node, and domain name, hosted zone ID, and ACM certificate ARN on the edge.`,
           edgeId: edge.id,
           nodeId: r53Source.id,
         });

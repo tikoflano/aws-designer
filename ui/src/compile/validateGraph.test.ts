@@ -112,10 +112,8 @@ describe("validateGraph", () => {
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
           config: {
-            domainName: "www.example.com",
-            zoneName: "example.com",
-            hostedZoneId: "Z123",
-            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
+            name: "example.com",
+            type: "public",
           },
         },
       ],
@@ -134,7 +132,11 @@ describe("validateGraph", () => {
           targetNodeId: "cf1",
           relationshipId: "route53_alias_cloudfront",
           relationshipVersion: RELATIONSHIP_VERSION,
-          config: {},
+          config: {
+            domainName: "www.example.com",
+            hostedZoneId: "Z123",
+            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
+          },
         },
       ],
     });
@@ -163,24 +165,14 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {
-            domainName: "www.example.com",
-            zoneName: "example.com",
-            hostedZoneId: "Z123",
-            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
-          },
+          config: { name: "example.com", type: "public" },
         },
         {
           id: "r2",
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {
-            domainName: "app.example.com",
-            zoneName: "example.com",
-            hostedZoneId: "Z123",
-            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
-          },
+          config: { name: "example.com", type: "public" },
         },
       ],
       edges: [
@@ -198,7 +190,11 @@ describe("validateGraph", () => {
           targetNodeId: "cf1",
           relationshipId: "route53_alias_cloudfront",
           relationshipVersion: RELATIONSHIP_VERSION,
-          config: {},
+          config: {
+            domainName: "www.example.com",
+            hostedZoneId: "Z123",
+            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
+          },
         },
         {
           id: "ea2",
@@ -206,7 +202,11 @@ describe("validateGraph", () => {
           targetNodeId: "cf1",
           relationshipId: "route53_alias_cloudfront",
           relationshipVersion: RELATIONSHIP_VERSION,
-          config: {},
+          config: {
+            domainName: "app.example.com",
+            hostedZoneId: "Z123",
+            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
+          },
         },
       ],
     });
@@ -216,7 +216,7 @@ describe("validateGraph", () => {
     ).toBe(true);
   });
 
-  it("accepts Route 53 node with empty DNS fields when no alias edge exists", () => {
+  it("accepts Route 53 node with empty name when no alias edge exists", () => {
     const result = validateGraph({
       nodes: [
         {
@@ -224,12 +224,7 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {
-            domainName: "",
-            zoneName: "",
-            hostedZoneId: "",
-            certificateArn: "",
-          },
+          config: { name: "", type: "public" },
         },
       ],
       edges: [],
@@ -259,12 +254,7 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {
-            domainName: "",
-            zoneName: "example.com",
-            hostedZoneId: "Z1",
-            certificateArn: "arn:aws:acm:us-east-1:123:certificate/x",
-          },
+          config: { name: "example.com", type: "public" },
         },
       ],
       edges: [
@@ -282,7 +272,11 @@ describe("validateGraph", () => {
           targetNodeId: "cf1",
           relationshipId: "route53_alias_cloudfront",
           relationshipVersion: RELATIONSHIP_VERSION,
-          config: {},
+          config: {
+            domainName: "",
+            hostedZoneId: "Z1",
+            certificateArn: "arn:aws:acm:us-east-1:123:certificate/x",
+          },
         },
       ],
     });

@@ -5,7 +5,11 @@ import {
   type RelationshipDefinition,
 } from "../../domain/catalogTypes.ts";
 
-export const route53AliasCloudFrontConfigSchema = z.object({});
+export const route53AliasCloudFrontConfigSchema = z.object({
+  domainName: z.string().default(""),
+  hostedZoneId: z.string().default(""),
+  certificateArn: z.string().default(""),
+});
 
 export const route53AliasCloudFrontDefinition: RelationshipDefinition = {
   id: "route53_alias_cloudfront",

@@ -1,6 +1,7 @@
 import { AwsServiceArchitectureIcon } from "../../awsServiceIcons";
 import { AwsServiceFlowNode } from "./AwsServiceFlowNode";
 import { TouchAwareGraphHandles } from "./TouchAwareGraphHandles";
+import { useTouchConnectLongPress } from "./useTouchConnectLongPress";
 
 type Props = {
   data: {
@@ -12,6 +13,8 @@ type Props = {
 };
 
 export function Route53CanvasNode({ data, selected }: Props) {
+  const longPressHandlers = useTouchConnectLongPress();
+
   if (!data.useServiceIcons) {
     return (
       <div
@@ -20,6 +23,7 @@ export function Route53CanvasNode({ data, selected }: Props) {
             ? "border-orange-600 ring-2 ring-orange-300"
             : "border-slate-200"
         }`}
+        {...longPressHandlers}
       >
         <div className="text-xs font-semibold uppercase tracking-wide text-teal-800">
           Route 53

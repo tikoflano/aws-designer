@@ -104,3 +104,33 @@ Prefer clarity over deep nesting:
 ---
 
 Update this file when the team adopts concrete package versions or replaces a default library so agents stay aligned with the repo.
+
+## Cursor Cloud specific instructions
+
+### Services
+
+| Service | Command | Port | Notes |
+|---------|---------|------|-------|
+| Vite UI | `npm run dev:ui` | 5173 | Proxies `/api` to the API server |
+| Fastify API | `npm run dev:server` | 8787 | Auto-creates SQLite DB at `server/data/graphs.sqlite` |
+| Both (recommended) | `npm run dev` | 5173 + 8787 | Uses `concurrently` to run both |
+
+### Running commands
+
+Standard commands are documented in `README.md` under **Scripts**. Key ones: `npm run dev`, `npm test`, `npm run lint`, `npm run build`.
+
+### Non-obvious caveats
+
+- `better-sqlite3` is a native Node.js addon. If `npm ci` fails with compilation errors, ensure `python3`, `make`, and `g++` are available (they are pre-installed in the Cloud Agent VM).
+- The API wire format for nodes/edges is **flat** (not nested under React Flow's `type`/`data` keys). See `shared/api/schemas.ts` for the Zod schemas (`graphNodeSchema`, `graphEdgeSchema`).
+- Deleting `server/data/graphs.sqlite` resets all graph data; the file is auto-created on server start.
+- The Vite dev server deprecation warning (`fs.rmdir` with `recursive`) is harmless and comes from a transitive dependency.
+
+### Cloudflare tunnel
+
+The tunnel exposes the Vite dev server externally at `https://vite.tikoflano.work/`. It requires:
+1. `cloudflared` installed (`sudo apt-get install -y cloudflared` via the Cloudflare apt repo, or download the binary).
+2. The `VITE_DEV_TUNNEL` secret set in the environment (configured in Cursor Secrets).
+3. Dev servers running first (`npm run dev`), then `npm run tunnel` in a separate terminal.
+
+The tunnel proxies `vite.tikoflano.work` → `http://localhost:5173`. The domain has Cloudflare managed challenge enabled, so `curl` will get a 403; use a browser to verify. ICMP proxy warnings in the tunnel logs are harmless in the Cloud Agent VM.
