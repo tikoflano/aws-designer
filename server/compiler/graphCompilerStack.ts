@@ -39,9 +39,21 @@ export type GraphCompilerStackProps = cdk.StackProps & {
  */
 export class GraphCompilerStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props: GraphCompilerStackProps) {
-    super(scope, id, props);
-
-    const { graph } = props;
+    const { graph, ...stackProps } = props;
+    super(scope, id, {
+      ...stackProps,
+      env:
+        stackProps.env ??
+        (process.env.CDK_DEFAULT_ACCOUNT && process.env.CDK_DEFAULT_REGION
+          ? {
+              account: process.env.CDK_DEFAULT_ACCOUNT,
+              region: process.env.CDK_DEFAULT_REGION,
+            }
+          : {
+              account: "123456789012",
+              region: "us-east-1",
+            }),
+    });
     const ctx: GraphCompileContext = {
       stack: this,
       buckets: new Map<string, s3.Bucket>(),

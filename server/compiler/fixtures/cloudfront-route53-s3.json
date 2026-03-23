@@ -23,7 +23,6 @@
       "position": { "x": 200, "y": 0 },
       "config": {
         "name": "example.com",
-        "hostedZoneId": "Z1234567890ABC",
         "type": "public"
       }
     }

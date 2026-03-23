@@ -34,20 +34,19 @@ export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
 
     const domainRaw = edgeCfg.domainName.trim();
     const zoneRaw = nodeCfg.name.trim();
-    const hostedZoneId = nodeCfg.hostedZoneId.trim();
 
-    if (domainRaw === "" || zoneRaw === "" || hostedZoneId === "") {
+    if (domainRaw === "" || zoneRaw === "") {
       return;
     }
 
     const domainName = normalizeFqdn(domainRaw);
     const zoneName = zoneRaw.replace(/\.$/, "");
-    const zone = route53.HostedZone.fromHostedZoneAttributes(
+    const zone = route53.HostedZone.fromLookup(
       ctx.stack,
       NodeIds.cfnId("R53Zone", sourceNode.id),
       {
-        hostedZoneId,
-        zoneName,
+        domainName: zoneName,
+        privateZone: nodeCfg.type === "private",
       },
     );
 

@@ -129,7 +129,6 @@ describe("validateGraph", () => {
           position: { x: 0, y: 0 },
           config: {
             name: "example.com",
-            hostedZoneId: "Z123",
             type: "public",
           },
         },
@@ -180,14 +179,14 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", hostedZoneId: "Z123", type: "public" },
+          config: { name: "example.com", type: "public" },
         },
         {
           id: "r2",
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", hostedZoneId: "Z123", type: "public" },
+          config: { name: "example.com", type: "public" },
         },
       ],
       edges: [
@@ -265,7 +264,7 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", hostedZoneId: "Z1", type: "public" },
+          config: { name: "example.com", type: "public" },
         },
       ],
       edges: [
@@ -317,7 +316,7 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", hostedZoneId: "Z1", type: "public" },
+          config: { name: "example.com", type: "public" },
         },
       ],
       edges: [

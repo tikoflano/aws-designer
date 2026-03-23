@@ -167,13 +167,12 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
     if (r53Source?.serviceId === "route53") {
       const nc = r53Source.config as Record<string, unknown>;
       const zoneName = String(nc.name ?? "").trim();
-      const hostedZoneId = String(nc.hostedZoneId ?? "").trim();
       const ec = edge.config as Record<string, unknown>;
       const domainName = String(ec.domainName ?? "").trim();
-      if (domainName === "" || zoneName === "" || hostedZoneId === "") {
+      if (domainName === "" || zoneName === "") {
         issues.push({
           code: "route53_alias_incomplete_dns",
-          message: `Route 53 alias edge "${edge.id}" requires a domain name on the edge, and zone name plus hosted zone ID on the Route 53 node "${r53Source.id}".`,
+          message: `Route 53 alias edge "${edge.id}" requires a domain name on the edge and a zone name on the Route 53 node "${r53Source.id}".`,
           edgeId: edge.id,
           nodeId: r53Source.id,
         });
