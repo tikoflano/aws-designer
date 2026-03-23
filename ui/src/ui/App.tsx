@@ -181,6 +181,7 @@ export function App() {
   const pendingConnection = useGraphStore((s) => s.pendingConnection);
   const nodes = useGraphStore((s) => s.nodes);
   const cancelPendingConnection = useGraphStore((s) => s.cancelPendingConnection);
+  const beginConnection = useGraphStore((s) => s.beginConnection);
   const confirmRelationship = useGraphStore((s) => s.confirmRelationship);
 
   const sourceNode = pendingConnection
@@ -190,10 +191,31 @@ export function App() {
     ? nodes.find((n) => n.id === pendingConnection.targetNodeId)
     : undefined;
 
-  const options =
+  const forwardOptions =
     sourceNode && targetNode
       ? listRelationships(sourceNode.serviceId, targetNode.serviceId)
       : [];
+  const reverseOptions =
+    sourceNode && targetNode
+      ? listRelationships(targetNode.serviceId, sourceNode.serviceId)
+      : [];
+
+  const handleSelectRelationship = useCallback(
+    (relationshipId: string, reversed: boolean) => {
+      if (reversed && pendingConnection) {
+        beginConnection(
+          pendingConnection.targetNodeId,
+          pendingConnection.sourceNodeId,
+          {
+            sourceHandleId: pendingConnection.targetHandleId,
+            targetHandleId: pendingConnection.sourceHandleId,
+          },
+        );
+      }
+      confirmRelationship(relationshipId);
+    },
+    [pendingConnection, beginConnection, confirmRelationship],
+  );
 
   return (
     <div className="flex h-full flex-col bg-white text-slate-900">
@@ -235,9 +257,10 @@ export function App() {
         open={Boolean(pendingConnection)}
         fromServiceId={sourceNode?.serviceId}
         toServiceId={targetNode?.serviceId}
-        relationships={options}
+        forwardRelationships={forwardOptions}
+        reverseRelationships={reverseOptions}
         onCancel={() => cancelPendingConnection()}
-        onSelect={(relationshipId) => confirmRelationship(relationshipId)}
+        onSelect={handleSelectRelationship}
       />
     </div>
   );
