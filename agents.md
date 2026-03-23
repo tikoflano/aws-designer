@@ -125,3 +125,12 @@ Standard commands are documented in `README.md` under **Scripts**. Key ones: `np
 - The API wire format for nodes/edges is **flat** (not nested under React Flow's `type`/`data` keys). See `shared/api/schemas.ts` for the Zod schemas (`graphNodeSchema`, `graphEdgeSchema`).
 - Deleting `server/data/graphs.sqlite` resets all graph data; the file is auto-created on server start.
 - The Vite dev server deprecation warning (`fs.rmdir` with `recursive`) is harmless and comes from a transitive dependency.
+
+### Cloudflare tunnel
+
+The tunnel exposes the Vite dev server externally at `https://vite.tikoflano.work/`. It requires:
+1. `cloudflared` installed (`sudo apt-get install -y cloudflared` via the Cloudflare apt repo, or download the binary).
+2. The `VITE_DEV_TUNNEL` secret set in the environment (configured in Cursor Secrets).
+3. Dev servers running first (`npm run dev`), then `npm run tunnel` in a separate terminal.
+
+The tunnel proxies `vite.tikoflano.work` → `http://localhost:5173`. The domain has Cloudflare managed challenge enabled, so `curl` will get a 403; use a browser to verify. ICMP proxy warnings in the tunnel logs are harmless in the Cloud Agent VM.
