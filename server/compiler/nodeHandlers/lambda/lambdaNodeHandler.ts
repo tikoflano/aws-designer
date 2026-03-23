@@ -26,11 +26,17 @@ export class LambdaNodeHandler implements NodeServiceHandler {
       inline && inline.length > 0
         ? inline
         : defaultInlineSourceForRuntime(cfg.runtime);
+    const envKeys = Object.keys(cfg.environmentVariables);
     const fn = new lambda.Function(stack, NodeIds.cfnId("Fn", node.id), {
       functionName: cfg.functionName,
       runtime: rt,
       handler,
       code: lambda.Code.fromInline(source),
+      memorySize: cfg.memorySizeMb,
+      ephemeralStorageSize: cdk.Size.mebibytes(cfg.ephemeralStorageMb),
+      timeout: cdk.Duration.seconds(cfg.timeoutSeconds),
+      environment:
+        envKeys.length > 0 ? { ...cfg.environmentVariables } : undefined,
     });
     fn.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
