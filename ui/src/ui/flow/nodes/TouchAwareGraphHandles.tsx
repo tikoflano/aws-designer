@@ -1,6 +1,7 @@
 import {
   Handle,
   Position,
+  useConnection,
   useNodeId,
   useStore,
   useStoreApi,
@@ -9,6 +10,7 @@ import { XYHandle } from "@xyflow/system";
 import type { HandleType } from "@xyflow/system";
 import { useRef } from "react";
 
+import { hasRelationshipBetween } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../../state/graphStore";
 import { useCoarsePointer } from "../useCoarsePointer";
 
@@ -55,19 +57,50 @@ function TouchAwareHandle({
   const linkingActive = useStore(
     (s) => Boolean(s.connection.inProgress || s.connectionClickStartHandle),
   );
+  const clickOriginNodeId = useStore(
+    (s) => s.connectionClickStartHandle?.nodeId ?? null,
+  );
+  const { inProgress, fromNode } = useConnection((c) => ({
+    inProgress: c.inProgress,
+    fromNode: c.inProgress ? c.fromNode : null,
+  }));
+  const graphDragOriginNodeId = useGraphStore((s) => s.connectionOriginNodeId);
+  const graphNodes = useGraphStore((s) => s.nodes);
+
+  const originNodeId =
+    clickOriginNodeId ??
+    (inProgress ? (fromNode?.id ?? null) : null) ??
+    graphDragOriginNodeId;
+
+  const nodeId = useNodeId();
+  const originSvc = originNodeId
+    ? graphNodes.find((n) => n.id === originNodeId)?.serviceId
+    : undefined;
+  const thisSvc = nodeId
+    ? graphNodes.find((n) => n.id === nodeId)?.serviceId
+    : undefined;
+
+  const isValidHandleTarget =
+    !originNodeId ||
+    nodeId === originNodeId ||
+    (originSvc != null &&
+      thisSvc != null &&
+      hasRelationshipBetween(originSvc, thisSvc));
+
   const isSourceHandle = useStore((s) => {
     const start = s.connectionClickStartHandle;
     return Boolean(start && start.nodeId === nodeId && start.id === handleId);
   });
   const connectingMode = useGraphStore((s) => s.connectingMode);
-  const nodeId = useNodeId();
   const store = useStoreApi();
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const movedRef = useRef(false);
 
   const posKey = positionClass(position);
 
-  const showHandles = coarse ? connectingMode || linkingActive : true;
+  const showForCoarse =
+    (connectingMode && !linkingActive) ||
+    (linkingActive && isValidHandleTarget);
 
   const tryCompleteClickConnect = (native: PointerEvent) => {
     if (!nodeId) return;
@@ -94,25 +127,25 @@ function TouchAwareHandle({
     store.setState({ connectionClickStartHandle: null });
   };
 
-  /* ---- Handle visual class ---- */
   let handleClass: string;
 
   if (coarse) {
-    if (isSourceHandle) {
-      handleClass = `${VISUAL_SOURCE} !pointer-events-none`;
-    } else if (showHandles) {
-      handleClass = `${VISUAL_CONNECTING} !pointer-events-none`;
-    } else {
+    if (!showForCoarse) {
       handleClass = `${VISUAL_IDLE} !pointer-events-none opacity-0`;
+    } else if (isSourceHandle) {
+      handleClass = `${VISUAL_SOURCE} !pointer-events-none`;
+    } else {
+      handleClass = `${VISUAL_CONNECTING} !pointer-events-none`;
     }
+  } else if (linkingActive && !isValidHandleTarget) {
+    handleClass = `${VISUAL_IDLE} pointer-events-none opacity-0`;
+  } else if (linkingActive) {
+    handleClass = VISUAL_IDLE;
   } else {
-    handleClass = linkingActive
-      ? VISUAL_IDLE
-      : `${VISUAL_IDLE} pointer-events-none opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100`;
+    handleClass = `${VISUAL_IDLE} pointer-events-none opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100`;
   }
 
-  /* ---- Touch overlay (coarse only, visible in connecting / linking mode) ---- */
-  const showOverlay = coarse && showHandles;
+  const showOverlay = coarse && showForCoarse;
 
   return (
     <>

@@ -14,6 +14,7 @@ export {
 
 export {
   getRelationship,
+  hasRelationshipBetween,
   listRelationships,
 } from "./edgeHandlers/relationshipsCatalog.ts";
 

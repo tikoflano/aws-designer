@@ -16,6 +16,8 @@ import {
   type Node,
   type NodeChange,
   type NodeTypes,
+  type OnConnectEnd,
+  type OnConnectStart,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
@@ -27,7 +29,12 @@ import {
 } from "react";
 
 import type { ServiceId } from "../../domain/types";
-import { getRelationship, getService, listServices } from "@compiler/catalog.ts";
+import {
+  getRelationship,
+  getService,
+  hasRelationshipBetween,
+  listServices,
+} from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
 import { PALETTE_DRAG_MIME } from "../palette/ServicePalette";
 import { CanvasGraphMenu } from "./CanvasGraphMenu";
@@ -155,6 +162,9 @@ function FlowCanvasBody({
   const useServiceIcons = useGraphStore((s) => s.useServiceIcons);
   const connectingMode = useGraphStore((s) => s.connectingMode);
   const setConnectingMode = useGraphStore((s) => s.setConnectingMode);
+  const setConnectionOriginNodeId = useGraphStore(
+    (s) => s.setConnectionOriginNodeId,
+  );
   const addNode = useGraphStore((s) => s.addNode);
   const select = useGraphStore((s) => s.select);
   const beginConnection = useGraphStore((s) => s.beginConnection);
@@ -193,7 +203,12 @@ function FlowCanvasBody({
 
   const isValidConnection = useCallback<IsValidConnection>((edge) => {
     const { source, target } = edge;
-    return Boolean(source && target && source !== target);
+    if (!source || !target || source === target) return false;
+    const gn = useGraphStore.getState().nodes;
+    const sa = gn.find((n) => n.id === source)?.serviceId;
+    const tb = gn.find((n) => n.id === target)?.serviceId;
+    if (!sa || !tb) return false;
+    return hasRelationshipBetween(sa, tb);
   }, []);
 
   /** Loose mode + all `source` handles: `c.source` / `c.target` match interaction order. */
@@ -201,13 +216,24 @@ function FlowCanvasBody({
     (c: Connection) => {
       if (!c.source || !c.target) return;
       setConnectingMode(false);
+      setConnectionOriginNodeId(null);
       beginConnection(c.source, c.target, {
         sourceHandleId: c.sourceHandle ?? undefined,
         targetHandleId: c.targetHandle ?? undefined,
       });
     },
-    [beginConnection, setConnectingMode],
+    [beginConnection, setConnectingMode, setConnectionOriginNodeId],
   );
+
+  const onConnectStart = useCallback<OnConnectStart>((_event, params) => {
+    if (params.nodeId) {
+      setConnectionOriginNodeId(params.nodeId);
+    }
+  }, [setConnectionOriginNodeId]);
+
+  const onConnectEnd = useCallback<OnConnectEnd>(() => {
+    setConnectionOriginNodeId(null);
+  }, [setConnectionOriginNodeId]);
 
   const clearClickConnectIntent = useCallback(() => {
     rfStore.setState({ connectionClickStartHandle: null });
@@ -250,6 +276,7 @@ function FlowCanvasBody({
     (e: MouseEvent) => {
       clearClickConnectIntent();
       setConnectingMode(false);
+      setConnectionOriginNodeId(null);
       const placement = useGraphStore.getState().palettePlacement;
       if (placement) {
         const position = screenToFlowPosition({
@@ -261,7 +288,14 @@ function FlowCanvasBody({
       }
       select(null);
     },
-    [addNode, clearClickConnectIntent, setConnectingMode, screenToFlowPosition, select],
+    [
+      addNode,
+      clearClickConnectIntent,
+      setConnectingMode,
+      setConnectionOriginNodeId,
+      screenToFlowPosition,
+      select,
+    ],
   );
 
   useEffect(() => {
@@ -269,6 +303,7 @@ function FlowCanvasBody({
       if (e.key === "Escape") {
         clearClickConnectIntent();
         setConnectingMode(false);
+        setConnectionOriginNodeId(null);
         useGraphStore.getState().setPalettePlacement(null);
         return;
       }
@@ -291,7 +326,13 @@ function FlowCanvasBody({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [removeNode, removeEdge, clearClickConnectIntent, setConnectingMode]);
+  }, [
+    removeNode,
+    removeEdge,
+    clearClickConnectIntent,
+    setConnectingMode,
+    setConnectionOriginNodeId,
+  ]);
 
   return (
     <ReactFlow
@@ -310,6 +351,8 @@ function FlowCanvasBody({
       connectionMode={ConnectionMode.Loose}
       isValidConnection={isValidConnection}
       onNodesChange={onNodesChange}
+      onConnectStart={onConnectStart}
+      onConnectEnd={onConnectEnd}
       onConnect={onConnect}
       onNodeClick={onNodeClick}
       onEdgeClick={onEdgeClick}

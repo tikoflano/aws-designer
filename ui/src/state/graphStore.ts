@@ -80,6 +80,12 @@ type GraphStateInner = {
   /** True while the user is in "tap handles to connect" mode (entered via long-press on a node on touch devices). */
   connectingMode: boolean;
   setConnectingMode: (v: boolean) => void;
+  /**
+   * Node id where click-to-connect started (drag connections use React Flow store).
+   * Cleared when the connection gesture ends so handle visibility can filter targets.
+   */
+  connectionOriginNodeId: string | null;
+  setConnectionOriginNodeId: (id: string | null) => void;
   /** Desktop: when true, inspector column is hidden. Starts true on load; cleared when selecting a node or edge. */
   inspectorDismissed: boolean;
   dismissInspector: () => void;
@@ -245,11 +251,14 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   palettePlacement: null,
   useServiceIcons: readUseServiceIconsFromStorage(),
   connectingMode: false,
+  connectionOriginNodeId: null,
   inspectorDismissed: true,
 
   setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
 
   setConnectingMode: (v) => set({ connectingMode: v }),
+
+  setConnectionOriginNodeId: (id) => set({ connectionOriginNodeId: id }),
 
   setUseServiceIcons: (value) => {
     writeUseServiceIconsToStorage(value);
@@ -389,6 +398,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
+      connectionOriginNodeId: null,
       inspectorDismissed: true,
     });
   },
@@ -461,6 +471,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
+      connectionOriginNodeId: null,
       inspectorDismissed: true,
       serverGraphId: record.id,
       serverUpdatedAt: record.updatedAt,
@@ -478,6 +489,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
+      connectionOriginNodeId: null,
       inspectorDismissed: true,
       serverGraphId: null,
       serverUpdatedAt: null,
