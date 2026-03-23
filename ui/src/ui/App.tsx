@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { Toaster } from "sonner";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+import { toast, Toaster } from "sonner";
 
 import { useGraphStore } from "../state/graphStore";
 import { listRelationships } from "@compiler/catalog.ts";
@@ -8,6 +14,120 @@ import { InspectorPanel } from "./inspector/InspectorPanel";
 import { GraphToasts } from "./notifications/GraphToasts";
 import { ServicePalette } from "./palette/ServicePalette";
 import { RelationshipPicker } from "./relationship/RelationshipPicker";
+
+function IconPencil({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  );
+}
+
+function GraphHeaderTitle() {
+  const graphTitle = useGraphStore((s) => s.graphTitle);
+  const commitGraphTitle = useGraphStore((s) => s.commitGraphTitle);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const skipBlurCommitRef = useRef(false);
+
+  const displayTitle = graphTitle.trim() || "Untitled";
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const finishEditing = useCallback(() => {
+    setEditing(false);
+  }, []);
+
+  const commit = useCallback(async () => {
+    try {
+      const { savedToServer } = await commitGraphTitle(draft);
+      if (savedToServer) {
+        toast.success("Title saved");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    }
+    finishEditing();
+  }, [commitGraphTitle, draft, finishEditing]);
+
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        skipBlurCommitRef.current = true;
+        void commit();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        skipBlurCommitRef.current = true;
+        finishEditing();
+      }
+    },
+    [commit, finishEditing],
+  );
+
+  const onBlur = useCallback(() => {
+    if (skipBlurCommitRef.current) {
+      skipBlurCommitRef.current = false;
+      return;
+    }
+    void commit();
+  }, [commit]);
+
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <span className="shrink-0 text-sm font-semibold text-orange-950">
+        AWS Designer —
+      </span>
+      {editing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          maxLength={200}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+          className="min-w-0 flex-1 rounded border border-orange-800/30 bg-white/80 px-2 py-0.5 text-sm font-semibold text-orange-950 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+          aria-label="Graph title"
+        />
+      ) : (
+        <>
+          <h1 className="min-w-0 truncate text-sm font-semibold text-orange-950">
+            {displayTitle}
+          </h1>
+          <button
+            type="button"
+            className="shrink-0 rounded p-1 text-orange-900/80 hover:bg-orange-950/10 hover:text-orange-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
+            aria-label="Edit graph title"
+            onClick={() => {
+              setDraft(graphTitle);
+              setEditing(true);
+            }}
+          >
+            <IconPencil className="h-4 w-4" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function App() {
   const [servicePaletteOpen, setServicePaletteOpen] = useState(true);
@@ -52,10 +172,8 @@ export function App() {
         }}
       />
       <GraphToasts />
-      <header className="border-b-2 border-orange-400 bg-linear-to-r from-orange-300 to-amber-200 px-4 py-2.5 shadow-sm">
-        <h1 className="text-sm font-semibold text-orange-950">
-          AWS Designer - Untitled
-        </h1>
+      <header className="flex items-center border-b-2 border-orange-400 bg-linear-to-r from-orange-300 to-amber-200 px-4 py-2.5 shadow-sm">
+        <GraphHeaderTitle />
       </header>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col md:flex-row">
         {servicePaletteOpen ? <ServicePalette /> : null}

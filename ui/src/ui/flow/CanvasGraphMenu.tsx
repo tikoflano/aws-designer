@@ -115,6 +115,8 @@ const menuItemClass =
 export function CanvasGraphMenu() {
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
+  const graphTitle = useGraphStore((s) => s.graphTitle);
+  const setGraphTitle = useGraphStore((s) => s.setGraphTitle);
   const serverGraphId = useGraphStore((s) => s.serverGraphId);
   const saveStatus = useGraphStore((s) => s.saveStatus);
   const replaceFromGraphDocument = useGraphStore(
@@ -130,19 +132,20 @@ export function CanvasGraphMenu() {
   const [cdkDownloadBusy, setCdkDownloadBusy] = useState(false);
 
   const exportGraphJson = useCallback(() => {
-    const file = graphDocumentToFile({ nodes, edges });
+    const file = graphDocumentToFile({ nodes, edges }, graphTitle);
     downloadTextFile(
       "aws-designer-graph.json",
       serializeGraphFile(file),
       "application/json",
     );
-  }, [nodes, edges]);
+  }, [nodes, edges, graphTitle]);
 
   const importGraphFromText = useCallback(
     (text: string) => {
       try {
         const parsed = parseGraphFileJson(JSON.parse(text));
         replaceFromGraphDocument(graphFileToDocument(parsed));
+        setGraphTitle(parsed.title ?? "");
         toast.success("Graph imported");
       } catch (e) {
         toast.error(
@@ -152,7 +155,7 @@ export function CanvasGraphMenu() {
         );
       }
     },
-    [replaceFromGraphDocument],
+    [replaceFromGraphDocument, setGraphTitle],
   );
 
   const onImportClick = useCallback(() => {

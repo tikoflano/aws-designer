@@ -68,6 +68,22 @@ export async function putGraph(
   return parseGraphRecordResponse(res);
 }
 
+export async function patchGraphTitle(
+  id: string,
+  title: string,
+): Promise<GraphRecord> {
+  const path = apiPaths.graph(id);
+  const res = await fetch(url(path), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) {
+    throw new Error(`PATCH ${path} failed: ${res.status}`);
+  }
+  return parseGraphRecordResponse(res);
+}
+
 /**
  * GET /compiled runs CDK synth on the server and returns a zip of cdk.out.
  */

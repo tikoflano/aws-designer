@@ -33,16 +33,22 @@ const graphEdgeSchema = z.object({
 export const graphFileSchema = z.object({
   formatVersion: z.literal(GRAPH_FILE_FORMAT_VERSION),
   kind: z.literal(GRAPH_FILE_KIND),
+  title: z.string().optional(),
   nodes: z.array(graphNodeSchema),
   edges: z.array(graphEdgeSchema),
 });
 
 export type GraphFileV1 = z.infer<typeof graphFileSchema>;
 
-export function graphDocumentToFile(doc: GraphDocument): GraphFileV1 {
+export function graphDocumentToFile(
+  doc: GraphDocument,
+  title?: string,
+): GraphFileV1 {
+  const t = title?.trim() ?? "";
   return {
     formatVersion: GRAPH_FILE_FORMAT_VERSION,
     kind: GRAPH_FILE_KIND,
+    ...(t ? { title: t } : {}),
     nodes: doc.nodes as GraphNode[],
     edges: doc.edges as GraphEdge[],
   };

@@ -33,6 +33,7 @@ export const graphRecordSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   version: z.number(),
+  title: z.string(),
   graph: graphDocumentSchema,
 });
 
@@ -44,10 +45,20 @@ export const putGraphBodySchema = z.object({
 
 export type PutGraphBody = z.infer<typeof putGraphBodySchema>;
 
+export const patchGraphTitleBodySchema = z.object({
+  title: z
+    .string()
+    .max(200)
+    .transform((s) => s.trim()),
+});
+
+export type PatchGraphTitleBody = z.infer<typeof patchGraphTitleBodySchema>;
+
 export const graphSummarySchema = z.object({
   id: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  title: z.string(),
 });
 
 export const graphsListResponseSchema = z.object({

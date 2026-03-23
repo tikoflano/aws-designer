@@ -9,6 +9,7 @@ import {
   invalidBodyErrorSchema,
   invalidVersionErrorSchema,
   notFoundErrorSchema,
+  patchGraphTitleBodySchema,
   putGraphBodySchema,
   validationFailedErrorSchema,
   type GraphRecord,
@@ -22,6 +23,7 @@ import {
   graphExists,
   listGraphSummaries,
   listGraphVersions,
+  updateGraphTitle,
   type GraphRow,
 } from "./graphRepo.js";
 import { synthGraphToZipBuffer } from "./synthZip.js";
@@ -32,6 +34,7 @@ function formatResponse(row: GraphRow): GraphRecord {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     version: row.version,
+    title: row.title,
     graph: row.graph,
   };
 }
@@ -61,6 +64,24 @@ await app.register(
     r.get("/graph/:id", async (req, reply) => {
       const { id } = req.params as { id: string };
       const row = getLatestGraph(id);
+      if (!row) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
+      return reply.send(formatResponse(row));
+    });
+
+    r.patch("/graph/:id", async (req, reply) => {
+      const { id } = req.params as { id: string };
+      const parsed = patchGraphTitleBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: "Expected { title: string } (max 200 characters)",
+          }),
+        );
+      }
+      const row = updateGraphTitle(id, parsed.data.title);
       if (!row) {
         return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
       }

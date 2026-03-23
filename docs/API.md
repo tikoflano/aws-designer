@@ -16,6 +16,7 @@ Successful graph reads/writes return:
   "createdAt": "<iso8601>",
   "updatedAt": "<iso8601>",
   "version": 42,
+  "title": "",
   "graph": {
     "nodes": [],
     "edges": []
@@ -25,24 +26,41 @@ Successful graph reads/writes return:
 
 `version` is a **per-graph sequence** (`seq` in SQLite): `1` for the first snapshot after `POST /api/graph`, then `2`, `3`, … on each `PUT`.
 
+`title` is **graph-level metadata** (stored on the `graphs` row, not inside each version snapshot). Changing the title does **not** increment `version` or change `graph.nodes` / `graph.edges`.
+
 ---
 
 ## `POST /api/graph`
 
-Creates a new graph with an **empty** `nodes` / `edges` array and an initial version row.
+Creates a new graph with an **empty** `nodes` / `edges` array, an empty `title`, and an initial version row.
 
 - **Body:** empty (no JSON required).
 - **Response:** `201` + format A above (`Location: /api/graph/{id}`).
 
 ## `GET /api/graph/:id`
 
-Returns the **latest** version for that graph.
+Returns the **latest** version for that graph and the current `title`.
 
 - **Response:** `200` + format A, or `404`.
 
+## `PATCH /api/graph/:id`
+
+Updates the graph **title** only. Does **not** append a new version; `version` and `graph` stay as the latest snapshot until the next `PUT`. `updatedAt` in the response remains the latest snapshot’s timestamp.
+
+- **Body:**
+
+```json
+{
+  "title": "My production stack"
+}
+```
+
+- **Validation:** `title` is trimmed; maximum length **200** characters.
+- **Response:** `200` + format A, or `404` / `400`.
+
 ## `PUT /api/graph/:id`
 
-Appends a **new** version (backup history). Each save updates `updatedAt` and increments `version`.
+Appends a **new** version (backup history). Each save updates `updatedAt` and increments `version`. The stored `title` is unchanged by this request.
 
 - **Body:**
 
@@ -65,7 +83,7 @@ Lists all stored versions.
 
 ## `GET /api/graph/:id/versions/:versionId`
 
-Loads a specific historical version (same format A body as latest).
+Loads a specific historical **topology** (`nodes` / `edges` from that snapshot). The response still includes the graph’s **current** `title` (the same value as `GET /api/graph/:id`), so restoring an old version does not revert the title.
 
 - **Response:** `200` + format A, or `404` / `400`.
 
@@ -77,9 +95,9 @@ Synthesizes the **latest** graph with CDK, zips the `cdk.out` directory, returns
 
 ## `GET /api/graphs`
 
-Lists up to 50 graphs by most recently updated.
+Lists up to 50 graphs by most recently updated version.
 
-- **Response:** `200` `{ "graphs": [ { "id", "createdAt", "updatedAt" } ] }`.
+- **Response:** `200` `{ "graphs": [ { "id", "createdAt", "updatedAt", "title" } ] }`.
 
 ## `DELETE /api/graph/:id`
 
@@ -91,4 +109,4 @@ Deletes the graph and all versions (`ON DELETE CASCADE`).
 
 ## SQLite
 
-Default file: `server/data/graphs.sqlite` (gitignored). Enable foreign keys and use tables `graphs` + `graph_versions`.
+Default file: `server/data/graphs.sqlite` (gitignored). Enable foreign keys and use tables `graphs` (including `title`) + `graph_versions`.

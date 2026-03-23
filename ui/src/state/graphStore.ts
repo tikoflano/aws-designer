@@ -33,11 +33,13 @@ type DraftSnapshot = {
   serverGraphId: string | null;
   serverUpdatedAt: string | null;
   serverVersion: number | null;
+  graphTitle: string;
 };
 
 type GraphStateInner = {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  graphTitle: string;
   selection: Selection | null;
   pendingConnection: PendingConnection | null;
   serverGraphId: string | null;
@@ -72,6 +74,10 @@ type GraphStateInner = {
   updateEdgeConfig: (edgeId: string, config: Record<string, unknown>) => void;
   removeEdge: (edgeId: string) => void;
   replaceFromGraphDocument: (doc: GraphDocument) => void;
+  setGraphTitle: (title: string) => void;
+  commitGraphTitle: (
+    title: string,
+  ) => Promise<{ savedToServer: boolean }>;
   setServerMeta: (
     id: string | null,
     updatedAt: string | null,
@@ -86,7 +92,12 @@ export type GraphState = GraphStateInner;
 
 type GraphStateForDraft = Pick<
   GraphStateInner,
-  "nodes" | "edges" | "serverGraphId" | "serverUpdatedAt" | "serverVersion"
+  | "nodes"
+  | "edges"
+  | "serverGraphId"
+  | "serverUpdatedAt"
+  | "serverVersion"
+  | "graphTitle"
 >;
 
 function readDraftFromStorage(): DraftSnapshot | null {
@@ -103,6 +114,7 @@ function readDraftFromStorage(): DraftSnapshot | null {
         typeof p.serverUpdatedAt === "string" ? p.serverUpdatedAt : null,
       serverVersion:
         typeof p.serverVersion === "number" ? p.serverVersion : null,
+      graphTitle: typeof p.graphTitle === "string" ? p.graphTitle : "",
     };
   } catch {
     return null;
@@ -122,6 +134,7 @@ export function persistDraftIfChanged(state: GraphStateForDraft) {
     serverGraphId: state.serverGraphId,
     serverUpdatedAt: state.serverUpdatedAt,
     serverVersion: state.serverVersion,
+    graphTitle: state.graphTitle,
   };
   const json = JSON.stringify(snap);
   if (json === lastPersistedJson) return;
@@ -138,6 +151,7 @@ export function hydrateDraftFromStorage(): Partial<GraphStateInner> | null {
     serverGraphId: d.serverGraphId,
     serverUpdatedAt: d.serverUpdatedAt,
     serverVersion: d.serverVersion,
+    graphTitle: d.graphTitle,
   });
   return {
     nodes: d.nodes,
@@ -145,6 +159,7 @@ export function hydrateDraftFromStorage(): Partial<GraphStateInner> | null {
     serverGraphId: d.serverGraphId,
     serverUpdatedAt: d.serverUpdatedAt,
     serverVersion: d.serverVersion,
+    graphTitle: d.graphTitle,
   };
 }
 
@@ -158,6 +173,7 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
 export const useGraphStore = create<GraphStateInner>((set, get) => ({
   nodes: [],
   edges: [],
+  graphTitle: "",
   selection: null,
   pendingConnection: null,
   serverGraphId: null,
@@ -307,6 +323,21 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
     });
   },
 
+  setGraphTitle: (title) => set({ graphTitle: title }),
+
+  commitGraphTitle: async (title) => {
+    const trimmed = title.trim().slice(0, 200);
+    set({ graphTitle: trimmed });
+    const { serverGraphId } = get();
+    if (!serverGraphId) return { savedToServer: false };
+    const record = await graphApi.patchGraphTitle(serverGraphId, trimmed);
+    set({
+      serverUpdatedAt: record.updatedAt,
+      serverVersion: record.version,
+    });
+    return { savedToServer: true };
+  },
+
   setServerMeta: (id, updatedAt, version) => {
     set({
       serverGraphId: id,
@@ -318,8 +349,9 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveToServer: async () => {
     set({ saveStatus: "saving", saveError: null });
     try {
-      const { nodes, edges, serverGraphId } = get();
+      const { nodes, edges, serverGraphId, graphTitle } = get();
       const graph: GraphDocument = { nodes, edges };
+      const desiredTitle = graphTitle.trim().slice(0, 200);
       let record: graphApi.GraphRecord;
       if (!serverGraphId) {
         const created = await graphApi.postGraph();
@@ -327,10 +359,14 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       } else {
         record = await graphApi.putGraph(serverGraphId, graph);
       }
+      if (desiredTitle !== record.title) {
+        record = await graphApi.patchGraphTitle(record.id, desiredTitle);
+      }
       set({
         serverGraphId: record.id,
         serverUpdatedAt: record.updatedAt,
         serverVersion: record.version,
+        graphTitle: record.title,
         saveStatus: "saved",
         saveError: null,
       });
@@ -348,6 +384,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
     set({
       nodes: record.graph.nodes,
       edges: record.graph.edges,
+      graphTitle: record.title,
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
@@ -364,6 +401,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
     set({
       nodes: [],
       edges: [],
+      graphTitle: "",
       selection: null,
       pendingConnection: null,
       palettePlacement: null,

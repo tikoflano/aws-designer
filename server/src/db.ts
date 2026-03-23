@@ -15,7 +15,8 @@ db.pragma("foreign_keys = ON");
 db.exec(`
   CREATE TABLE IF NOT EXISTS graphs (
     id TEXT PRIMARY KEY,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT ''
   );
 
   CREATE TABLE IF NOT EXISTS graph_versions (
@@ -30,3 +31,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_graph_versions_graph_id
     ON graph_versions(graph_id);
 `);
+
+/** Pre-`title` DBs: `CREATE TABLE IF NOT EXISTS` does not alter existing tables. */
+function ensureGraphTitleColumn() {
+  try {
+    db.exec(
+      `ALTER TABLE graphs ADD COLUMN title TEXT NOT NULL DEFAULT '';`,
+    );
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (!/duplicate column name/i.test(message)) throw e;
+  }
+}
+
+ensureGraphTitleColumn();

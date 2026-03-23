@@ -30,4 +30,19 @@ describe("graphFile", () => {
     expect(parsed.kind).toBe(GRAPH_FILE_KIND);
     expect(graphFileToDocument(parsed)).toEqual(doc);
   });
+
+  it("includes title in export when provided", () => {
+    const doc = { nodes: [], edges: [] };
+    const file = graphDocumentToFile(doc, "  My stack  ");
+    expect(file.title).toBe("My stack");
+    const parsed = parseGraphFileJson(JSON.parse(serializeGraphFile(file)));
+    expect(parsed.title).toBe("My stack");
+    expect(graphFileToDocument(parsed)).toEqual(doc);
+  });
+
+  it("omits title in JSON when empty", () => {
+    const doc = { nodes: [], edges: [] };
+    const file = graphDocumentToFile(doc, "   ");
+    expect(file.title).toBeUndefined();
+  });
 });
