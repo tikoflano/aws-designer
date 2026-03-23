@@ -26,6 +26,28 @@ export type PendingConnection = {
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 const DRAFT_KEY = "aws-designer-draft-v1";
+const USE_SERVICE_ICONS_KEY = "aws-designer-use-service-icons-v1";
+
+function readUseServiceIconsFromStorage(): boolean {
+  try {
+    if (typeof localStorage === "undefined") return false;
+    const raw = localStorage.getItem(USE_SERVICE_ICONS_KEY);
+    if (raw === "true") return true;
+    if (raw === "false") return false;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function writeUseServiceIconsToStorage(value: boolean) {
+  try {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(USE_SERVICE_ICONS_KEY, value ? "true" : "false");
+  } catch {
+    /* quota / private mode */
+  }
+}
 
 type DraftSnapshot = {
   nodes: GraphNode[];
@@ -50,7 +72,7 @@ type GraphStateInner = {
   /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
   palettePlacement: ServiceId | null;
   setPalettePlacement: (serviceId: ServiceId | null) => void;
-  /** When true, palette and canvas use AWS architecture icons (with delayed name tooltips). Not persisted. */
+  /** When true, palette and canvas use AWS architecture icons (with delayed name tooltips). Persisted in localStorage. */
   useServiceIcons: boolean;
   setUseServiceIcons: (value: boolean) => void;
   /** Desktop: when true, inspector column is hidden. Starts true on load; cleared when selecting a node or edge. */
@@ -193,12 +215,15 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveStatus: "idle",
   saveError: null,
   palettePlacement: null,
-  useServiceIcons: false,
+  useServiceIcons: readUseServiceIconsFromStorage(),
   inspectorDismissed: true,
 
   setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
 
-  setUseServiceIcons: (value) => set({ useServiceIcons: value }),
+  setUseServiceIcons: (value) => {
+    writeUseServiceIconsToStorage(value);
+    set({ useServiceIcons: value });
+  },
 
   dismissInspector: () => set({ selection: null, inspectorDismissed: true }),
 
