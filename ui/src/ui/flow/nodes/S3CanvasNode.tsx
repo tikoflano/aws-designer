@@ -15,7 +15,7 @@ export function S3CanvasNode({ data, selected }: Props) {
   if (!data.useServiceIcons) {
     return (
       <div
-        className={`min-w-[140px] rounded-lg border bg-white px-3 py-2 shadow-sm ${
+        className={`group min-w-[140px] rounded-lg border bg-white px-3 py-2 shadow-sm ${
           selected
             ? "border-orange-600 ring-2 ring-orange-300"
             : "border-slate-200"

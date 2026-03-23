@@ -2,6 +2,7 @@ import {
   Background,
   Controls,
   ConnectionMode,
+  MarkerType,
   MiniMap,
   Panel,
   ReactFlow,
@@ -61,12 +62,17 @@ function toFlowNodes(
   });
 }
 
+const EDGE_ARROW = { width: 18, height: 18 } as const;
+const EDGE_MARKER_SLATE = "#64748b";
+const EDGE_MARKER_SELECTED = "#ea580c";
+
 function toFlowEdges(
   edges: ReturnType<typeof useGraphStore.getState>["edges"],
   selection: ReturnType<typeof useGraphStore.getState>["selection"],
 ): Edge[] {
   return edges.map((e) => {
     const rel = getRelationship(e.relationshipId, e.relationshipVersion);
+    const selected = selection?.kind === "edge" && selection.id === e.id;
     return {
       id: e.id,
       source: e.sourceNodeId,
@@ -76,7 +82,12 @@ function toFlowEdges(
       label: rel?.name ?? e.relationshipId,
       type: "smoothstep",
       animated: true,
-      selected: selection?.kind === "edge" && selection.id === e.id,
+      selected,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: selected ? EDGE_MARKER_SELECTED : EDGE_MARKER_SLATE,
+        ...EDGE_ARROW,
+      },
     };
   });
 }
@@ -237,6 +248,14 @@ function FlowCanvasBody({
       nodes={flowNodes}
       edges={flowEdges}
       nodeTypes={nodeTypes}
+      defaultEdgeOptions={{
+        type: "smoothstep",
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: EDGE_MARKER_SLATE,
+          ...EDGE_ARROW,
+        },
+      }}
       connectionMode={ConnectionMode.Loose}
       isValidConnection={isValidConnection}
       onNodesChange={onNodesChange}

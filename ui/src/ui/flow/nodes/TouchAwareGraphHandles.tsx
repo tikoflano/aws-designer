@@ -2,6 +2,7 @@ import {
   Handle,
   Position,
   useNodeId,
+  useStore,
   useStoreApi,
 } from "@xyflow/react";
 import { XYHandle } from "@xyflow/system";
@@ -43,6 +44,9 @@ function TouchAwareHandle({
   handleId: string;
 }) {
   const coarse = useCoarsePointer();
+  const linkingActive = useStore(
+    (s) => Boolean(s.connection.inProgress || s.connectionClickStartHandle),
+  );
   const nodeId = useNodeId();
   const store = useStoreApi();
   const select = useGraphStore((s) => s.select);
@@ -84,15 +88,18 @@ function TouchAwareHandle({
     store.setState({ connectionClickStartHandle: null });
   };
 
+  const handleClass =
+    coarse || linkingActive
+      ? `${VISUAL_HANDLE}${coarse ? " !pointer-events-none" : ""}`
+      : `${VISUAL_HANDLE} pointer-events-none opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100`;
+
   return (
     <>
       <Handle
         id={handleId}
         type={type}
         position={position}
-        className={
-          coarse ? `${VISUAL_HANDLE} !pointer-events-none` : VISUAL_HANDLE
-        }
+        className={handleClass}
       />
       {coarse ? (
         <div

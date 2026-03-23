@@ -23,7 +23,7 @@ export function AwsServiceFlowNode({
   return (
     <DelayedTooltip
       label={serviceDisplayName}
-      className={`relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-lg border bg-white px-1.5 py-1 shadow-sm ${
+      className={`group relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-lg border bg-white px-1.5 py-1 shadow-sm ${
         selected ? selectedClass : idleClass
       }`}
     >
