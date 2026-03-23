@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import { customAlphabet, nanoid } from "nanoid";
 import { create } from "zustand";
 
 import * as graphApi from "../api/graphApi";
@@ -24,6 +24,8 @@ export type PendingConnection = {
 };
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+const s3BucketNameSuffix = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
 
 const DRAFT_KEY = "aws-designer-draft-v1";
 const USE_SERVICE_ICONS_KEY = "aws-designer-use-service-icons-v1";
@@ -192,6 +194,9 @@ export function hydrateDraftFromStorage(): Partial<GraphStateInner> | null {
 }
 
 function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
+  if (serviceId === "s3") {
+    return { name: `b-${s3BucketNameSuffix()}` };
+  }
   if (serviceId === "lambda") {
     return { functionName: `fn-${nanoid(6)}` };
   }

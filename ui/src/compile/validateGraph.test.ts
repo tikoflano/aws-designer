@@ -15,7 +15,7 @@ describe("validateGraph", () => {
           serviceId: "s3",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "validate-test-bucket" },
         },
         {
           id: "l1",
@@ -48,7 +48,7 @@ describe("validateGraph", () => {
           serviceId: "s3",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "validate-test-bucket" },
         },
         {
           id: "l1",
@@ -113,7 +113,7 @@ describe("validateGraph", () => {
           serviceId: "s3",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
@@ -165,7 +165,7 @@ describe("validateGraph", () => {
           serviceId: "s3",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
@@ -250,7 +250,7 @@ describe("validateGraph", () => {
           serviceId: "s3",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
@@ -302,7 +302,7 @@ describe("validateGraph", () => {
           serviceId: "s3",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",

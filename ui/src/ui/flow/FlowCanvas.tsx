@@ -57,7 +57,11 @@ function toFlowNodes(
   return nodes.map((n) => {
     const title =
       n.serviceId === "s3"
-        ? ((n.config.bucketName as string | undefined) ?? "Bucket")
+        ? String(
+            (n.config.name as string | undefined)?.trim() ||
+              (n.config.bucketName as string | undefined)?.trim() ||
+              "Bucket",
+          )
         : n.serviceId === "lambda"
           ? String(n.config.functionName ?? "Lambda")
           : n.serviceId === "route53"

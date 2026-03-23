@@ -18,7 +18,7 @@ describe("graphFile", () => {
           serviceId: "s3" as const,
           serviceVersion: "1.0.0",
           position: { x: 1, y: 2 },
-          config: {},
+          config: { name: "roundtrip-bucket-name" },
         },
       ],
       edges: [],
