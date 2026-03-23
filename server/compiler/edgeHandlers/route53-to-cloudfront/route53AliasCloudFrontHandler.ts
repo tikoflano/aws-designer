@@ -26,18 +26,21 @@ export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {
     const { edge, sourceNode, targetNode } = args;
-    route53AliasCloudFrontConfigSchema.parse(edge.config);
-    const cfg = route53NodeConfigSchema.parse(sourceNode.config);
+    const edgeCfg = route53AliasCloudFrontConfigSchema.parse(edge.config);
+    const nodeCfg = route53NodeConfigSchema.parse(sourceNode.config);
     const distribution = ctx.distributions.get(targetNode.id);
     if (!distribution) return;
 
-    const domainRaw = cfg.domainName.trim();
-    const zoneRaw = cfg.zoneName.trim();
+    const domainRaw = edgeCfg.domainName.trim();
+    const zoneRaw = nodeCfg.name.trim();
+    const hostedZoneId = edgeCfg.hostedZoneId.trim();
+    const certificateArn = edgeCfg.certificateArn.trim();
+
     if (
       domainRaw === "" ||
       zoneRaw === "" ||
-      cfg.hostedZoneId.trim() === "" ||
-      cfg.certificateArn.trim() === ""
+      hostedZoneId === "" ||
+      certificateArn === ""
     ) {
       return;
     }
@@ -46,7 +49,7 @@ export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
     const cfn = distribution.node.defaultChild as cloudfront.CfnDistribution;
     cfn.addPropertyOverride("DistributionConfig.Aliases", [domainName]);
     cfn.addPropertyOverride("DistributionConfig.ViewerCertificate", {
-      AcmCertificateArn: cfg.certificateArn,
+      AcmCertificateArn: certificateArn,
       SslSupportMethod: "sni-only",
       MinimumProtocolVersion: "TLSv1.2_2021",
     });
@@ -56,7 +59,7 @@ export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
       ctx.stack,
       NodeIds.cfnId("R53Zone", sourceNode.id),
       {
-        hostedZoneId: cfg.hostedZoneId,
+        hostedZoneId,
         zoneName,
       },
     );

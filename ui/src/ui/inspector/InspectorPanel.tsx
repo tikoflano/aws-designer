@@ -362,95 +362,57 @@ function NodeInspectorForm({
       {node.serviceId === "route53" && (
         <>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Domain name (FQDN)</span>
+            <span className="text-slate-700">Zone name</span>
             <span className="text-xs text-slate-500">
-              Record name for the alias, e.g. www.example.com or example.com
-              (apex). Must match the hosted zone.
+              Hosted zone domain, e.g. example.com
             </span>
             <input
               className={`rounded border px-2 py-1 text-sm ${
-                errors.domainName ? "border-red-300" : "border-slate-200"
+                errors.name ? "border-red-300" : "border-slate-200"
               }`}
-              aria-invalid={errors.domainName ? true : undefined}
+              aria-invalid={errors.name ? true : undefined}
               aria-describedby={
-                errors.domainName?.message
-                  ? fieldErrorId(formId, "domainName")
+                errors.name?.message
+                  ? fieldErrorId(formId, "name")
                   : undefined
               }
-              {...register("domainName")}
+              {...register("name")}
             />
             <FieldError
               baseId={formId}
-              field="domainName"
-              message={errors.domainName?.message}
+              field="name"
+              message={errors.name?.message}
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Hosted zone name</span>
-            <span className="text-xs text-slate-500">
-              Public zone domain, e.g. example.com
-            </span>
+            <span className="text-slate-700">Description (optional)</span>
             <input
               className={`rounded border px-2 py-1 text-sm ${
-                errors.zoneName ? "border-red-300" : "border-slate-200"
+                errors.description ? "border-red-300" : "border-slate-200"
               }`}
-              aria-invalid={errors.zoneName ? true : undefined}
+              aria-invalid={errors.description ? true : undefined}
               aria-describedby={
-                errors.zoneName?.message
-                  ? fieldErrorId(formId, "zoneName")
+                errors.description?.message
+                  ? fieldErrorId(formId, "description")
                   : undefined
               }
-              {...register("zoneName")}
+              {...register("description")}
             />
             <FieldError
               baseId={formId}
-              field="zoneName"
-              message={errors.zoneName?.message}
+              field="description"
+              message={errors.description?.message}
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Hosted zone ID</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.hostedZoneId ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.hostedZoneId ? true : undefined}
-              aria-describedby={
-                errors.hostedZoneId?.message
-                  ? fieldErrorId(formId, "hostedZoneId")
-                  : undefined
-              }
-              {...register("hostedZoneId")}
-            />
-            <FieldError
-              baseId={formId}
-              field="hostedZoneId"
-              message={errors.hostedZoneId?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">ACM certificate ARN</span>
-            <span className="text-xs text-slate-500">
-              Must be in us-east-1 (N. Virginia) and cover the domain name
-              above. Used for HTTPS on CloudFront.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 font-mono text-xs ${
-                errors.certificateArn ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.certificateArn ? true : undefined}
-              aria-describedby={
-                errors.certificateArn?.message
-                  ? fieldErrorId(formId, "certificateArn")
-                  : undefined
-              }
-              {...register("certificateArn")}
-            />
-            <FieldError
-              baseId={formId}
-              field="certificateArn"
-              message={errors.certificateArn?.message}
-            />
+            <span className="text-slate-700">Type</span>
+            <select
+              className="rounded border border-slate-200 px-2 py-1 text-sm"
+              {...register("type")}
+            >
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select>
           </label>
         </>
       )}
@@ -715,6 +677,79 @@ function EdgeInspectorForm({
             message={errors.originPath?.message}
           />
         </label>
+      )}
+
+      {rel.id === "route53_alias_cloudfront" && (
+        <>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">Domain name (FQDN)</span>
+            <span className="text-xs text-slate-500">
+              Record name for the alias, e.g. www.example.com or example.com
+              (apex). Must match the Route 53 hosted zone.
+            </span>
+            <input
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.domainName ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.domainName ? true : undefined}
+              aria-describedby={
+                errors.domainName?.message
+                  ? fieldErrorId(formId, "domainName")
+                  : undefined
+              }
+              {...register("domainName")}
+            />
+            <FieldError
+              baseId={formId}
+              field="domainName"
+              message={errors.domainName?.message}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">Hosted zone ID</span>
+            <input
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.hostedZoneId ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.hostedZoneId ? true : undefined}
+              aria-describedby={
+                errors.hostedZoneId?.message
+                  ? fieldErrorId(formId, "hostedZoneId")
+                  : undefined
+              }
+              {...register("hostedZoneId")}
+            />
+            <FieldError
+              baseId={formId}
+              field="hostedZoneId"
+              message={errors.hostedZoneId?.message}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">ACM certificate ARN</span>
+            <span className="text-xs text-slate-500">
+              Must be in us-east-1 (N. Virginia) and cover the domain name.
+              Used for HTTPS on CloudFront.
+            </span>
+            <input
+              className={`rounded border px-2 py-1 font-mono text-xs ${
+                errors.certificateArn ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.certificateArn ? true : undefined}
+              aria-describedby={
+                errors.certificateArn?.message
+                  ? fieldErrorId(formId, "certificateArn")
+                  : undefined
+              }
+              {...register("certificateArn")}
+            />
+            <FieldError
+              baseId={formId}
+              field="certificateArn"
+              message={errors.certificateArn?.message}
+            />
+          </label>
+        </>
       )}
 
       <div className="flex flex-wrap gap-2">

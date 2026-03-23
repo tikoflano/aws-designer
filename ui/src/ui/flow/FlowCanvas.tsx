@@ -62,7 +62,7 @@ function toFlowNodes(
           ? String(n.config.functionName ?? "Lambda")
           : n.serviceId === "route53"
             ? String(
-                (n.config.domainName as string | undefined)?.trim() || "DNS",
+                (n.config.name as string | undefined)?.trim() || "DNS",
               )
             : n.serviceId === "cloudfront"
               ? String(
