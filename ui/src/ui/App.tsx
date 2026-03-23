@@ -118,10 +118,10 @@ function GraphHeaderTitle() {
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
-      <span className="shrink-0 text-sm font-semibold leading-none text-orange-950">
+      <span className="shrink-0 text-sm font-semibold leading-snug text-orange-950">
         AWS Designer —
       </span>
-      <div className="flex min-h-7 min-w-0 flex-1 items-center">
+      <div className="flex min-h-8 min-w-0 flex-1 items-center">
         {editing ? (
           <input
             ref={inputRef}
@@ -131,11 +131,11 @@ function GraphHeaderTitle() {
             onChange={(e) => setDraft(e.target.value)}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
-            className="box-border h-7 w-full min-w-0 rounded border border-orange-800/30 bg-white/80 px-2 py-0 text-sm font-semibold leading-none text-orange-950 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+            className="box-border h-8 w-full min-w-0 rounded border border-orange-800/30 bg-white/80 px-2 py-0 text-sm font-semibold leading-snug text-orange-950 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
             aria-label="Graph title"
           />
         ) : (
-          <h1 className="flex min-h-7 w-full min-w-0 items-center py-0 text-sm font-semibold leading-none text-orange-950">
+          <h1 className="flex min-h-8 w-full min-w-0 items-center text-sm font-semibold leading-snug text-orange-950">
             <span className="min-w-0 truncate">{displayTitle}</span>
           </h1>
         )}
