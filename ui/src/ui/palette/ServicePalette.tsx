@@ -62,16 +62,14 @@ export function ServicePalette() {
                   onClick={() =>
                     setPalettePlacement(palettePlacement === s.id ? null : s.id)
                   }
-                  className={`flex aspect-square w-full min-w-0 cursor-grab flex-col items-stretch justify-between gap-1 rounded-md border bg-white p-1.5 shadow-sm active:cursor-grabbing ${
+                  className={`flex aspect-square w-full min-w-0 cursor-grab flex-col items-center justify-start gap-1 rounded-md border bg-white p-1.5 shadow-sm active:cursor-grabbing ${
                     palettePlacement === s.id
                       ? "border-sky-500 ring-2 ring-sky-300"
                       : "border-slate-200"
                   }`}
                 >
-                  <div className="flex min-h-0 flex-1 items-center justify-center">
-                    <AwsServiceArchitectureIcon serviceId={s.id} size={32} />
-                  </div>
-                  <span className="line-clamp-2 w-full shrink-0 text-center text-[10px] font-medium leading-tight text-slate-700">
+                  <AwsServiceArchitectureIcon serviceId={s.id} size={32} />
+                  <span className="line-clamp-2 w-full text-center text-[10px] font-medium leading-tight text-slate-700">
                     {s.displayName}
                   </span>
                 </div>
