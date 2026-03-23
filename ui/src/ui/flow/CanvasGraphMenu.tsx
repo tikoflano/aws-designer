@@ -6,6 +6,8 @@ import {
   type ChangeEvent,
 } from "react";
 
+import { toast } from "sonner";
+
 import { fetchGraphCompiledZip } from "../../api/graphApi";
 import {
   graphDocumentToFile,
@@ -141,8 +143,9 @@ export function CanvasGraphMenu() {
       try {
         const parsed = parseGraphFileJson(JSON.parse(text));
         replaceFromGraphDocument(graphFileToDocument(parsed));
+        toast.success("Graph imported");
       } catch (e) {
-        window.alert(
+        toast.error(
           e instanceof Error
             ? e.message
             : "Invalid graph JSON. Expected formatVersion 1 aws-designer-graph file.",
@@ -177,8 +180,9 @@ export function CanvasGraphMenu() {
     if (!id) return;
     try {
       await loadFromServer(id);
+      toast.success("Graph loaded from server");
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : String(e));
+      toast.error(e instanceof Error ? e.message : String(e));
     }
   }, [loadFromServer]);
 
@@ -189,8 +193,9 @@ export function CanvasGraphMenu() {
       const { blob, filename } = await fetchGraphCompiledZip(serverGraphId);
       downloadBlobFile(filename, blob);
       setOpen(false);
+      toast.success("cdk.out download started");
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : String(e));
+      toast.error(e instanceof Error ? e.message : String(e));
     } finally {
       setCdkDownloadBusy(false);
     }
@@ -251,6 +256,7 @@ export function CanvasGraphMenu() {
                 )
               ) {
                 newLocalGraph();
+                toast.success("New local graph");
               }
             }}
           >
@@ -288,6 +294,7 @@ export function CanvasGraphMenu() {
             onClick={() => {
               setOpen(false);
               exportGraphJson();
+              toast.success("Graph exported");
             }}
           >
             <IconExport className={menuItemIconClass} />
