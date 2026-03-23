@@ -6,6 +6,7 @@ const serviceIdSchema = z.enum([
   "cloudfront",
   "route53",
   "secretsmanager",
+  "sns",
 ]);
 
 const graphNodeSchema = z.object({

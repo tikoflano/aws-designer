@@ -213,6 +213,9 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
       secretValue: "",
     };
   }
+  if (serviceId === "sns") {
+    return { name: `topic-${s3BucketNameSuffix()}.fifo` };
+  }
   return {};
 }
 

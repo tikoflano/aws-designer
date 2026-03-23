@@ -20,6 +20,7 @@ function formatServiceLabel(id: string): string {
   if (id === "cloudfront") return "CloudFront";
   if (id === "route53") return "Route 53";
   if (id === "secretsmanager") return "Secrets Manager";
+  if (id === "sns") return "SNS";
   return id;
 }
 

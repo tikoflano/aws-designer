@@ -5,6 +5,7 @@ import { LambdaNodeHandler } from "./lambda/lambdaNodeHandler.ts";
 import { Route53NodeHandler } from "./route53/route53NodeHandler.ts";
 import { SecretsManagerNodeHandler } from "./secretsmanager/secretsManagerNodeHandler.ts";
 import { S3NodeHandler } from "./s3/s3NodeHandler.ts";
+import { SnsNodeHandler } from "./sns/snsNodeHandler.ts";
 import type { NodeServiceHandler } from "./types.ts";
 
 export const nodeServiceHandlers: Record<ServiceId, NodeServiceHandler> = {
@@ -13,4 +14,5 @@ export const nodeServiceHandlers: Record<ServiceId, NodeServiceHandler> = {
   cloudfront: new CloudFrontNodeHandler(),
   route53: new Route53NodeHandler(),
   secretsmanager: new SecretsManagerNodeHandler(),
+  sns: new SnsNodeHandler(),
 };
