@@ -75,6 +75,9 @@ type GraphStateInner = {
   /** When true, palette and canvas use AWS architecture icons (with delayed name tooltips). Persisted in localStorage. */
   useServiceIcons: boolean;
   setUseServiceIcons: (value: boolean) => void;
+  /** True while the user is in "tap handles to connect" mode (entered via long-press on a node on touch devices). */
+  connectingMode: boolean;
+  setConnectingMode: (v: boolean) => void;
   /** Desktop: when true, inspector column is hidden. Starts true on load; cleared when selecting a node or edge. */
   inspectorDismissed: boolean;
   dismissInspector: () => void;
@@ -216,9 +219,12 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveError: null,
   palettePlacement: null,
   useServiceIcons: readUseServiceIconsFromStorage(),
+  connectingMode: false,
   inspectorDismissed: true,
 
   setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
+
+  setConnectingMode: (v) => set({ connectingMode: v }),
 
   setUseServiceIcons: (value) => {
     writeUseServiceIconsToStorage(value);

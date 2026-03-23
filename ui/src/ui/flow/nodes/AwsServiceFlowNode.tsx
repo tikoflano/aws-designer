@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { DelayedTooltip } from "../../common/DelayedTooltip";
 import { TouchAwareGraphHandles } from "./TouchAwareGraphHandles";
+import { useTouchConnectLongPress } from "./useTouchConnectLongPress";
 
 type Props = {
   icon: ReactNode;
@@ -20,18 +21,22 @@ export function AwsServiceFlowNode({
   selectedClass,
   idleClass,
 }: Props) {
+  const longPressHandlers = useTouchConnectLongPress();
+
   return (
-    <DelayedTooltip
-      label={serviceDisplayName}
-      className={`group relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-lg border bg-white px-1.5 py-1 shadow-sm ${
-        selected ? selectedClass : idleClass
-      }`}
-    >
-      <div className="flex shrink-0 items-center justify-center">{icon}</div>
-      <div className="max-w-[120px] truncate text-center text-xs font-medium text-slate-900">
-        {title}
-      </div>
-      <TouchAwareGraphHandles />
-    </DelayedTooltip>
+    <div {...longPressHandlers}>
+      <DelayedTooltip
+        label={serviceDisplayName}
+        className={`group relative flex min-w-[88px] flex-col items-center gap-0.5 rounded-lg border bg-white px-1.5 py-1 shadow-sm ${
+          selected ? selectedClass : idleClass
+        }`}
+      >
+        <div className="flex shrink-0 items-center justify-center">{icon}</div>
+        <div className="max-w-[120px] truncate text-center text-xs font-medium text-slate-900">
+          {title}
+        </div>
+        <TouchAwareGraphHandles />
+      </DelayedTooltip>
+    </div>
   );
 }
