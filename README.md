@@ -38,10 +38,13 @@ The compiler loads [`compiler/graphCompilerStack.ts`](./compiler/graphCompilerSt
 
 ## Scripts
 
+With **Dev Containers** (VS Code / Cursor), use **Reopen in Container**; `npm ci` runs on first create and ports **5173** (Vite) and **8787** (API) are forwarded.
+
 ```bash
 npm install
-npm run dev           # UI — http://localhost:5173 (proxies /api → :8787)
-npm run server:dev    # API + SQLite — http://localhost:8787 (run in a second terminal)
+npm run dev           # UI + API — Vite :5173 + server :8787 (proxies /api → :8787)
+npm run dev:ui        # UI only — http://localhost:5173
+npm run dev:server    # API + SQLite — http://localhost:8787
 npm run build
 npm test
 npm run lint
