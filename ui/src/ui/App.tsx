@@ -34,6 +34,25 @@ function IconPencil({ className }: { className?: string }) {
   );
 }
 
+function IconX({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
 function GraphHeaderTitle() {
   const graphTitle = useGraphStore((s) => s.graphTitle);
   const commitGraphTitle = useGraphStore((s) => s.commitGraphTitle);
@@ -67,6 +86,11 @@ function GraphHeaderTitle() {
     finishEditing();
   }, [commitGraphTitle, draft, finishEditing]);
 
+  const cancelEditing = useCallback(() => {
+    skipBlurCommitRef.current = true;
+    finishEditing();
+  }, [finishEditing]);
+
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
@@ -75,11 +99,10 @@ function GraphHeaderTitle() {
         void commit();
       } else if (e.key === "Escape") {
         e.preventDefault();
-        skipBlurCommitRef.current = true;
-        finishEditing();
+        cancelEditing();
       }
     },
-    [commit, finishEditing],
+    [cancelEditing, commit],
   );
 
   const onBlur = useCallback(() => {
@@ -90,40 +113,57 @@ function GraphHeaderTitle() {
     void commit();
   }, [commit]);
 
+  const actionBtnClass =
+    "flex h-7 w-7 shrink-0 items-center justify-center rounded text-orange-900/80 hover:bg-orange-950/10 hover:text-orange-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-700";
+
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
-      <span className="shrink-0 text-sm font-semibold text-orange-950">
+      <span className="shrink-0 text-sm font-semibold leading-none text-orange-950">
         AWS Designer —
       </span>
-      {editing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          maxLength={200}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={onBlur}
-          onKeyDown={onKeyDown}
-          className="min-w-0 flex-1 rounded border border-orange-800/30 bg-white/80 px-2 py-0.5 text-sm font-semibold text-orange-950 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
-          aria-label="Graph title"
-        />
-      ) : (
-        <>
-          <h1 className="min-w-0 truncate text-sm font-semibold text-orange-950">
-            {displayTitle}
+      <div className="flex min-h-7 min-w-0 flex-1 items-center">
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            maxLength={200}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={onBlur}
+            onKeyDown={onKeyDown}
+            className="box-border h-7 w-full min-w-0 rounded border border-orange-800/30 bg-white/80 px-2 py-0 text-sm font-semibold leading-none text-orange-950 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+            aria-label="Graph title"
+          />
+        ) : (
+          <h1 className="flex min-h-7 w-full min-w-0 items-center py-0 text-sm font-semibold leading-none text-orange-950">
+            <span className="min-w-0 truncate">{displayTitle}</span>
           </h1>
-          <button
-            type="button"
-            className="shrink-0 rounded p-1 text-orange-900/80 hover:bg-orange-950/10 hover:text-orange-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
-            aria-label="Edit graph title"
-            onClick={() => {
-              setDraft(graphTitle);
-              setEditing(true);
-            }}
-          >
-            <IconPencil className="h-4 w-4" />
-          </button>
-        </>
+        )}
+      </div>
+      {editing ? (
+        <button
+          type="button"
+          className={actionBtnClass}
+          aria-label="Cancel editing title"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            cancelEditing();
+          }}
+        >
+          <IconX className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={actionBtnClass}
+          aria-label="Edit graph title"
+          onClick={() => {
+            setDraft(graphTitle);
+            setEditing(true);
+          }}
+        >
+          <IconPencil className="h-4 w-4" />
+        </button>
       )}
     </div>
   );
