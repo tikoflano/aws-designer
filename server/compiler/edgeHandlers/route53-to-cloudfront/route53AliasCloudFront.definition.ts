@@ -7,8 +7,6 @@ import {
 
 export const route53AliasCloudFrontConfigSchema = z.object({
   domainName: z.string().default(""),
-  hostedZoneId: z.string().default(""),
-  certificateArn: z.string().default(""),
 });
 
 export const route53AliasCloudFrontDefinition: RelationshipDefinition = {
@@ -16,7 +14,7 @@ export const route53AliasCloudFrontDefinition: RelationshipDefinition = {
   version: RELATIONSHIP_VERSION,
   name: "Route 53 alias to CloudFront",
   description:
-    "Creates an alias A record, attaches the domain to the distribution, and sets the ACM viewer certificate (certificate must be in us-east-1).",
+    "Creates a DNS-validated ACM certificate (us-east-1), attaches the domain to the distribution, and adds a Route 53 alias record using the connected hosted zone.",
   source: "route53",
   target: "cloudfront",
   configSchema: route53AliasCloudFrontConfigSchema,

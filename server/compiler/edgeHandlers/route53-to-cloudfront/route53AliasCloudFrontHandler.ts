@@ -1,3 +1,4 @@
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
@@ -33,27 +34,13 @@ export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
 
     const domainRaw = edgeCfg.domainName.trim();
     const zoneRaw = nodeCfg.name.trim();
-    const hostedZoneId = edgeCfg.hostedZoneId.trim();
-    const certificateArn = edgeCfg.certificateArn.trim();
+    const hostedZoneId = nodeCfg.hostedZoneId.trim();
 
-    if (
-      domainRaw === "" ||
-      zoneRaw === "" ||
-      hostedZoneId === "" ||
-      certificateArn === ""
-    ) {
+    if (domainRaw === "" || zoneRaw === "" || hostedZoneId === "") {
       return;
     }
 
     const domainName = normalizeFqdn(domainRaw);
-    const cfn = distribution.node.defaultChild as cloudfront.CfnDistribution;
-    cfn.addPropertyOverride("DistributionConfig.Aliases", [domainName]);
-    cfn.addPropertyOverride("DistributionConfig.ViewerCertificate", {
-      AcmCertificateArn: certificateArn,
-      SslSupportMethod: "sni-only",
-      MinimumProtocolVersion: "TLSv1.2_2021",
-    });
-
     const zoneName = zoneRaw.replace(/\.$/, "");
     const zone = route53.HostedZone.fromHostedZoneAttributes(
       ctx.stack,
@@ -63,6 +50,24 @@ export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
         zoneName,
       },
     );
+
+    const certificate = new acm.DnsValidatedCertificate(
+      ctx.stack,
+      NodeIds.cfnId("CfCert", edge.id),
+      {
+        domainName,
+        hostedZone: zone,
+        region: "us-east-1",
+      },
+    );
+
+    const cfn = distribution.node.defaultChild as cloudfront.CfnDistribution;
+    cfn.addPropertyOverride("DistributionConfig.Aliases", [domainName]);
+    cfn.addPropertyOverride("DistributionConfig.ViewerCertificate", {
+      AcmCertificateArn: certificate.certificateArn,
+      SslSupportMethod: "sni-only",
+      MinimumProtocolVersion: "TLSv1.2_2021",
+    });
 
     new route53.ARecord(ctx.stack, NodeIds.cfnId("R53Alias", edge.id), {
       zone,

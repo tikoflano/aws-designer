@@ -4,6 +4,7 @@ import type { GraphDocument } from "@shared/domain/graph.ts";
 import { RELATIONSHIP_VERSION } from "./domain/catalogTypes.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
 import { logicalBucketId } from "./nodeHandlers/s3/s3Service.definition.ts";
+import { domainInHostedZone } from "./nodeHandlers/route53/route53Service.definition.ts";
 import { getService } from "./nodeHandlers/servicesCatalog.ts";
 
 const CLOUDFRONT_ORIGIN_S3 = "cloudfront_origin_s3";
@@ -157,19 +158,20 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
     if (r53Source?.serviceId === "route53") {
       const nc = r53Source.config as Record<string, unknown>;
       const zoneName = String(nc.name ?? "").trim();
+      const hostedZoneId = String(nc.hostedZoneId ?? "").trim();
       const ec = edge.config as Record<string, unknown>;
       const domainName = String(ec.domainName ?? "").trim();
-      const hostedZoneId = String(ec.hostedZoneId ?? "").trim();
-      const certificateArn = String(ec.certificateArn ?? "").trim();
-      if (
-        domainName === "" ||
-        zoneName === "" ||
-        hostedZoneId === "" ||
-        certificateArn === ""
-      ) {
+      if (domainName === "" || zoneName === "" || hostedZoneId === "") {
         issues.push({
           code: "route53_alias_incomplete_dns",
-          message: `Route 53 alias edge "${edge.id}" requires: zone name on the Route 53 node, and domain name, hosted zone ID, and ACM certificate ARN on the edge.`,
+          message: `Route 53 alias edge "${edge.id}" requires a domain name on the edge, and zone name plus hosted zone ID on the Route 53 node "${r53Source.id}".`,
+          edgeId: edge.id,
+          nodeId: r53Source.id,
+        });
+      } else if (!domainInHostedZone(domainName, zoneName)) {
+        issues.push({
+          code: "route53_alias_domain_not_in_zone",
+          message: `Route 53 alias domain "${domainName}" must be the zone apex or a subdomain of hosted zone "${zoneName}".`,
           edgeId: edge.id,
           nodeId: r53Source.id,
         });
