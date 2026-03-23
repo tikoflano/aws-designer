@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import { useForm, type UseFormReturn } from "react-hook-form";
 
 import type { GraphEdge, GraphNode } from "../../domain/types";
@@ -12,6 +12,31 @@ import {
 import { useGraphStore } from "../../state/graphStore";
 
 type FormValues = Record<string, unknown>;
+
+function fieldErrorId(baseId: string, field: string) {
+  return `${baseId}-${field}-err`;
+}
+
+function FieldError({
+  baseId,
+  field,
+  message,
+}: {
+  baseId: string;
+  field: string;
+  message?: string;
+}) {
+  if (!message) return null;
+  return (
+    <p
+      id={fieldErrorId(baseId, field)}
+      className="text-xs text-red-600"
+      role="alert"
+    >
+      {message}
+    </p>
+  );
+}
 
 function CloseCrossIcon({ className }: { className?: string }) {
   return (
@@ -138,12 +163,18 @@ function NodeInspectorForm({
   onSave: (config: Record<string, unknown>) => void;
   onRemove: () => void;
 }) {
+  const formId = useId();
   const defaults = svc.configSchema.parse(node.config) as FormValues;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(svc.configSchema),
     defaultValues: defaults,
   });
+
+  const {
+    register,
+    formState: { errors },
+  } = form;
 
   useEffect(() => {
     form.reset(svc.configSchema.parse(node.config) as FormValues);
@@ -170,13 +201,30 @@ function NodeInspectorForm({
         <>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Bucket name (optional)</span>
+            <span className="text-xs text-slate-500">
+              Leave blank for a generated name. If set, use 3–63 characters:
+              lowercase letters, digits, dots, and hyphens only.
+            </span>
             <input
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("bucketName")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.bucketName ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.bucketName ? true : undefined}
+              aria-describedby={
+                errors.bucketName?.message
+                  ? fieldErrorId(formId, "bucketName")
+                  : undefined
+              }
+              {...register("bucketName")}
+            />
+            <FieldError
+              baseId={formId}
+              field="bucketName"
+              message={errors.bucketName?.message}
             />
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" {...form.register("enforceEncryption")} />
+            <input type="checkbox" {...register("enforceEncryption")} />
             Enforce SSE-S3 encryption
           </label>
         </>
@@ -187,22 +235,56 @@ function NodeInspectorForm({
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Function name</span>
             <input
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("functionName")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.functionName ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.functionName ? true : undefined}
+              aria-describedby={
+                errors.functionName?.message
+                  ? fieldErrorId(formId, "functionName")
+                  : undefined
+              }
+              {...register("functionName")}
+            />
+            <FieldError
+              baseId={formId}
+              field="functionName"
+              message={errors.functionName?.message}
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Handler</span>
             <input
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("handler")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.handler ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.handler ? true : undefined}
+              aria-describedby={
+                errors.handler?.message
+                  ? fieldErrorId(formId, "handler")
+                  : undefined
+              }
+              {...register("handler")}
+            />
+            <FieldError
+              baseId={formId}
+              field="handler"
+              message={errors.handler?.message}
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Runtime</span>
             <select
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("runtime")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.runtime ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.runtime ? true : undefined}
+              aria-describedby={
+                errors.runtime?.message
+                  ? fieldErrorId(formId, "runtime")
+                  : undefined
+              }
+              {...register("runtime")}
             >
               <option value="nodejs18.x">nodejs18.x</option>
               <option value="nodejs20.x">nodejs20.x</option>
@@ -210,12 +292,13 @@ function NodeInspectorForm({
               <option value="python3.12">python3.12</option>
               <option value="python3.13">python3.13</option>
             </select>
+            <FieldError
+              baseId={formId}
+              field="runtime"
+              message={errors.runtime?.message}
+            />
           </label>
         </>
-      )}
-
-      {Object.keys(form.formState.errors).length > 0 && (
-        <p className="text-xs text-red-600">Fix validation errors to save.</p>
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -273,12 +356,18 @@ function EdgeInspectorForm({
   onSave: (config: Record<string, unknown>) => void;
   onRemove: () => void;
 }) {
+  const formId = useId();
   const defaults = rel.configSchema.parse(edge.config) as FormValues;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(rel.configSchema),
     defaultValues: defaults,
   });
+
+  const {
+    register,
+    formState: { errors },
+  } = form;
 
   useEffect(() => {
     form.reset(rel.configSchema.parse(edge.config) as FormValues);
@@ -305,12 +394,25 @@ function EdgeInspectorForm({
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Object key prefix</span>
             <input
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("objectKeyPrefix")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.objectKeyPrefix ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.objectKeyPrefix ? true : undefined}
+              aria-describedby={
+                errors.objectKeyPrefix?.message
+                  ? fieldErrorId(formId, "objectKeyPrefix")
+                  : undefined
+              }
+              {...register("objectKeyPrefix")}
+            />
+            <FieldError
+              baseId={formId}
+              field="objectKeyPrefix"
+              message={errors.objectKeyPrefix?.message}
             />
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" {...form.register("includeListBucket")} />
+            <input type="checkbox" {...register("includeListBucket")} />
             Include s3:ListBucket
           </label>
         </>
@@ -320,8 +422,21 @@ function EdgeInspectorForm({
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-slate-700">Object key prefix</span>
           <input
-            className="rounded border border-slate-200 px-2 py-1 text-sm"
-            {...form.register("objectKeyPrefix")}
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.objectKeyPrefix ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.objectKeyPrefix ? true : undefined}
+            aria-describedby={
+              errors.objectKeyPrefix?.message
+                ? fieldErrorId(formId, "objectKeyPrefix")
+                : undefined
+            }
+            {...register("objectKeyPrefix")}
+          />
+          <FieldError
+            baseId={formId}
+            field="objectKeyPrefix"
+            message={errors.objectKeyPrefix?.message}
           />
         </label>
       )}
@@ -330,20 +445,53 @@ function EdgeInspectorForm({
         <>
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-700">Events</span>
-            <S3EventsField form={form} />
+            <span className="text-xs text-slate-500">
+              Select at least one event type.
+            </span>
+            <S3EventsField
+              form={form}
+              baseId={formId}
+              eventsError={errors.events?.message}
+            />
           </div>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Prefix filter</span>
             <input
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("prefix")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.prefix ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.prefix ? true : undefined}
+              aria-describedby={
+                errors.prefix?.message
+                  ? fieldErrorId(formId, "prefix")
+                  : undefined
+              }
+              {...register("prefix")}
+            />
+            <FieldError
+              baseId={formId}
+              field="prefix"
+              message={errors.prefix?.message}
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Suffix filter</span>
             <input
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...form.register("suffix")}
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.suffix ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.suffix ? true : undefined}
+              aria-describedby={
+                errors.suffix?.message
+                  ? fieldErrorId(formId, "suffix")
+                  : undefined
+              }
+              {...register("suffix")}
+            />
+            <FieldError
+              baseId={formId}
+              field="suffix"
+              message={errors.suffix?.message}
             />
           </label>
         </>
@@ -368,7 +516,15 @@ function EdgeInspectorForm({
   );
 }
 
-function S3EventsField({ form }: { form: UseFormReturn<FormValues> }) {
+function S3EventsField({
+  form,
+  baseId,
+  eventsError,
+}: {
+  form: UseFormReturn<FormValues>;
+  baseId: string;
+  eventsError?: string;
+}) {
   const events = (form.watch("events") as string[] | undefined) ?? [];
   const toggle = (value: string) => {
     const set = new Set(events);
@@ -378,7 +534,13 @@ function S3EventsField({ form }: { form: UseFormReturn<FormValues> }) {
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div
+      className="flex flex-col gap-1"
+      aria-invalid={eventsError ? true : undefined}
+      aria-describedby={
+        eventsError ? fieldErrorId(baseId, "events") : undefined
+      }
+    >
       {(["s3:ObjectCreated:*", "s3:ObjectRemoved:*"] as const).map((ev) => (
         <label key={ev} className="flex items-center gap-2 text-slate-700">
           <input
@@ -389,6 +551,7 @@ function S3EventsField({ form }: { form: UseFormReturn<FormValues> }) {
           <span className="text-xs font-mono">{ev}</span>
         </label>
       ))}
+      <FieldError baseId={baseId} field="events" message={eventsError} />
     </div>
   );
 }

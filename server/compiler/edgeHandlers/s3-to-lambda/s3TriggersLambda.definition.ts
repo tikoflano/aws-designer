@@ -8,7 +8,7 @@ import {
 export const s3TriggersLambdaConfigSchema = z.object({
   events: z
     .array(z.enum(["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]))
-    .min(1)
+    .min(1, { message: "Select at least one S3 event type." })
     .default(["s3:ObjectCreated:*"]),
   prefix: z.string().optional().default(""),
   suffix: z.string().optional().default(""),

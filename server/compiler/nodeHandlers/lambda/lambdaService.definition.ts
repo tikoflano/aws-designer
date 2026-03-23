@@ -10,11 +10,16 @@ import { NodeIds } from "../nodeIds.ts";
 export const lambdaNodeConfigSchema = z.object({
   functionName: z
     .string()
-    .min(1)
-    .max(64)
-    .regex(/^[a-zA-Z0-9-_]+$/)
+    .min(1, { message: "Function name is required." })
+    .max(64, { message: "Function name must be at most 64 characters." })
+    .regex(/^[a-zA-Z0-9-_]+$/, {
+      message: "Use only letters, numbers, hyphens, and underscores.",
+    })
     .default("function"),
-  handler: z.string().min(1).default("index.handler"),
+  handler: z
+    .string()
+    .min(1, { message: "Handler is required (e.g. index.handler)." })
+    .default("index.handler"),
   runtime: z
     .enum([
       "nodejs18.x",
