@@ -72,7 +72,7 @@ describe("validateGraph", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("rejects cloudfront node without exactly one cloudfront_origin_s3 edge", () => {
+  it("rejects cloudfront node without a distribution name", () => {
     const result = validateGraph({
       nodes: [
         {
@@ -86,7 +86,23 @@ describe("validateGraph", () => {
       edges: [],
     });
     expect(result.ok).toBe(false);
-    expect(result.issues.some((i) => i.code === "cloudfront_origin_s3_count")).toBe(true);
+    expect(result.issues.some((i) => i.code === "cloudfront_missing_name")).toBe(true);
+  });
+
+  it("accepts cloudfront node with only a name (no S3 origin edge yet)", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "cf1",
+          serviceId: "cloudfront",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { name: "cdn" },
+        },
+      ],
+      edges: [],
+    });
+    expect(result.ok).toBe(true);
   });
 
   it("accepts S3 + cloudfront + route53 with origin and alias edges", () => {
@@ -104,7 +120,7 @@ describe("validateGraph", () => {
           serviceId: "cloudfront",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "app-cdn" },
         },
         {
           id: "r1",
@@ -157,7 +173,7 @@ describe("validateGraph", () => {
           serviceId: "cloudfront",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "app-cdn" },
         },
         {
           id: "r1",
@@ -242,7 +258,7 @@ describe("validateGraph", () => {
           serviceId: "cloudfront",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "app-cdn" },
         },
         {
           id: "r1",
@@ -294,7 +310,7 @@ describe("validateGraph", () => {
           serviceId: "cloudfront",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: {},
+          config: { name: "app-cdn" },
         },
         {
           id: "r1",

@@ -110,19 +110,28 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   );
 
   for (const cfId of cloudfrontNodeIds) {
+    const cfNode = nodeById(doc, cfId);
+    const nc = cfNode?.config as Record<string, unknown> | undefined;
+    const displayName = String(nc?.name ?? "").trim();
+    const legacyComment = String(nc?.comment ?? "").trim();
+    if (displayName === "" && legacyComment === "") {
+      issues.push({
+        code: "cloudfront_missing_name",
+        message: `CloudFront node "${cfId}" requires a distribution name.`,
+        nodeId: cfId,
+      });
+    }
+
     const originEdges = doc.edges.filter(
       (e) =>
         e.sourceNodeId === cfId &&
         e.relationshipId === CLOUDFRONT_ORIGIN_S3 &&
         e.relationshipVersion === RELATIONSHIP_VERSION,
     );
-    if (originEdges.length !== 1) {
+    if (originEdges.length > 1) {
       issues.push({
-        code: "cloudfront_origin_s3_count",
-        message:
-          originEdges.length === 0
-            ? `CloudFront node "${cfId}" must have exactly one "${CLOUDFRONT_ORIGIN_S3}" edge to an S3 bucket.`
-            : `CloudFront node "${cfId}" must have exactly one "${CLOUDFRONT_ORIGIN_S3}" edge (found ${originEdges.length}).`,
+        code: "cloudfront_origin_s3_duplicate",
+        message: `CloudFront node "${cfId}" may have at most one "${CLOUDFRONT_ORIGIN_S3}" edge (found ${originEdges.length}).`,
         nodeId: cfId,
       });
     }

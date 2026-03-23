@@ -198,6 +198,9 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
   if (serviceId === "route53") {
     return { name: "", hostedZoneId: "", type: "public" };
   }
+  if (serviceId === "cloudfront") {
+    return { name: `cf-${nanoid(6)}` };
+  }
   return {};
 }
 
