@@ -20,7 +20,8 @@ export function ServicePalette() {
           Connect handles to add a relationship.
         </p>
         <p className="text-xs text-slate-600 md:hidden">
-          Tap a service, then tap the canvas. Connect handles for relationships.
+          Tap a service, then tap the canvas. To connect: tap one node’s{" "}
+          <strong>out</strong> handle, then the other’s <strong>in</strong> handle.
         </p>
       </div>
       <div className="flex flex-row gap-2 overflow-x-auto pb-0.5 [-webkit-overflow-scrolling:touch] md:flex-col md:overflow-visible md:pb-0">
