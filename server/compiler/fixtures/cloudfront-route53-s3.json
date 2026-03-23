@@ -1,0 +1,50 @@
+{
+  "formatVersion": 1,
+  "kind": "aws-designer-graph",
+  "nodes": [
+    {
+      "id": "b1",
+      "serviceId": "s3",
+      "serviceVersion": "1.0.0",
+      "position": { "x": 0, "y": 0 },
+      "config": {}
+    },
+    {
+      "id": "cf1",
+      "serviceId": "cloudfront",
+      "serviceVersion": "1.0.0",
+      "position": { "x": 100, "y": 0 },
+      "config": { "comment": "fixture dist" }
+    },
+    {
+      "id": "r53a",
+      "serviceId": "route53",
+      "serviceVersion": "1.0.0",
+      "position": { "x": 200, "y": 0 },
+      "config": {
+        "domainName": "www.example.com",
+        "zoneName": "example.com",
+        "hostedZoneId": "Z1234567890ABC",
+        "certificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "eOrigin",
+      "sourceNodeId": "cf1",
+      "targetNodeId": "b1",
+      "relationshipId": "cloudfront_origin_s3",
+      "relationshipVersion": "1.0.0",
+      "config": {}
+    },
+    {
+      "id": "eAlias",
+      "sourceNodeId": "r53a",
+      "targetNodeId": "cf1",
+      "relationshipId": "route53_alias_cloudfront",
+      "relationshipVersion": "1.0.0",
+      "config": {}
+    }
+  ]
+}

@@ -15,6 +15,8 @@ type Props = {
 function formatServiceLabel(id: string): string {
   if (id === "s3") return "S3";
   if (id === "lambda") return "Lambda";
+  if (id === "cloudfront") return "CloudFront";
+  if (id === "route53") return "Route 53";
   return id;
 }
 

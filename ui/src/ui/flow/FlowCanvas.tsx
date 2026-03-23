@@ -27,17 +27,25 @@ import {
 } from "react";
 
 import type { ServiceId } from "../../domain/types";
-import { getRelationship, getService } from "@compiler/catalog.ts";
+import { getRelationship, getService, listServices } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
 import { PALETTE_DRAG_MIME } from "../palette/ServicePalette";
 import { CanvasGraphMenu } from "./CanvasGraphMenu";
 import { CanvasPaletteToggle } from "./CanvasPaletteToggle";
+import { CloudFrontCanvasNode } from "./nodes/CloudFrontCanvasNode";
 import { LambdaCanvasNode } from "./nodes/LambdaCanvasNode";
+import { Route53CanvasNode } from "./nodes/Route53CanvasNode";
 import { S3CanvasNode } from "./nodes/S3CanvasNode";
+
+const PALETTE_SERVICE_IDS = new Set<ServiceId>(
+  listServices().map((s) => s.id),
+);
 
 const nodeTypes: NodeTypes = {
   s3: S3CanvasNode,
   lambda: LambdaCanvasNode,
+  cloudfront: CloudFrontCanvasNode,
+  route53: Route53CanvasNode,
 };
 
 function toFlowNodes(
@@ -49,7 +57,18 @@ function toFlowNodes(
     const title =
       n.serviceId === "s3"
         ? ((n.config.bucketName as string | undefined) ?? "Bucket")
-        : String(n.config.functionName ?? "Lambda");
+        : n.serviceId === "lambda"
+          ? String(n.config.functionName ?? "Lambda")
+          : n.serviceId === "route53"
+            ? String(
+                (n.config.domainName as string | undefined)?.trim() || "DNS",
+              )
+            : n.serviceId === "cloudfront"
+              ? String(
+                  (n.config.comment as string | undefined)?.trim() ||
+                    "Distribution",
+                )
+              : n.serviceId;
     const svc = getService(n.serviceId, n.serviceVersion);
     const serviceDisplayName = svc?.displayName ?? n.serviceId;
     return {
@@ -173,7 +192,7 @@ function FlowCanvasBody({
     (e: DragEvent) => {
       e.preventDefault();
       const raw = e.dataTransfer.getData(PALETTE_DRAG_MIME);
-      if (raw !== "s3" && raw !== "lambda") return;
+      if (!PALETTE_SERVICE_IDS.has(raw as ServiceId)) return;
       const position = screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,

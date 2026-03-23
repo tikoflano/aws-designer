@@ -22,13 +22,16 @@ function nodeInspectorFormDefaults(
   node: GraphNode,
   svc: ServiceDefinition,
 ): FormValues {
-  const parsed = svc.configSchema.parse(node.config) as FormValues;
-  if (node.serviceId !== "lambda") return parsed;
+  const result = svc.configSchema.safeParse(node.config);
+  const base = (
+    result.success ? result.data : { ...node.config }
+  ) as FormValues;
+  if (node.serviceId !== "lambda") return base;
   return {
-    ...parsed,
+    ...base,
     inlineSource:
-      (parsed.inlineSource as string | undefined) ??
-      defaultInlineSourceForRuntime(parsed.runtime as LambdaRuntime),
+      (base.inlineSource as string | undefined) ??
+      defaultInlineSourceForRuntime(base.runtime as LambdaRuntime),
   };
 }
 
@@ -330,6 +333,128 @@ function NodeInspectorForm({
         </>
       )}
 
+      {node.serviceId === "cloudfront" && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-slate-700">Comment (optional)</span>
+          <span className="text-xs text-slate-500">
+            Shown in the AWS console for this distribution.
+          </span>
+          <input
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.comment ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.comment ? true : undefined}
+            aria-describedby={
+              errors.comment?.message
+                ? fieldErrorId(formId, "comment")
+                : undefined
+            }
+            {...register("comment")}
+          />
+          <FieldError
+            baseId={formId}
+            field="comment"
+            message={errors.comment?.message}
+          />
+        </label>
+      )}
+
+      {node.serviceId === "route53" && (
+        <>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">Domain name (FQDN)</span>
+            <span className="text-xs text-slate-500">
+              Record name for the alias, e.g. www.example.com or example.com
+              (apex). Must match the hosted zone.
+            </span>
+            <input
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.domainName ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.domainName ? true : undefined}
+              aria-describedby={
+                errors.domainName?.message
+                  ? fieldErrorId(formId, "domainName")
+                  : undefined
+              }
+              {...register("domainName")}
+            />
+            <FieldError
+              baseId={formId}
+              field="domainName"
+              message={errors.domainName?.message}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">Hosted zone name</span>
+            <span className="text-xs text-slate-500">
+              Public zone domain, e.g. example.com
+            </span>
+            <input
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.zoneName ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.zoneName ? true : undefined}
+              aria-describedby={
+                errors.zoneName?.message
+                  ? fieldErrorId(formId, "zoneName")
+                  : undefined
+              }
+              {...register("zoneName")}
+            />
+            <FieldError
+              baseId={formId}
+              field="zoneName"
+              message={errors.zoneName?.message}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">Hosted zone ID</span>
+            <input
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.hostedZoneId ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.hostedZoneId ? true : undefined}
+              aria-describedby={
+                errors.hostedZoneId?.message
+                  ? fieldErrorId(formId, "hostedZoneId")
+                  : undefined
+              }
+              {...register("hostedZoneId")}
+            />
+            <FieldError
+              baseId={formId}
+              field="hostedZoneId"
+              message={errors.hostedZoneId?.message}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">ACM certificate ARN</span>
+            <span className="text-xs text-slate-500">
+              Must be in us-east-1 (N. Virginia) and cover the domain name
+              above. Used for HTTPS on CloudFront.
+            </span>
+            <input
+              className={`rounded border px-2 py-1 font-mono text-xs ${
+                errors.certificateArn ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.certificateArn ? true : undefined}
+              aria-describedby={
+                errors.certificateArn?.message
+                  ? fieldErrorId(formId, "certificateArn")
+                  : undefined
+              }
+              {...register("certificateArn")}
+            />
+            <FieldError
+              baseId={formId}
+              field="certificateArn"
+              message={errors.certificateArn?.message}
+            />
+          </label>
+        </>
+      )}
+
       <div className="flex flex-wrap gap-2">
         <button
           type="submit"
@@ -563,6 +688,33 @@ function EdgeInspectorForm({
             />
           </label>
         </>
+      )}
+
+      {rel.id === "cloudfront_origin_s3" && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-slate-700">Origin path (optional)</span>
+          <span className="text-xs text-slate-500">
+            Prefix within the bucket served as the root, e.g.{" "}
+            <code className="rounded bg-slate-100 px-1 font-mono">static</code>
+          </span>
+          <input
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.originPath ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.originPath ? true : undefined}
+            aria-describedby={
+              errors.originPath?.message
+                ? fieldErrorId(formId, "originPath")
+                : undefined
+            }
+            {...register("originPath")}
+          />
+          <FieldError
+            baseId={formId}
+            field="originPath"
+            message={errors.originPath?.message}
+          />
+        </label>
       )}
 
       <div className="flex flex-wrap gap-2">

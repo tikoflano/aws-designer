@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const serviceIdSchema = z.enum(["s3", "lambda"]);
+const serviceIdSchema = z.enum(["s3", "lambda", "cloudfront", "route53"]);
 
 const graphNodeSchema = z.object({
   id: z.string(),

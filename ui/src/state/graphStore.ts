@@ -170,6 +170,14 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
   if (serviceId === "lambda") {
     return { functionName: `fn-${nanoid(6)}` };
   }
+  if (serviceId === "route53") {
+    return {
+      domainName: "",
+      zoneName: "",
+      hostedZoneId: "",
+      certificateArn: "",
+    };
+  }
   return {};
 }
 

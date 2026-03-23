@@ -1,3 +1,5 @@
+import ArchitectureServiceAmazonCloudFront from "aws-react-icons/icons/ArchitectureServiceAmazonCloudFront";
+import ArchitectureServiceAmazonRoute53 from "aws-react-icons/icons/ArchitectureServiceAmazonRoute53";
 import ArchitectureServiceAmazonSimpleStorageService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleStorageService";
 import ArchitectureServiceAWSLambda from "aws-react-icons/icons/ArchitectureServiceAWSLambda";
 
@@ -27,6 +29,22 @@ export function AwsServiceArchitectureIcon({
     case "s3":
       return (
         <ArchitectureServiceAmazonSimpleStorageService
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+    case "cloudfront":
+      return (
+        <ArchitectureServiceAmazonCloudFront
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+    case "route53":
+      return (
+        <ArchitectureServiceAmazonRoute53
           size={size}
           className={svgClass}
           aria-hidden

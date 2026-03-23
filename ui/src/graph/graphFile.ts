@@ -13,7 +13,7 @@ const positionSchema = z.object({
 
 const graphNodeSchema = z.object({
   id: z.string().min(1),
-  serviceId: z.enum(["s3", "lambda"]),
+  serviceId: z.enum(["s3", "lambda", "cloudfront", "route53"]),
   serviceVersion: z.string().min(1),
   position: positionSchema,
   config: z.record(z.string(), z.unknown()),

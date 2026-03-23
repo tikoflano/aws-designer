@@ -1,9 +1,13 @@
 import type { CompileIssue, ValidateGraphResult } from "@shared/compile/types.ts";
 import type { GraphDocument } from "@shared/domain/graph.ts";
 
+import { RELATIONSHIP_VERSION } from "./domain/catalogTypes.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
 import { logicalBucketId } from "./nodeHandlers/s3/s3Service.definition.ts";
 import { getService } from "./nodeHandlers/servicesCatalog.ts";
+
+const CLOUDFRONT_ORIGIN_S3 = "cloudfront_origin_s3";
+const ROUTE53_ALIAS_CLOUDFRONT = "route53_alias_cloudfront";
 
 function nodeById(doc: GraphDocument, id: string) {
   return doc.nodes.find((n) => n.id === id);
@@ -97,6 +101,94 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
             : "Invalid configuration for relationship edge.",
         edgeId: edge.id,
       });
+    }
+  }
+
+  const cloudfrontNodeIds = new Set(
+    doc.nodes.filter((n) => n.serviceId === "cloudfront").map((n) => n.id),
+  );
+
+  for (const cfId of cloudfrontNodeIds) {
+    const originEdges = doc.edges.filter(
+      (e) =>
+        e.sourceNodeId === cfId &&
+        e.relationshipId === CLOUDFRONT_ORIGIN_S3 &&
+        e.relationshipVersion === RELATIONSHIP_VERSION,
+    );
+    if (originEdges.length !== 1) {
+      issues.push({
+        code: "cloudfront_origin_s3_count",
+        message:
+          originEdges.length === 0
+            ? `CloudFront node "${cfId}" must have exactly one "${CLOUDFRONT_ORIGIN_S3}" edge to an S3 bucket.`
+            : `CloudFront node "${cfId}" must have exactly one "${CLOUDFRONT_ORIGIN_S3}" edge (found ${originEdges.length}).`,
+        nodeId: cfId,
+      });
+    }
+  }
+
+  const route53AliasTargets = new Map<string, string[]>();
+  for (const edge of doc.edges) {
+    if (
+      edge.relationshipId !== ROUTE53_ALIAS_CLOUDFRONT ||
+      edge.relationshipVersion !== RELATIONSHIP_VERSION
+    ) {
+      continue;
+    }
+    const targetNode = nodeById(doc, edge.targetNodeId);
+    if (!targetNode) continue;
+    if (targetNode.serviceId !== "cloudfront") continue;
+
+    const hasOrigin = doc.edges.some(
+      (e) =>
+        e.sourceNodeId === edge.targetNodeId &&
+        e.relationshipId === CLOUDFRONT_ORIGIN_S3 &&
+        e.relationshipVersion === RELATIONSHIP_VERSION,
+    );
+    if (!hasOrigin) {
+      issues.push({
+        code: "route53_alias_without_distribution",
+        message: `Route 53 alias targets CloudFront node "${edge.targetNodeId}" but that node has no "${CLOUDFRONT_ORIGIN_S3}" edge (distribution would not be created).`,
+        edgeId: edge.id,
+      });
+    }
+
+    const r53Source = nodeById(doc, edge.sourceNodeId);
+    if (r53Source?.serviceId === "route53") {
+      const c = r53Source.config as Record<string, unknown>;
+      const domainName = String(c.domainName ?? "").trim();
+      const zoneName = String(c.zoneName ?? "").trim();
+      const hostedZoneId = String(c.hostedZoneId ?? "").trim();
+      const certificateArn = String(c.certificateArn ?? "").trim();
+      if (
+        domainName === "" ||
+        zoneName === "" ||
+        hostedZoneId === "" ||
+        certificateArn === ""
+      ) {
+        issues.push({
+          code: "route53_alias_incomplete_dns",
+          message: `Route 53 node "${r53Source.id}" must have domain name, zone name, hosted zone ID, and ACM certificate ARN set before this alias edge can be compiled.`,
+          edgeId: edge.id,
+          nodeId: r53Source.id,
+        });
+      }
+    }
+
+    const list = route53AliasTargets.get(edge.targetNodeId) ?? [];
+    list.push(edge.id);
+    route53AliasTargets.set(edge.targetNodeId, list);
+  }
+
+  for (const [targetId, edgeIds] of route53AliasTargets) {
+    if (edgeIds.length > 1) {
+      for (const eid of edgeIds.slice(1)) {
+        issues.push({
+          code: "duplicate_route53_alias_cloudfront",
+          message: `At most one "${ROUTE53_ALIAS_CLOUDFRONT}" edge may target CloudFront node "${targetId}".`,
+          edgeId: eid,
+        });
+      }
     }
   }
 

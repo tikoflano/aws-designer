@@ -55,4 +55,18 @@ describe("GraphCompilerStack", () => {
     const json = JSON.stringify(template.toJSON());
     expect(json).toContain("418");
   });
+
+  it("synthesizes CloudFront distribution and Route 53 alias for fixture", () => {
+    const raw = JSON.parse(
+      readFileSync(join(__dirname, "fixtures/cloudfront-route53-s3.json"), "utf-8"),
+    );
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "CfR53Stack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::CloudFront::Distribution", 1);
+    template.resourceCountIs("AWS::Route53::RecordSet", 1);
+  });
 });
