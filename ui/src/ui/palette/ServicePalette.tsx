@@ -15,7 +15,7 @@ export function ServicePalette() {
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Services
       </div>
-      <div className="grid grid-cols-2 items-stretch gap-1.5">
+      <div className="grid grid-cols-2 items-start gap-1.5">
         {services.map((s) => (
           <DelayedTooltip
             key={s.id}
@@ -32,7 +32,7 @@ export function ServicePalette() {
               onClick={() =>
                 setPalettePlacement(palettePlacement === s.id ? null : s.id)
               }
-              className={`flex aspect-square w-full min-w-0 cursor-grab flex-col items-center justify-start gap-1 rounded-md border bg-white p-1.5 shadow-sm active:cursor-grabbing ${
+              className={`flex w-full min-w-0 cursor-grab flex-col items-center justify-start gap-0.5 rounded-md border bg-white px-1.5 pt-1.5 pb-1 shadow-sm active:cursor-grabbing ${
                 palettePlacement === s.id
                   ? "border-sky-500 ring-2 ring-sky-300"
                   : "border-slate-200"
