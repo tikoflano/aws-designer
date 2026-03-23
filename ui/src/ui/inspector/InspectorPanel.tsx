@@ -384,50 +384,6 @@ function NodeInspectorForm({
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Hosted zone ID</span>
-            <span className="text-xs text-slate-500">
-              From the Route 53 console (e.g. Z123…). Required for alias records and
-              automatic ACM validation when this zone is linked to CloudFront.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.hostedZoneId ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.hostedZoneId ? true : undefined}
-              aria-describedby={
-                errors.hostedZoneId?.message
-                  ? fieldErrorId(formId, "hostedZoneId")
-                  : undefined
-              }
-              {...register("hostedZoneId")}
-            />
-            <FieldError
-              baseId={formId}
-              field="hostedZoneId"
-              message={errors.hostedZoneId?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Description (optional)</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.description ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.description ? true : undefined}
-              aria-describedby={
-                errors.description?.message
-                  ? fieldErrorId(formId, "description")
-                  : undefined
-              }
-              {...register("description")}
-            />
-            <FieldError
-              baseId={formId}
-              field="description"
-              message={errors.description?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Type</span>
             <select
               className="rounded border border-slate-200 px-2 py-1 text-sm"

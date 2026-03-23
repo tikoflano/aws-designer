@@ -14,7 +14,7 @@ export const route53AliasCloudFrontDefinition: RelationshipDefinition = {
   version: RELATIONSHIP_VERSION,
   name: "Route 53 alias to CloudFront",
   description:
-    "Creates a DNS-validated ACM certificate (us-east-1), attaches the domain to the distribution, and adds a Route 53 alias record using the connected hosted zone.",
+    "Creates a DNS-validated ACM certificate (us-east-1), attaches the domain to the distribution, and adds a Route 53 alias record. The hosted zone is resolved from the Route 53 node zone name at deploy time (CDK lookup).",
   source: "route53",
   target: "cloudfront",
   configSchema: route53AliasCloudFrontConfigSchema,

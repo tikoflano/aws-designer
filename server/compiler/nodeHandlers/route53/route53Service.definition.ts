@@ -10,8 +10,6 @@ export const route53ZoneType = z.enum(["public", "private"]);
 
 export const route53NodeConfigSchema = z.object({
   name: z.string().default(""),
-  hostedZoneId: z.string().default(""),
-  description: z.string().default(""),
   type: route53ZoneType.default("public"),
 });
 
