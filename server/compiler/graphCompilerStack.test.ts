@@ -404,4 +404,89 @@ describe("GraphCompilerStack", () => {
 
     template.resourceCountIs("AWS::SNS::Subscription", 1);
   });
+
+  it("synthesizes DynamoDB table with partition key only", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "d1",
+          serviceId: "dynamodb",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture-ddb-table",
+            partitionKeyName: "pk",
+            partitionKeyType: "string",
+          },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "DdbStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::DynamoDB::Table", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("fixture-ddb-table");
+    expect(json).toContain("PAY_PER_REQUEST");
+  });
+
+  it("grants Lambda read/write on DynamoDB via graph edges", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureDdbFn" },
+        },
+        {
+          id: "d1",
+          serviceId: "dynamodb",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture-ddb-access",
+            partitionKeyName: "id",
+            partitionKeyType: "string",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "er",
+          sourceNodeId: "l1",
+          targetNodeId: "d1",
+          relationshipId: "lambda_reads_dynamodb",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+        {
+          id: "ew",
+          sourceNodeId: "l1",
+          targetNodeId: "d1",
+          relationshipId: "lambda_writes_dynamodb",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "LambdaDdbStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("dynamodb:GetItem");
+    expect(json).toContain("dynamodb:PutItem");
+  });
 });

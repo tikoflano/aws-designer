@@ -4,6 +4,8 @@ import type { ServiceId } from "../domain/serviceId.ts";
 import { cloudfrontOriginS3Definition } from "./cloudfront-to-s3/cloudfrontOriginS3.definition.ts";
 import { lambdaReadsSecretsManagerDefinition } from "./lambda-to-secretsmanager/lambdaReadsSecretsManager.definition.ts";
 import { lambdaWritesSecretsManagerDefinition } from "./lambda-to-secretsmanager/lambdaWritesSecretsManager.definition.ts";
+import { lambdaReadsDynamodbDefinition } from "./lambda-to-dynamodb/lambdaReadsDynamodb.definition.ts";
+import { lambdaWritesDynamodbDefinition } from "./lambda-to-dynamodb/lambdaWritesDynamodb.definition.ts";
 import { lambdaReadsS3Definition } from "./lambda-to-s3/lambdaReadsS3.definition.ts";
 import { lambdaWritesS3Definition } from "./lambda-to-s3/lambdaWritesS3.definition.ts";
 import { route53AliasCloudFrontDefinition } from "./route53-to-cloudfront/route53AliasCloudFront.definition.ts";
@@ -15,6 +17,8 @@ import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/snsStandardToSq
 export const ALL_RELATIONSHIPS = [
   lambdaReadsS3Definition,
   lambdaWritesS3Definition,
+  lambdaReadsDynamodbDefinition,
+  lambdaWritesDynamodbDefinition,
   lambdaReadsSecretsManagerDefinition,
   lambdaWritesSecretsManagerDefinition,
   s3TriggersLambdaDefinition,

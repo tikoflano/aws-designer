@@ -6,4 +6,5 @@ export type ServiceId =
   | "secretsmanager"
   | "sns_standard"
   | "sns_fifo"
-  | "sqs";
+  | "sqs"
+  | "dynamodb";

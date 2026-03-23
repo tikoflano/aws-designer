@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import type * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import type * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import type * as lambda from "aws-cdk-lib/aws-lambda";
 import type * as s3 from "aws-cdk-lib/aws-s3";
 import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
@@ -65,6 +66,7 @@ export class GraphCompilerStack extends cdk.Stack {
       secrets: new Map<string, secretsmanager.ISecret>(),
       snsTopics: new Map(),
       sqsQueues: new Map(),
+      dynamoTables: new Map<string, dynamodb.ITable>(),
     };
 
     for (const node of graph.nodes) {

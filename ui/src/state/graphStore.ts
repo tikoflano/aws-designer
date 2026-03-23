@@ -209,6 +209,14 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
       queueType: "standard",
     };
   }
+  if (serviceId === "dynamodb") {
+    return {
+      name: `tbl-${s3BucketNameSuffix()}`,
+      partitionKeyName: "pk",
+      partitionKeyType: "string",
+      sortKeyName: "",
+    };
+  }
   return {};
 }
 

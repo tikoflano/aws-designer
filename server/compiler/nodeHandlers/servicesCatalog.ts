@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "../domain/catalogTypes.ts";
 import type { ServiceId } from "../domain/serviceId.ts";
 
+import { dynamodbServiceDefinition } from "./dynamodb/dynamodbService.definition.ts";
 import { cloudfrontServiceDefinition } from "./cloudfront/cloudfrontService.definition.ts";
 import { lambdaServiceDefinition } from "./lambda/lambdaService.definition.ts";
 import { route53ServiceDefinition } from "./route53/route53Service.definition.ts";
@@ -19,6 +20,7 @@ const SERVICE_ORDER: ServiceId[] = [
   "sns_standard",
   "sns_fifo",
   "sqs",
+  "dynamodb",
 ];
 
 const BY_ID: Record<ServiceId, ServiceDefinition> = {
@@ -30,6 +32,7 @@ const BY_ID: Record<ServiceId, ServiceDefinition> = {
   sns_standard: snsStandardServiceDefinition,
   sns_fifo: snsFifoServiceDefinition,
   sqs: sqsServiceDefinition,
+  dynamodb: dynamodbServiceDefinition,
 };
 
 export const ALL_SERVICES = SERVICE_ORDER.map((id) => BY_ID[id]);
