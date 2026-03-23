@@ -126,7 +126,6 @@ function TouchAwareHandle({
         <div
           className={`react-flow__handle react-flow__handle-${posKey} nodrag nopan z-[3] flex !h-11 !w-11 !min-h-[44px] !min-w-[44px] touch-manipulation items-center justify-center !bg-transparent`}
           onPointerDown={(e) => {
-            if (e.pointerType === "mouse") return;
             e.stopPropagation();
             (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
             startRef.current = { x: e.clientX, y: e.clientY };
@@ -141,7 +140,6 @@ function TouchAwareHandle({
             }
           }}
           onPointerUp={(e) => {
-            if (e.pointerType === "mouse") return;
             try {
               (e.currentTarget as HTMLElement).releasePointerCapture(
                 e.pointerId,

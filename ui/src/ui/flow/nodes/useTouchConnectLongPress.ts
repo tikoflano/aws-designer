@@ -30,7 +30,7 @@ export function useTouchConnectLongPress(): Record<
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent) => {
-      if (!coarse || e.pointerType === "mouse") return;
+      if (!coarse) return;
       startRef.current = { x: e.clientX, y: e.clientY };
       clearTimer();
       timerRef.current = setTimeout(() => {
