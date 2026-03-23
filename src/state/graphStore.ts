@@ -43,6 +43,9 @@ type GraphStateInner = {
   /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
   palettePlacement: ServiceId | null;
   setPalettePlacement: (serviceId: ServiceId | null) => void;
+  /** Desktop: hide inspector column until user selects again. Clears selection. */
+  inspectorDismissed: boolean;
+  dismissInspector: () => void;
   addNode: (serviceId: ServiceId, position: { x: number; y: number }) => void;
   updateNode: (
     id: string,
@@ -155,8 +158,11 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveStatus: "idle",
   saveError: null,
   palettePlacement: null,
+  inspectorDismissed: false,
 
   setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
+
+  dismissInspector: () => set({ selection: null, inspectorDismissed: true }),
 
   addNode: (serviceId, position) => {
     const id = nanoid(10);
@@ -171,6 +177,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       nodes: [...s.nodes, node],
       selection: { kind: "node", id },
       palettePlacement: null,
+      inspectorDismissed: false,
     }));
   },
 
@@ -238,10 +245,15 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       edges: [...s.edges, edge],
       pendingConnection: null,
       selection: { kind: "edge", id: edge.id },
+      inspectorDismissed: false,
     }));
   },
 
-  select: (selection) => set({ selection }),
+  select: (selection) =>
+    set({
+      selection,
+      ...(selection ? { inspectorDismissed: false } : {}),
+    }),
 
   updateEdgeConfig: (edgeId, config) => {
     set((s) => ({
@@ -272,6 +284,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
+      inspectorDismissed: false,
       lastCompile: null,
     });
   },
@@ -320,6 +333,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
+      inspectorDismissed: false,
       lastCompile: null,
       serverGraphId: record.id,
       serverUpdatedAt: record.updatedAt,
@@ -336,6 +350,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       selection: null,
       pendingConnection: null,
       palettePlacement: null,
+      inspectorDismissed: false,
       lastCompile: null,
       serverGraphId: null,
       serverUpdatedAt: null,
