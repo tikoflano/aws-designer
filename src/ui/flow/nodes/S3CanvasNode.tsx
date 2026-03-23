@@ -1,4 +1,4 @@
-import { GraphNodeHandles } from "./GraphNodeHandles";
+import { Handle, Position } from "@xyflow/react";
 
 type Props = {
   data: { title: string; subtitle: string };
@@ -17,7 +17,16 @@ export function S3CanvasNode({ data, selected }: Props) {
       </div>
       <div className="text-sm font-medium text-slate-900">{data.title}</div>
       <div className="text-xs text-slate-500">{data.subtitle}</div>
-      <GraphNodeHandles />
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="!h-2.5 !w-2.5 !border !border-slate-300 !bg-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="!h-2.5 !w-2.5 !border !border-slate-300 !bg-white"
+      />
     </div>
   );
 }

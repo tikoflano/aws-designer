@@ -27,7 +27,6 @@ import { useGraphStore } from "../../state/graphStore";
 import { PALETTE_DRAG_MIME } from "../palette/ServicePalette";
 import { LambdaCanvasNode } from "./nodes/LambdaCanvasNode";
 import { S3CanvasNode } from "./nodes/S3CanvasNode";
-import { useCoarsePointer } from "./useCoarsePointer";
 
 const nodeTypes: NodeTypes = {
   s3: S3CanvasNode,
@@ -75,7 +74,6 @@ function toFlowEdges(
 }
 
 function FlowCanvasBody() {
-  const coarsePointer = useCoarsePointer();
   const { screenToFlowPosition } = useReactFlow();
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
@@ -212,10 +210,6 @@ function FlowCanvasBody() {
       onPaneClick={onPaneClick}
       onDrop={onDrop}
       onDragOver={onDragOver}
-      connectOnClick
-      connectionDragThreshold={coarsePointer ? 32 : 1}
-      nodeDragThreshold={coarsePointer ? 24 : 1}
-      connectionRadius={coarsePointer ? 40 : 20}
       fitView
       proOptions={{ hideAttribution: true }}
     >
