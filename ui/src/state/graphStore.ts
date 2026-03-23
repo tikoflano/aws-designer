@@ -28,28 +28,6 @@ export type SaveStatus = "idle" | "saving" | "saved" | "error";
 const s3BucketNameSuffix = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
 
 const DRAFT_KEY = "aws-designer-draft-v1";
-const USE_SERVICE_ICONS_KEY = "aws-designer-use-service-icons-v1";
-
-function readUseServiceIconsFromStorage(): boolean {
-  try {
-    if (typeof localStorage === "undefined") return false;
-    const raw = localStorage.getItem(USE_SERVICE_ICONS_KEY);
-    if (raw === "true") return true;
-    if (raw === "false") return false;
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-function writeUseServiceIconsToStorage(value: boolean) {
-  try {
-    if (typeof localStorage === "undefined") return;
-    localStorage.setItem(USE_SERVICE_ICONS_KEY, value ? "true" : "false");
-  } catch {
-    /* quota / private mode */
-  }
-}
 
 type DraftSnapshot = {
   nodes: GraphNode[];
@@ -74,9 +52,6 @@ type GraphStateInner = {
   /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
   palettePlacement: ServiceId | null;
   setPalettePlacement: (serviceId: ServiceId | null) => void;
-  /** When true, palette and canvas use AWS architecture icons (with delayed name tooltips). Persisted in localStorage. */
-  useServiceIcons: boolean;
-  setUseServiceIcons: (value: boolean) => void;
   /** True while the user is in "tap handles to connect" mode (entered via long-press on a node on touch devices). */
   connectingMode: boolean;
   setConnectingMode: (v: boolean) => void;
@@ -249,7 +224,6 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveStatus: "idle",
   saveError: null,
   palettePlacement: null,
-  useServiceIcons: readUseServiceIconsFromStorage(),
   connectingMode: false,
   connectionOriginNodeId: null,
   inspectorDismissed: true,
@@ -259,11 +233,6 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   setConnectingMode: (v) => set({ connectingMode: v }),
 
   setConnectionOriginNodeId: (id) => set({ connectionOriginNodeId: id }),
-
-  setUseServiceIcons: (value) => {
-    writeUseServiceIconsToStorage(value);
-    set({ useServiceIcons: value });
-  },
 
   dismissInspector: () => set({ selection: null, inspectorDismissed: true }),
 
