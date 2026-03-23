@@ -23,6 +23,15 @@ export function listRelationships(source: ServiceId, target: ServiceId) {
   return ALL_RELATIONSHIPS.filter((r) => r.source === source && r.target === target);
 }
 
+/** True if any catalog relationship allows an edge between the two service types (either direction). */
+export function hasRelationshipBetween(a: ServiceId, b: ServiceId): boolean {
+  if (a === b) return false;
+  return ALL_RELATIONSHIPS.some(
+    (r) =>
+      (r.source === a && r.target === b) || (r.source === b && r.target === a),
+  );
+}
+
 export function getRelationship(id: string, version: string) {
   return ALL_RELATIONSHIPS.find((r) => r.id === id && r.version === version);
 }
