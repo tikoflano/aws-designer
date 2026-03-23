@@ -4,15 +4,23 @@ import type { ServiceId } from "../domain/serviceId.ts";
 import { cloudfrontServiceDefinition } from "./cloudfront/cloudfrontService.definition.ts";
 import { lambdaServiceDefinition } from "./lambda/lambdaService.definition.ts";
 import { route53ServiceDefinition } from "./route53/route53Service.definition.ts";
+import { secretsManagerServiceDefinition } from "./secretsmanager/secretsManagerService.definition.ts";
 import { s3ServiceDefinition } from "./s3/s3Service.definition.ts";
 
-const SERVICE_ORDER: ServiceId[] = ["s3", "lambda", "cloudfront", "route53"];
+const SERVICE_ORDER: ServiceId[] = [
+  "s3",
+  "lambda",
+  "cloudfront",
+  "route53",
+  "secretsmanager",
+];
 
 const BY_ID: Record<ServiceId, ServiceDefinition> = {
   s3: s3ServiceDefinition,
   lambda: lambdaServiceDefinition,
   cloudfront: cloudfrontServiceDefinition,
   route53: route53ServiceDefinition,
+  secretsmanager: secretsManagerServiceDefinition,
 };
 
 export const ALL_SERVICES = SERVICE_ORDER.map((id) => BY_ID[id]);

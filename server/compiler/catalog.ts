@@ -35,6 +35,7 @@ export {
   route53NodeConfigSchema,
   route53RecordNameFromDomain,
 } from "./nodeHandlers/route53/route53Service.definition.ts";
+export { secretsManagerNodeConfigSchema } from "./nodeHandlers/secretsmanager/secretsManagerService.definition.ts";
 
 export { lambdaReadsS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaReadsS3.definition.ts";
 export { lambdaWritesS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaWritesS3.definition.ts";

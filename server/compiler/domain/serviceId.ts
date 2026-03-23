@@ -1,1 +1,6 @@
-export type ServiceId = "s3" | "lambda" | "cloudfront" | "route53";
+export type ServiceId =
+  | "s3"
+  | "lambda"
+  | "cloudfront"
+  | "route53"
+  | "secretsmanager";
