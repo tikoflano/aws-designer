@@ -1,5 +1,6 @@
 import type { ServiceId } from "../domain/serviceId.ts";
 
+import { DynamodbNodeHandler } from "./dynamodb/dynamodbNodeHandler.ts";
 import { CloudFrontNodeHandler } from "./cloudfront/cloudfrontNodeHandler.ts";
 import { LambdaNodeHandler } from "./lambda/lambdaNodeHandler.ts";
 import { Route53NodeHandler } from "./route53/route53NodeHandler.ts";
@@ -19,4 +20,5 @@ export const nodeServiceHandlers: Record<ServiceId, NodeServiceHandler> = {
   sns_standard: new SnsStandardNodeHandler(),
   sns_fifo: new SnsFifoNodeHandler(),
   sqs: new SqsNodeHandler(),
+  dynamodb: new DynamodbNodeHandler(),
 };

@@ -452,6 +452,50 @@ describe("validateGraph", () => {
     ).toBe(true);
   });
 
+  it("accepts lambda_reads_dynamodb and lambda_writes_dynamodb", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { functionName: "demo" },
+        },
+        {
+          id: "d1",
+          serviceId: "dynamodb",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: {
+            name: "app-items",
+            partitionKeyName: "pk",
+            partitionKeyType: "string",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "d1",
+          relationshipId: "lambda_reads_dynamodb",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+        {
+          id: "e2",
+          sourceNodeId: "l1",
+          targetNodeId: "d1",
+          relationshipId: "lambda_writes_dynamodb",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+  });
+
   it("accepts sqs_subscribes_sns_fifo with a FIFO queue", () => {
     const result = validateGraph({
       nodes: [

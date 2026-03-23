@@ -45,6 +45,7 @@ import { Route53CanvasNode } from "./nodes/Route53CanvasNode";
 import { SecretsManagerCanvasNode } from "./nodes/SecretsManagerCanvasNode";
 import { SnsCanvasNode } from "./nodes/SnsCanvasNode";
 import { SqsCanvasNode } from "./nodes/SqsCanvasNode";
+import { DynamodbCanvasNode } from "./nodes/DynamodbCanvasNode";
 import { S3CanvasNode } from "./nodes/S3CanvasNode";
 
 const PALETTE_SERVICE_IDS = new Set<ServiceId>(
@@ -60,6 +61,7 @@ const nodeTypes: NodeTypes = {
   sns_standard: SnsCanvasNode,
   sns_fifo: SnsCanvasNode,
   sqs: SqsCanvasNode,
+  dynamodb: DynamodbCanvasNode,
 };
 
 function toFlowNodes(
@@ -100,7 +102,12 @@ function toFlowNodes(
                         (n.config.name as string | undefined)?.trim() ||
                           "Queue",
                       )
-                    : n.serviceId;
+                    : n.serviceId === "dynamodb"
+                      ? String(
+                          (n.config.name as string | undefined)?.trim() ||
+                            "Table",
+                        )
+                      : n.serviceId;
     const svc = getService(n.serviceId, n.serviceVersion);
     const serviceDisplayName = svc?.displayName ?? n.serviceId;
     return {

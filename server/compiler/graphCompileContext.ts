@@ -1,5 +1,6 @@
 import type * as cdk from "aws-cdk-lib";
 import type * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import type * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import type * as lambda from "aws-cdk-lib/aws-lambda";
 import type * as s3 from "aws-cdk-lib/aws-s3";
 import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
@@ -14,4 +15,5 @@ export type GraphCompileContext = {
   secrets: Map<string, secretsmanager.ISecret>;
   snsTopics: Map<string, sns.ITopic>;
   sqsQueues: Map<string, sqs.IQueue>;
+  dynamoTables: Map<string, dynamodb.ITable>;
 };

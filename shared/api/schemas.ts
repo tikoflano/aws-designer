@@ -13,6 +13,7 @@ const serviceIdSchema = z.enum([
   "sns_standard",
   "sns_fifo",
   "sqs",
+  "dynamodb",
 ]);
 
 const graphNodeSchema = z.object({

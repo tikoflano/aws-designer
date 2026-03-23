@@ -2,6 +2,8 @@
 import { CloudFrontOriginS3Handler } from "./cloudfront-to-s3/cloudfrontOriginS3Handler.ts";
 import { LambdaReadsSecretsManagerHandler } from "./lambda-to-secretsmanager/lambdaReadsSecretsManagerHandler.ts";
 import { LambdaWritesSecretsManagerHandler } from "./lambda-to-secretsmanager/lambdaWritesSecretsManagerHandler.ts";
+import { LambdaReadsDynamodbHandler } from "./lambda-to-dynamodb/lambdaReadsDynamodbHandler.ts";
+import { LambdaWritesDynamodbHandler } from "./lambda-to-dynamodb/lambdaWritesDynamodbHandler.ts";
 import { LambdaReadsS3Handler } from "./lambda-to-s3/lambdaReadsS3Handler.ts";
 import { LambdaWritesS3Handler } from "./lambda-to-s3/lambdaWritesS3Handler.ts";
 import { Route53AliasCloudFrontHandler } from "./route53-to-cloudfront/route53AliasCloudFrontHandler.ts";
@@ -14,6 +16,8 @@ import type { EdgeRelationshipHandler } from "./types.ts";
 const ALL_HANDLERS: EdgeRelationshipHandler[] = [
   new LambdaReadsS3Handler(),
   new LambdaWritesS3Handler(),
+  new LambdaReadsDynamodbHandler(),
+  new LambdaWritesDynamodbHandler(),
   new LambdaReadsSecretsManagerHandler(),
   new LambdaWritesSecretsManagerHandler(),
   new S3TriggersLambdaHandler(),

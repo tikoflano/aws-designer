@@ -5,6 +5,7 @@ import ArchitectureServiceAWSLambda from "aws-react-icons/icons/ArchitectureServ
 import ArchitectureServiceAmazonSimpleNotificationService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleNotificationService";
 import ArchitectureServiceAmazonSimpleQueueService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleQueueService";
 import ArchitectureServiceAWSSecretsManager from "aws-react-icons/icons/ArchitectureServiceAWSSecretsManager";
+import ArchitectureServiceAmazonDynamoDB from "aws-react-icons/icons/ArchitectureServiceAmazonDynamoDB";
 
 import type { ServiceId } from "../domain/types";
 
@@ -73,6 +74,14 @@ export function AwsServiceArchitectureIcon({
     case "sqs":
       return (
         <ArchitectureServiceAmazonSimpleQueueService
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+    case "dynamodb":
+      return (
+        <ArchitectureServiceAmazonDynamoDB
           size={size}
           className={svgClass}
           aria-hidden

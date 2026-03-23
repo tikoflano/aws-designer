@@ -23,6 +23,7 @@ function formatServiceLabel(id: string): string {
   if (id === "sns_standard") return "SNS (standard)";
   if (id === "sns_fifo") return "SNS (FIFO)";
   if (id === "sqs") return "SQS";
+  if (id === "dynamodb") return "DynamoDB";
   return id;
 }
 
