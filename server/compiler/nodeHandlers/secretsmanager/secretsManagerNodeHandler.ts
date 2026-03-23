@@ -13,10 +13,10 @@ import {
 export class SecretsManagerNodeHandler implements NodeServiceHandler {
   public readonly definition = secretsManagerServiceDefinition;
 
-  public apply(stack: cdk.Stack, _ctx: GraphCompileContext, node: GraphNode): void {
+  public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {
     const cfg = secretsManagerNodeConfigSchema.parse(node.config);
     const key = cfg.secretKey.trim();
-    new secretsmanager.Secret(stack, NodeIds.cfnId("Secret", node.id), {
+    const secret = new secretsmanager.Secret(stack, NodeIds.cfnId("Secret", node.id), {
       secretName: cfg.name.trim(),
       description: "Other type of secret (key/value from graph)",
       secretObjectValue: {
@@ -24,5 +24,6 @@ export class SecretsManagerNodeHandler implements NodeServiceHandler {
       },
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
+    ctx.secrets.set(node.id, secret);
   }
 }

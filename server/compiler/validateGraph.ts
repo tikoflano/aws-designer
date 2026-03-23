@@ -18,9 +18,13 @@ function nodeById(doc: GraphDocument, id: string) {
  * Validates node/edge shapes, known service and relationship versions, and Zod configs.
  * Used by the UI and by the Node CDK compiler before synthesis.
  */
+const LAMBDA_READS_SECRETSMANAGER = "lambda_reads_secretsmanager";
+const LAMBDA_WRITES_SECRETSMANAGER = "lambda_writes_secretsmanager";
+
 export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   const issues: CompileIssue[] = [];
   const bucketLogicalIds = new Set<string>();
+  const validSecretsManagerNodeIds = new Set<string>();
 
   for (const node of doc.nodes) {
     const svc = getService(node.serviceId, node.serviceVersion);
@@ -36,6 +40,9 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
       svc.configSchema.parse(node.config);
       if (node.serviceId === "s3") {
         bucketLogicalIds.add(logicalBucketId(node.id));
+      }
+      if (node.serviceId === "secretsmanager") {
+        validSecretsManagerNodeIds.add(node.id);
       }
     } catch (e) {
       issues.push({
@@ -89,6 +96,18 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
           issues.push({
             code: "notification_without_bucket",
             message: `S3 notification references bucket for node "${sourceNode.id}" but that bucket was not created (missing or invalid S3 node).`,
+            edgeId: edge.id,
+          });
+        }
+      }
+      if (
+        rel.id === LAMBDA_READS_SECRETSMANAGER ||
+        rel.id === LAMBDA_WRITES_SECRETSMANAGER
+      ) {
+        if (!validSecretsManagerNodeIds.has(targetNode.id)) {
+          issues.push({
+            code: "lambda_secret_edge_without_secret",
+            message: `Lambda–Secrets Manager edge targets node "${targetNode.id}" but that node is not a valid Secrets Manager node (missing or invalid config).`,
             edgeId: edge.id,
           });
         }

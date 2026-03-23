@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import type * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import type * as lambda from "aws-cdk-lib/aws-lambda";
 import type * as s3 from "aws-cdk-lib/aws-s3";
+import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
 
 import type { GraphDocument } from "@shared/domain/graph.ts";
@@ -59,6 +60,7 @@ export class GraphCompilerStack extends cdk.Stack {
       buckets: new Map<string, s3.Bucket>(),
       functions: new Map<string, lambda.Function>(),
       distributions: new Map<string, cloudfront.Distribution>(),
+      secrets: new Map<string, secretsmanager.ISecret>(),
     };
 
     for (const node of graph.nodes) {
