@@ -62,13 +62,16 @@ export function ServicePalette() {
                   onClick={() =>
                     setPalettePlacement(palettePlacement === s.id ? null : s.id)
                   }
-                  className={`inline-flex cursor-grab items-center justify-center rounded-md border bg-white p-1 shadow-sm active:cursor-grabbing ${
+                  className={`flex min-w-0 cursor-grab flex-col items-center gap-1 rounded-md border bg-white px-1 py-1.5 shadow-sm active:cursor-grabbing ${
                     palettePlacement === s.id
                       ? "border-sky-500 ring-2 ring-sky-300"
                       : "border-slate-200"
                   }`}
                 >
                   <AwsServiceArchitectureIcon serviceId={s.id} size={36} />
+                  <span className="line-clamp-2 w-full text-center text-[10px] font-medium leading-tight text-slate-700">
+                    {s.displayName}
+                  </span>
                 </div>
               </DelayedTooltip>
             ))
