@@ -385,6 +385,30 @@ function NodeInspectorForm({
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-700">Hosted zone ID</span>
+            <span className="text-xs text-slate-500">
+              From the Route 53 console (e.g. Z123…). Required for alias records and
+              automatic ACM validation when this zone is linked to CloudFront.
+            </span>
+            <input
+              className={`rounded border px-2 py-1 text-sm ${
+                errors.hostedZoneId ? "border-red-300" : "border-slate-200"
+              }`}
+              aria-invalid={errors.hostedZoneId ? true : undefined}
+              aria-describedby={
+                errors.hostedZoneId?.message
+                  ? fieldErrorId(formId, "hostedZoneId")
+                  : undefined
+              }
+              {...register("hostedZoneId")}
+            />
+            <FieldError
+              baseId={formId}
+              field="hostedZoneId"
+              message={errors.hostedZoneId?.message}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Description (optional)</span>
             <input
               className={`rounded border px-2 py-1 text-sm ${
@@ -680,76 +704,31 @@ function EdgeInspectorForm({
       )}
 
       {rel.id === "route53_alias_cloudfront" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Domain name (FQDN)</span>
-            <span className="text-xs text-slate-500">
-              Record name for the alias, e.g. www.example.com or example.com
-              (apex). Must match the Route 53 hosted zone.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.domainName ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.domainName ? true : undefined}
-              aria-describedby={
-                errors.domainName?.message
-                  ? fieldErrorId(formId, "domainName")
-                  : undefined
-              }
-              {...register("domainName")}
-            />
-            <FieldError
-              baseId={formId}
-              field="domainName"
-              message={errors.domainName?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Hosted zone ID</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.hostedZoneId ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.hostedZoneId ? true : undefined}
-              aria-describedby={
-                errors.hostedZoneId?.message
-                  ? fieldErrorId(formId, "hostedZoneId")
-                  : undefined
-              }
-              {...register("hostedZoneId")}
-            />
-            <FieldError
-              baseId={formId}
-              field="hostedZoneId"
-              message={errors.hostedZoneId?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">ACM certificate ARN</span>
-            <span className="text-xs text-slate-500">
-              Must be in us-east-1 (N. Virginia) and cover the domain name.
-              Used for HTTPS on CloudFront.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 font-mono text-xs ${
-                errors.certificateArn ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.certificateArn ? true : undefined}
-              aria-describedby={
-                errors.certificateArn?.message
-                  ? fieldErrorId(formId, "certificateArn")
-                  : undefined
-              }
-              {...register("certificateArn")}
-            />
-            <FieldError
-              baseId={formId}
-              field="certificateArn"
-              message={errors.certificateArn?.message}
-            />
-          </label>
-        </>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-slate-700">Domain name (FQDN)</span>
+          <span className="text-xs text-slate-500">
+            Alias and TLS name for CloudFront, e.g. www.example.com or the zone
+            apex. Must sit under the hosted zone on the Route 53 node; ACM issues
+            a certificate automatically via DNS validation.
+          </span>
+          <input
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.domainName ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.domainName ? true : undefined}
+            aria-describedby={
+              errors.domainName?.message
+                ? fieldErrorId(formId, "domainName")
+                : undefined
+            }
+            {...register("domainName")}
+          />
+          <FieldError
+            baseId={formId}
+            field="domainName"
+            message={errors.domainName?.message}
+          />
+        </label>
       )}
 
       <div className="flex flex-wrap gap-2">

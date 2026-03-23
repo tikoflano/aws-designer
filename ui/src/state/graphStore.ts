@@ -196,7 +196,7 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
     return { functionName: `fn-${nanoid(6)}` };
   }
   if (serviceId === "route53") {
-    return { name: "", type: "public" };
+    return { name: "", hostedZoneId: "", type: "public" };
   }
   return {};
 }

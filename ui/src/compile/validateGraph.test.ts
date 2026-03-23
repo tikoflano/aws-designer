@@ -113,6 +113,7 @@ describe("validateGraph", () => {
           position: { x: 0, y: 0 },
           config: {
             name: "example.com",
+            hostedZoneId: "Z123",
             type: "public",
           },
         },
@@ -134,8 +135,6 @@ describe("validateGraph", () => {
           relationshipVersion: RELATIONSHIP_VERSION,
           config: {
             domainName: "www.example.com",
-            hostedZoneId: "Z123",
-            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
           },
         },
       ],
@@ -165,14 +164,14 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", type: "public" },
+          config: { name: "example.com", hostedZoneId: "Z123", type: "public" },
         },
         {
           id: "r2",
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", type: "public" },
+          config: { name: "example.com", hostedZoneId: "Z123", type: "public" },
         },
       ],
       edges: [
@@ -192,8 +191,6 @@ describe("validateGraph", () => {
           relationshipVersion: RELATIONSHIP_VERSION,
           config: {
             domainName: "www.example.com",
-            hostedZoneId: "Z123",
-            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
           },
         },
         {
@@ -204,8 +201,6 @@ describe("validateGraph", () => {
           relationshipVersion: RELATIONSHIP_VERSION,
           config: {
             domainName: "app.example.com",
-            hostedZoneId: "Z123",
-            certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc",
           },
         },
       ],
@@ -254,7 +249,7 @@ describe("validateGraph", () => {
           serviceId: "route53",
           serviceVersion: SERVICE_VERSION,
           position: { x: 0, y: 0 },
-          config: { name: "example.com", type: "public" },
+          config: { name: "example.com", hostedZoneId: "Z1", type: "public" },
         },
       ],
       edges: [
@@ -274,8 +269,6 @@ describe("validateGraph", () => {
           relationshipVersion: RELATIONSHIP_VERSION,
           config: {
             domainName: "",
-            hostedZoneId: "Z1",
-            certificateArn: "arn:aws:acm:us-east-1:123:certificate/x",
           },
         },
       ],
@@ -283,6 +276,58 @@ describe("validateGraph", () => {
     expect(result.ok).toBe(false);
     expect(
       result.issues.some((i) => i.code === "route53_alias_incomplete_dns"),
+    ).toBe(true);
+  });
+
+  it("rejects route53_alias_cloudfront when domain is not under the hosted zone", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "b1",
+          serviceId: "s3",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: {},
+        },
+        {
+          id: "cf1",
+          serviceId: "cloudfront",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: {},
+        },
+        {
+          id: "r1",
+          serviceId: "route53",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { name: "example.com", hostedZoneId: "Z1", type: "public" },
+        },
+      ],
+      edges: [
+        {
+          id: "eo",
+          sourceNodeId: "cf1",
+          targetNodeId: "b1",
+          relationshipId: "cloudfront_origin_s3",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+        {
+          id: "ea",
+          sourceNodeId: "r1",
+          targetNodeId: "cf1",
+          relationshipId: "route53_alias_cloudfront",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {
+            domainName: "www.other.com",
+          },
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some((i) => i.code === "route53_alias_domain_not_in_zone"),
     ).toBe(true);
   });
 });
