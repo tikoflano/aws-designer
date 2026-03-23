@@ -4,5 +4,6 @@ export type ServiceId =
   | "cloudfront"
   | "route53"
   | "secretsmanager"
-  | "sns"
+  | "sns_standard"
+  | "sns_fifo"
   | "sqs";

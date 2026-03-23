@@ -1,5 +1,6 @@
 import type { CompileIssue, ValidateGraphResult } from "@shared/compile/types.ts";
 import type { GraphDocument } from "@shared/domain/graph.ts";
+import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 
 import { RELATIONSHIP_VERSION } from "./domain/catalogTypes.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
@@ -25,6 +26,8 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   const issues: CompileIssue[] = [];
   const bucketLogicalIds = new Set<string>();
   const validSecretsManagerNodeIds = new Set<string>();
+
+  doc = migrateLegacyGraphDocument(doc);
 
   for (const node of doc.nodes) {
     const svc = getService(node.serviceId, node.serviceVersion);

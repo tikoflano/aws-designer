@@ -45,4 +45,36 @@ describe("graphFile", () => {
     const file = graphDocumentToFile(doc, "   ");
     expect(file.title).toBeUndefined();
   });
+
+  it("migrates legacy sns nodes to sns_standard or sns_fifo on parse", () => {
+    const raw = {
+      formatVersion: GRAPH_FILE_FORMAT_VERSION,
+      kind: GRAPH_FILE_KIND,
+      nodes: [
+        {
+          id: "a",
+          serviceId: "sns",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "std", topicType: "standard" },
+        },
+        {
+          id: "b",
+          serviceId: "sns",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "q.fifo", topicType: "fifo", fifoThroughputScope: "topic" },
+        },
+      ],
+      edges: [],
+    };
+    const parsed = parseGraphFileJson(raw);
+    expect(parsed.nodes[0].serviceId).toBe("sns_standard");
+    expect(parsed.nodes[0].config).toEqual({ name: "std" });
+    expect(parsed.nodes[1].serviceId).toBe("sns_fifo");
+    expect(parsed.nodes[1].config).toEqual({
+      name: "q.fifo",
+      fifoThroughputScope: "topic",
+    });
+  });
 });

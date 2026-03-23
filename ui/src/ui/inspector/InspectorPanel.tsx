@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useId } from "react";
-import { useForm, useWatch, type UseFormReturn } from "react-hook-form";
+import { useForm, type UseFormReturn } from "react-hook-form";
 
 import type { GraphEdge, GraphNode } from "../../domain/types";
 import {
@@ -201,10 +201,6 @@ function NodeInspectorForm({
     setValue,
     formState: { errors },
   } = form;
-
-  const snsTopicTypeWatch = useWatch({ control, name: "topicType" }) as
-    | string
-    | undefined;
 
   useEffect(() => {
     form.reset(nodeInspectorFormDefaults(node, svc));
@@ -469,67 +465,67 @@ function NodeInspectorForm({
         </>
       )}
 
-      {node.serviceId === "sns" && (
+      {node.serviceId === "sns_standard" && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-slate-700">Topic name</span>
+          <span className="text-xs text-slate-500">
+            Letters, numbers, hyphens, underscores. Do not use a{" "}
+            <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code> suffix.
+            Encryption uses AWS-managed KMS (alias/aws/sns).
+          </span>
+          <input
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.name ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={
+              errors.name?.message ? fieldErrorId(formId, "name") : undefined
+            }
+            {...register("name")}
+          />
+          <FieldError
+            baseId={formId}
+            field="name"
+            message={errors.name?.message}
+          />
+        </label>
+      )}
+
+      {node.serviceId === "sns_fifo" && (
         <>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Topic type</span>
+            <span className="text-slate-700">High throughput</span>
+            <span className="text-xs text-slate-500">
+              FIFO throughput and deduplication scope. Content-based deduplication
+              is enabled.
+            </span>
             <select
               className={`rounded border px-2 py-1 text-sm ${
-                errors.topicType ? "border-red-300" : "border-slate-200"
+                errors.fifoThroughputScope ? "border-red-300" : "border-slate-200"
               }`}
-              aria-invalid={errors.topicType ? true : undefined}
+              aria-invalid={errors.fifoThroughputScope ? true : undefined}
               aria-describedby={
-                errors.topicType?.message
-                  ? fieldErrorId(formId, "topicType")
+                errors.fifoThroughputScope?.message
+                  ? fieldErrorId(formId, "fifoThroughputScope")
                   : undefined
               }
-              {...register("topicType")}
+              {...register("fifoThroughputScope")}
             >
-              <option value="standard">Standard</option>
-              <option value="fifo">FIFO</option>
+              <option value="message_group">Message group scope (default)</option>
+              <option value="topic">Topic scope</option>
             </select>
             <FieldError
               baseId={formId}
-              field="topicType"
-              message={errors.topicType?.message}
+              field="fifoThroughputScope"
+              message={errors.fifoThroughputScope?.message}
             />
           </label>
-          {node.serviceId === "sns" && snsTopicTypeWatch === "fifo" && (
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate-700">High throughput (FIFO)</span>
-              <span className="text-xs text-slate-500">
-                SNS FIFO throughput and deduplication scope. Content-based
-                deduplication stays on for FIFO topics.
-              </span>
-              <select
-                className={`rounded border px-2 py-1 text-sm ${
-                  errors.fifoThroughputScope ? "border-red-300" : "border-slate-200"
-                }`}
-                aria-invalid={errors.fifoThroughputScope ? true : undefined}
-                aria-describedby={
-                  errors.fifoThroughputScope?.message
-                    ? fieldErrorId(formId, "fifoThroughputScope")
-                    : undefined
-                }
-                {...register("fifoThroughputScope")}
-              >
-                <option value="message_group">Message group scope (default)</option>
-                <option value="topic">Topic scope</option>
-              </select>
-              <FieldError
-                baseId={formId}
-                field="fifoThroughputScope"
-                message={errors.fifoThroughputScope?.message}
-              />
-            </label>
-          )}
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-slate-700">Topic name</span>
             <span className="text-xs text-slate-500">
-              Letters, numbers, hyphens, underscores. Standard: no{" "}
-              <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code> suffix.
-              FIFO: suffix added if missing. Encryption uses AWS-managed KMS
-              (alias/aws/sns).
+              Letters, numbers, hyphens, underscores.{" "}
+              <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code> is
+              appended if missing. Encryption uses AWS-managed KMS (alias/aws/sns).
             </span>
             <input
               className={`rounded border px-2 py-1 text-sm ${

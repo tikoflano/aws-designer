@@ -50,7 +50,8 @@ const nodeTypes: NodeTypes = {
   cloudfront: CloudFrontCanvasNode,
   route53: Route53CanvasNode,
   secretsmanager: SecretsManagerCanvasNode,
-  sns: SnsCanvasNode,
+  sns_standard: SnsCanvasNode,
+  sns_fifo: SnsCanvasNode,
   sqs: SqsCanvasNode,
 };
 
@@ -84,7 +85,7 @@ function toFlowNodes(
                 ? String(
                     (n.config.name as string | undefined)?.trim() || "Secret",
                   )
-                : n.serviceId === "sns"
+                : n.serviceId === "sns_standard" || n.serviceId === "sns_fifo"
                   ? String(
                       (n.config.name as string | undefined)?.trim() || "Topic",
                     )

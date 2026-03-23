@@ -36,7 +36,9 @@ export function SnsCanvasNode({ data, selected }: Props) {
 
   return (
     <AwsServiceFlowNode
-      icon={<AwsServiceArchitectureIcon serviceId="sns" />}
+      icon={
+        <AwsServiceArchitectureIcon serviceId="sns_standard" />
+      }
       title={data.title}
       serviceDisplayName={data.serviceDisplayName}
       selected={selected}

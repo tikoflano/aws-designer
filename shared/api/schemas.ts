@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import type { GraphDocument } from "../domain/graph.ts";
+import { migrateLegacyGraphDocument } from "../domain/migrateLegacyGraph.ts";
+
 const serviceIdSchema = z.enum([
   "s3",
   "lambda",
@@ -7,6 +10,8 @@ const serviceIdSchema = z.enum([
   "route53",
   "secretsmanager",
   "sns",
+  "sns_standard",
+  "sns_fifo",
   "sqs",
 ]);
 
@@ -29,10 +34,12 @@ const graphEdgeSchema = z.object({
   config: z.record(z.string(), z.unknown()),
 });
 
-export const graphDocumentSchema = z.object({
-  nodes: z.array(graphNodeSchema),
-  edges: z.array(graphEdgeSchema),
-});
+export const graphDocumentSchema = z
+  .object({
+    nodes: z.array(graphNodeSchema),
+    edges: z.array(graphEdgeSchema),
+  })
+  .transform((d) => migrateLegacyGraphDocument(d as GraphDocument));
 
 export type GraphDocumentWire = z.infer<typeof graphDocumentSchema>;
 
