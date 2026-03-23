@@ -215,14 +215,18 @@ function FlowCanvasBody() {
     >
       <Background />
       <Controls />
-      <MiniMap pannable zoomable />
+      <MiniMap
+        pannable
+        zoomable
+        className="hidden md:block"
+      />
     </ReactFlow>
   );
 }
 
 export function FlowCanvas() {
   return (
-    <div className="h-full min-h-0 flex-1">
+    <div className="h-full min-h-0 min-w-0 flex-1">
       <ReactFlowProvider>
         <FlowCanvasBody />
       </ReactFlowProvider>
