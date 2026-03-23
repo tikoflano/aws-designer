@@ -101,4 +101,59 @@ describe("GraphCompilerStack", () => {
     expect(json).toContain("apiKey");
     expect(json).toContain("fixture-value-xyz");
   });
+
+  it("grants Lambda read/write on Secrets Manager via graph edges", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { functionName: "fnWithSecrets" },
+        },
+        {
+          id: "sm1",
+          serviceId: "secretsmanager",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture/lambda-secret",
+            secretKey: "k",
+            secretValue: "v",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "er",
+          sourceNodeId: "l1",
+          targetNodeId: "sm1",
+          relationshipId: "lambda_reads_secretsmanager",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+        {
+          id: "ew",
+          sourceNodeId: "l1",
+          targetNodeId: "sm1",
+          relationshipId: "lambda_writes_secretsmanager",
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "LambdaSecretStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SecretsManager::Secret", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("secretsmanager:GetSecretValue");
+    expect(json).toContain("secretsmanager:PutSecretValue");
+  });
 });

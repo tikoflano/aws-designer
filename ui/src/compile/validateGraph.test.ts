@@ -345,4 +345,75 @@ describe("validateGraph", () => {
       result.issues.some((i) => i.code === "route53_alias_domain_not_in_zone"),
     ).toBe(true);
   });
+
+  it("accepts Lambda + Secrets Manager + lambda_reads_secretsmanager", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { functionName: "demo" },
+        },
+        {
+          id: "sm1",
+          serviceId: "secretsmanager",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: {
+            name: "app/other",
+            secretKey: "token",
+            secretValue: "",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "sm1",
+          relationshipId: "lambda_reads_secretsmanager",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects lambda_reads_secretsmanager when target is not a valid secret node", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: { functionName: "demo" },
+        },
+        {
+          id: "sm1",
+          serviceId: "secretsmanager",
+          serviceVersion: SERVICE_VERSION,
+          position: { x: 0, y: 0 },
+          config: {},
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "sm1",
+          relationshipId: "lambda_reads_secretsmanager",
+          relationshipVersion: RELATIONSHIP_VERSION,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some((i) => i.code === "lambda_secret_edge_without_secret"),
+    ).toBe(true);
+  });
 });

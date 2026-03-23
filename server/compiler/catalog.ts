@@ -39,6 +39,8 @@ export { secretsManagerNodeConfigSchema } from "./nodeHandlers/secretsmanager/se
 
 export { lambdaReadsS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaReadsS3.definition.ts";
 export { lambdaWritesS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaWritesS3.definition.ts";
+export { lambdaReadsSecretsManagerConfigSchema } from "./edgeHandlers/lambda-to-secretsmanager/lambdaReadsSecretsManager.definition.ts";
+export { lambdaWritesSecretsManagerConfigSchema } from "./edgeHandlers/lambda-to-secretsmanager/lambdaWritesSecretsManager.definition.ts";
 export { s3TriggersLambdaConfigSchema } from "./edgeHandlers/s3-to-lambda/s3TriggersLambda.definition.ts";
 export { cloudfrontOriginS3ConfigSchema } from "./edgeHandlers/cloudfront-to-s3/cloudfrontOriginS3.definition.ts";
 export { route53AliasCloudFrontConfigSchema } from "./edgeHandlers/route53-to-cloudfront/route53AliasCloudFront.definition.ts";
