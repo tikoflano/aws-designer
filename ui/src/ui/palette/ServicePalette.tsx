@@ -15,12 +15,12 @@ export function ServicePalette() {
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Services
       </div>
-      <div className="grid grid-cols-2 items-start gap-1.5">
+      <div className="grid grid-cols-2 items-stretch gap-1.5">
         {services.map((s) => (
           <DelayedTooltip
             key={s.id}
             label={s.displayName}
-            className="flex min-h-0 min-w-0 w-full"
+            className="flex h-full min-h-0 min-w-0 w-full"
           >
             <div
               draggable
@@ -32,7 +32,7 @@ export function ServicePalette() {
               onClick={() =>
                 setPalettePlacement(palettePlacement === s.id ? null : s.id)
               }
-              className={`flex w-full min-w-0 cursor-grab flex-col items-center justify-start gap-0.5 rounded-md border bg-white px-1.5 pt-1.5 pb-1 shadow-sm active:cursor-grabbing ${
+              className={`flex h-full min-h-0 w-full min-w-0 cursor-grab flex-col items-center justify-start gap-0.5 rounded-md border bg-white px-1.5 pt-1.5 pb-1 shadow-sm active:cursor-grabbing ${
                 palettePlacement === s.id
                   ? "border-sky-500 ring-2 ring-sky-300"
                   : "border-slate-200"
