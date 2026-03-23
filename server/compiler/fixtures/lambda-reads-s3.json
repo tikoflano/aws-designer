@@ -7,7 +7,7 @@
       "serviceId": "s3",
       "serviceVersion": "1.0.0",
       "position": { "x": 0, "y": 0 },
-      "config": {}
+      "config": { "name": "fixture-lambda-reads-bucket" }
     },
     {
       "id": "l1",

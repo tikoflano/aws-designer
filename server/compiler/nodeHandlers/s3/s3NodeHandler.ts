@@ -13,10 +13,8 @@ export class S3NodeHandler implements NodeServiceHandler {
   public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {
     const cfg = s3NodeConfigSchema.parse(node.config);
     const bucket = new s3.Bucket(stack, NodeIds.cfnId("Bucket", node.id), {
-      bucketName: cfg.bucketName,
-      encryption: cfg.enforceEncryption
-        ? s3.BucketEncryption.S3_MANAGED
-        : undefined,
+      bucketName: cfg.name,
+      encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });

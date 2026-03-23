@@ -223,36 +223,28 @@ function NodeInspectorForm({
       </div>
 
       {node.serviceId === "s3" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Bucket name (optional)</span>
-            <span className="text-xs text-slate-500">
-              Leave blank for a generated name. If set, use 3–63 characters:
-              lowercase letters, digits, dots, and hyphens only.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.bucketName ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.bucketName ? true : undefined}
-              aria-describedby={
-                errors.bucketName?.message
-                  ? fieldErrorId(formId, "bucketName")
-                  : undefined
-              }
-              {...register("bucketName")}
-            />
-            <FieldError
-              baseId={formId}
-              field="bucketName"
-              message={errors.bucketName?.message}
-            />
-          </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" {...register("enforceEncryption")} />
-            Enforce SSE-S3 encryption
-          </label>
-        </>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-slate-700">Name</span>
+          <span className="text-xs text-slate-500">
+            Global S3 bucket name: 3–63 characters, lowercase letters, digits, dots,
+            and hyphens only. SSE-S3 encryption is always enabled on the bucket.
+          </span>
+          <input
+            className={`rounded border px-2 py-1 text-sm ${
+              errors.name ? "border-red-300" : "border-slate-200"
+            }`}
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={
+              errors.name?.message ? fieldErrorId(formId, "name") : undefined
+            }
+            {...register("name")}
+          />
+          <FieldError
+            baseId={formId}
+            field="name"
+            message={errors.name?.message}
+          />
+        </label>
       )}
 
       {node.serviceId === "lambda" && (
