@@ -66,7 +66,8 @@ function toFlowNodes(
               )
             : n.serviceId === "cloudfront"
               ? String(
-                  (n.config.comment as string | undefined)?.trim() ||
+                  (n.config.name as string | undefined)?.trim() ||
+                    (n.config.comment as string | undefined)?.trim() ||
                     "Distribution",
                 )
               : n.serviceId;

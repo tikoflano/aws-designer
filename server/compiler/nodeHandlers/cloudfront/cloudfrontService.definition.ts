@@ -6,9 +6,19 @@ import {
 } from "../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../domain/serviceId.ts";
 
-export const cloudfrontNodeConfigSchema = z.object({
-  comment: z.string().optional().default(""),
+const cloudfrontNodeConfigRawSchema = z.object({
+  name: z.string().default(""),
+  comment: z.string().optional(),
 });
+
+export const cloudfrontNodeConfigSchema = cloudfrontNodeConfigRawSchema.transform(
+  ({ name, comment }) => {
+    const n = name.trim();
+    if (n !== "") return { name: n };
+    const fromComment = comment?.trim() ?? "";
+    return { name: fromComment };
+  },
+);
 
 export const cloudfrontServiceDefinition: ServiceDefinition = {
   id: "cloudfront" satisfies ServiceId,

@@ -23,10 +23,7 @@ export class CloudFrontOriginS3Handler implements EdgeRelationshipHandler {
     const originPath =
       edgeCfg.originPath.trim() === "" ? undefined : edgeCfg.originPath.replace(/\/$/, "");
     const cfCfg = cloudfrontNodeConfigSchema.parse(sourceNode.config);
-    const comment =
-      typeof cfCfg.comment === "string" && cfCfg.comment.trim() !== ""
-        ? cfCfg.comment.trim()
-        : undefined;
+    const comment = cfCfg.name.trim() !== "" ? cfCfg.name.trim() : undefined;
 
     const distribution = new cloudfront.Distribution(
       ctx.stack,

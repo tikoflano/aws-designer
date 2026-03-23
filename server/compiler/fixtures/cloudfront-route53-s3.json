@@ -14,7 +14,7 @@
       "serviceId": "cloudfront",
       "serviceVersion": "1.0.0",
       "position": { "x": 100, "y": 0 },
-      "config": { "comment": "fixture dist" }
+      "config": { "name": "fixture dist" }
     },
     {
       "id": "r53a",

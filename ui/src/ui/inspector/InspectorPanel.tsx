@@ -335,26 +335,25 @@ function NodeInspectorForm({
 
       {node.serviceId === "cloudfront" && (
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Comment (optional)</span>
+          <span className="text-slate-700">Name</span>
           <span className="text-xs text-slate-500">
-            Shown in the AWS console for this distribution.
+            Identifies this distribution on the canvas and is sent to AWS as the
+            distribution comment.
           </span>
           <input
             className={`rounded border px-2 py-1 text-sm ${
-              errors.comment ? "border-red-300" : "border-slate-200"
+              errors.name ? "border-red-300" : "border-slate-200"
             }`}
-            aria-invalid={errors.comment ? true : undefined}
+            aria-invalid={errors.name ? true : undefined}
             aria-describedby={
-              errors.comment?.message
-                ? fieldErrorId(formId, "comment")
-                : undefined
+              errors.name?.message ? fieldErrorId(formId, "name") : undefined
             }
-            {...register("comment")}
+            {...register("name")}
           />
           <FieldError
             baseId={formId}
-            field="comment"
-            message={errors.comment?.message}
+            field="name"
+            message={errors.name?.message}
           />
         </label>
       )}
