@@ -206,6 +206,13 @@ function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
   if (serviceId === "cloudfront") {
     return { name: `cf-${nanoid(6)}` };
   }
+  if (serviceId === "secretsmanager") {
+    return {
+      name: `sec-${s3BucketNameSuffix()}`,
+      secretKey: "key",
+      secretValue: "",
+    };
+  }
   return {};
 }
 

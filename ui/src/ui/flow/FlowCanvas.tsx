@@ -35,6 +35,7 @@ import { CanvasPaletteToggle } from "./CanvasPaletteToggle";
 import { CloudFrontCanvasNode } from "./nodes/CloudFrontCanvasNode";
 import { LambdaCanvasNode } from "./nodes/LambdaCanvasNode";
 import { Route53CanvasNode } from "./nodes/Route53CanvasNode";
+import { SecretsManagerCanvasNode } from "./nodes/SecretsManagerCanvasNode";
 import { S3CanvasNode } from "./nodes/S3CanvasNode";
 
 const PALETTE_SERVICE_IDS = new Set<ServiceId>(
@@ -46,6 +47,7 @@ const nodeTypes: NodeTypes = {
   lambda: LambdaCanvasNode,
   cloudfront: CloudFrontCanvasNode,
   route53: Route53CanvasNode,
+  secretsmanager: SecretsManagerCanvasNode,
 };
 
 function toFlowNodes(
@@ -74,7 +76,11 @@ function toFlowNodes(
                     (n.config.comment as string | undefined)?.trim() ||
                     "Distribution",
                 )
-              : n.serviceId;
+              : n.serviceId === "secretsmanager"
+                ? String(
+                    (n.config.name as string | undefined)?.trim() || "Secret",
+                  )
+                : n.serviceId;
     const svc = getService(n.serviceId, n.serviceVersion);
     const serviceDisplayName = svc?.displayName ?? n.serviceId;
     return {

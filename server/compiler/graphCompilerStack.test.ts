@@ -69,4 +69,36 @@ describe("GraphCompilerStack", () => {
     template.resourceCountIs("AWS::CloudFront::Distribution", 1);
     template.resourceCountIs("AWS::Route53::RecordSet", 1);
   });
+
+  it("synthesizes Secrets Manager secret with JSON key/value", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "sm1",
+          serviceId: "secretsmanager",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture/other-secret",
+            secretKey: "apiKey",
+            secretValue: "fixture-value-xyz",
+          },
+        },
+      ],
+      edges: [],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SecretsStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SecretsManager::Secret", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("fixture/other-secret");
+    expect(json).toContain("apiKey");
+    expect(json).toContain("fixture-value-xyz");
+  });
 });
