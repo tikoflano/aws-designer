@@ -1,9 +1,13 @@
 import { apiPaths } from "@shared/api/paths.ts";
 import {
   graphRecordSchema,
+  graphsListResponseSchema,
+  graphVersionsListResponseSchema,
   notFoundErrorSchema,
   validationFailedErrorSchema,
   type GraphRecord,
+  type GraphsListResponse,
+  type GraphVersionsListResponse,
 } from "@shared/api/schemas.ts";
 
 import type { GraphDocument } from "../domain/types";
@@ -33,7 +37,81 @@ async function parseGraphRecordResponse(res: Response): Promise<GraphRecord> {
   return parsed.data;
 }
 
+async function parseJsonResponse<T>(
+  res: Response,
+  parse: (json: unknown) => { success: true; data: T } | { success: false; message: string },
+): Promise<T> {
+  const text = await res.text();
+  let json: unknown;
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error("Invalid JSON in graph API response");
+  }
+  const parsed = parse(json);
+  if (!parsed.success) {
+    throw new Error(parsed.message);
+  }
+  return parsed.data;
+}
+
 export type { GraphRecord };
+export type GraphSummary = GraphsListResponse["graphs"][number];
+export type GraphVersionEntry = GraphVersionsListResponse["versions"][number];
+
+export async function listGraphs(): Promise<GraphSummary[]> {
+  const path = apiPaths.graphs;
+  const res = await fetch(url(path));
+  if (!res.ok) {
+    throw new Error(`GET ${path} failed: ${res.status}`);
+  }
+  return (
+    await parseJsonResponse(res, (json) => {
+      const parsed = graphsListResponseSchema.safeParse(json);
+      if (!parsed.success) {
+        return {
+          success: false,
+          message: `Graph API response shape mismatch: ${parsed.error.message}`,
+        };
+      }
+      return { success: true, data: parsed.data.graphs };
+    })
+  );
+}
+
+export async function listGraphVersions(
+  id: string,
+): Promise<GraphVersionEntry[]> {
+  const path = apiPaths.graphVersions(id);
+  const res = await fetch(url(path));
+  if (!res.ok) {
+    throw new Error(`GET ${path} failed: ${res.status}`);
+  }
+  return (
+    await parseJsonResponse(res, (json) => {
+      const parsed = graphVersionsListResponseSchema.safeParse(json);
+      if (!parsed.success) {
+        return {
+          success: false,
+          message: `Graph API response shape mismatch: ${parsed.error.message}`,
+        };
+      }
+      return { success: true, data: parsed.data.versions };
+    })
+  );
+}
+
+export async function getGraphVersion(
+  id: string,
+  versionSeq: number,
+): Promise<GraphRecord> {
+  const path = apiPaths.graphVersion(id, versionSeq);
+  const res = await fetch(url(path));
+  if (!res.ok) {
+    throw new Error(`GET ${path} failed: ${res.status}`);
+  }
+  return parseGraphRecordResponse(res);
+}
 
 export async function postGraph(): Promise<GraphRecord> {
   const res = await fetch(url(apiPaths.postGraph), { method: "POST" });

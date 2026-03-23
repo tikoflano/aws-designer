@@ -17,6 +17,7 @@ import {
 } from "../../graph/graphFile";
 import { useGraphStore } from "../../state/graphStore";
 import { downloadBlobFile, downloadTextFile } from "../download";
+import { LoadGraphFromServerDialog } from "./LoadGraphFromServerDialog";
 
 const iconSvgProps = {
   xmlns: "http://www.w3.org/2000/svg" as const,
@@ -123,12 +124,12 @@ export function CanvasGraphMenu() {
     (s) => s.replaceFromGraphDocument,
   );
   const saveToServer = useGraphStore((s) => s.saveToServer);
-  const loadFromServer = useGraphStore((s) => s.loadFromServer);
   const newLocalGraph = useGraphStore((s) => s.newLocalGraph);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [cdkDownloadBusy, setCdkDownloadBusy] = useState(false);
 
   const exportGraphJson = useCallback(() => {
@@ -177,17 +178,10 @@ export function CanvasGraphMenu() {
     [importGraphFromText],
   );
 
-  const onLoadFromServer = useCallback(async () => {
+  const onOpenLoadDialog = useCallback(() => {
     setOpen(false);
-    const id = window.prompt("Graph ID (UUID)", "")?.trim();
-    if (!id) return;
-    try {
-      await loadFromServer(id);
-      toast.success("Graph loaded from server");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    }
-  }, [loadFromServer]);
+    setLoadDialogOpen(true);
+  }, []);
 
   const onDownloadCdkOut = useCallback(async () => {
     if (!serverGraphId) return;
@@ -225,6 +219,11 @@ export function CanvasGraphMenu() {
 
   return (
     <div ref={rootRef} className="relative">
+      <LoadGraphFromServerDialog
+        open={loadDialogOpen}
+        onClose={() => setLoadDialogOpen(false)}
+        onLoaded={() => toast.success("Graph loaded from server")}
+      />
       <input
         ref={fileInputRef}
         type="file"
@@ -285,7 +284,7 @@ export function CanvasGraphMenu() {
             type="button"
             role="menuitem"
             className={menuItemClass}
-            onClick={() => void onLoadFromServer()}
+            onClick={onOpenLoadDialog}
           >
             <IconLoadServer className={menuItemIconClass} />
             <span>Load from server</span>

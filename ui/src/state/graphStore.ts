@@ -87,7 +87,7 @@ type GraphStateInner = {
     version: number | null,
   ) => void;
   saveToServer: () => Promise<void>;
-  loadFromServer: (id: string) => Promise<void>;
+  loadFromServer: (id: string, versionSeq?: number) => Promise<void>;
   newLocalGraph: () => void;
 };
 
@@ -384,9 +384,12 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
     }
   },
 
-  loadFromServer: async (id) => {
+  loadFromServer: async (id, versionSeq) => {
     set({ saveStatus: "idle", saveError: null });
-    const record = await graphApi.getGraph(id);
+    const record =
+      versionSeq === undefined
+        ? await graphApi.getGraph(id)
+        : await graphApi.getGraphVersion(id, versionSeq);
     set({
       nodes: record.graph.nodes,
       edges: record.graph.edges,

@@ -33,6 +33,24 @@ These are the default choices for this product unless the repo already committed
 
 If the repository already uses different but equivalent libraries, **follow the existing codebase** rather than introducing parallel stacks.
 
+## Design (UI conventions)
+
+The canvas app uses a **warm orange / amber** palette for overlays and primary workflow chrome (see [`ui/src/ui/relationship/RelationshipPicker.tsx`](ui/src/ui/relationship/RelationshipPicker.tsx) as the reference modal). New full-screen dialogs and similar surfaces should match it; avoid neutral-only slate modals unless the surface is intentionally secondary (e.g. small dropdown menus).
+
+| Element | Convention |
+|--------|----------------|
+| **Modal backdrop** | `fixed inset-0 z-50`, `bg-orange-950/35`, `backdrop-blur-sm`, centered with `p-4`. Dismiss on backdrop mouse-down on the overlay root (not the panel). |
+| **Modal panel** | `max-w-lg`, `max-h-[80vh]`, `rounded-xl`, `border-2 border-orange-400`, `ring-2 ring-orange-300`, `shadow-2xl`, gradient fill `bg-linear-to-b from-orange-100 via-amber-50 to-orange-50`. |
+| **Modal header** | `border-b-2 border-orange-400`, `bg-linear-to-r from-orange-300 to-amber-200`, `px-4 py-3`. Title: `text-base font-semibold text-orange-950`. Secondary line (e.g. IDs): `text-sm font-medium text-orange-900 tabular-nums`. |
+| **Scrollable body / lists** | `bg-amber-50`, list rows `divide-y divide-orange-200`, row hover `transition-colors hover:bg-orange-200`. Primary line `text-sm font-medium text-slate-900`, supporting line `text-xs text-slate-600`. |
+| **Empty / loading copy** | Same amber-50 body background, `text-sm text-slate-700`. |
+| **Errors** | Prefer `text-red-800` on warm backgrounds; optional inline banner `border-b-2 border-orange-300 bg-orange-100 text-sm text-orange-950` for non-blocking messages. |
+| **Modal footer** | `border-t-2 border-orange-400`, `bg-orange-200`, `px-4 py-3`. Actions: `rounded-md border-2 border-orange-600 bg-amber-50 px-3 py-1.5 text-sm font-medium text-orange-950 hover:bg-orange-100` (disabled: `opacity-50`). |
+| **Accessibility** | `role="dialog"`, `aria-modal="true"`, `aria-labelledby` pointing at the visible title; close on **Escape** while open. |
+| **Portals (React Flow)** | Full-screen modals opened from under `@xyflow/react` (e.g. inside a `<Panel>`) must render with `createPortal(..., document.body)`. React Flow’s transformed viewport creates a stacking context, so an in-tree `fixed` overlay cannot sit above **Controls** / **MiniMap** or apply `backdrop-blur` to them; portaling fixes both. |
+
+Co-locate repeated class strings in a small constant block at the top of the component when it keeps the modal consistent and easier to update.
+
 ## Project structure (guidance)
 
 Prefer clarity over deep nesting:
