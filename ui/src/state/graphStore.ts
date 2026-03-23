@@ -1,0 +1,382 @@
+import { nanoid } from "nanoid";
+import { create } from "zustand";
+
+import * as graphApi from "../api/graphApi";
+import type { GraphDocument, GraphEdge, GraphNode, ServiceId } from "../domain/types";
+import {
+  getRelationship,
+  RELATIONSHIP_VERSION,
+  SERVICE_VERSION,
+} from "@compiler/catalog.ts";
+
+export type Selection =
+  | { kind: "node"; id: string }
+  | { kind: "edge"; id: string };
+
+/**
+ * Start → end node order (matches RF `Connection` under Loose mode + all-source perimeter handles).
+ */
+export type PendingConnection = {
+  sourceNodeId: string;
+  targetNodeId: string;
+  sourceHandleId?: string;
+  targetHandleId?: string;
+};
+
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+const DRAFT_KEY = "aws-designer-draft-v1";
+
+type DraftSnapshot = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  serverGraphId: string | null;
+  serverUpdatedAt: string | null;
+  serverVersion: number | null;
+};
+
+type GraphStateInner = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  selection: Selection | null;
+  pendingConnection: PendingConnection | null;
+  serverGraphId: string | null;
+  serverUpdatedAt: string | null;
+  serverVersion: number | null;
+  saveStatus: SaveStatus;
+  saveError: string | null;
+  /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
+  palettePlacement: ServiceId | null;
+  setPalettePlacement: (serviceId: ServiceId | null) => void;
+  /** Desktop: hide inspector column until user selects again. Clears selection. */
+  inspectorDismissed: boolean;
+  dismissInspector: () => void;
+  addNode: (serviceId: ServiceId, position: { x: number; y: number }) => void;
+  updateNode: (
+    id: string,
+    patch: Partial<Pick<GraphNode, "position" | "config">>,
+  ) => void;
+  removeNode: (id: string) => void;
+  /** Start node → end node (matches RF Connection under Loose + all-source handles). */
+  beginConnection: (
+    sourceNodeId: string,
+    targetNodeId: string,
+    handles?: { sourceHandleId?: string; targetHandleId?: string },
+  ) => void;
+  cancelPendingConnection: () => void;
+  confirmRelationship: (
+    relationshipId: string,
+    config?: Record<string, unknown>,
+  ) => void;
+  select: (selection: Selection | null) => void;
+  updateEdgeConfig: (edgeId: string, config: Record<string, unknown>) => void;
+  removeEdge: (edgeId: string) => void;
+  replaceFromGraphDocument: (doc: GraphDocument) => void;
+  setServerMeta: (
+    id: string | null,
+    updatedAt: string | null,
+    version: number | null,
+  ) => void;
+  saveToServer: () => Promise<void>;
+  loadFromServer: (id: string) => Promise<void>;
+  newLocalGraph: () => void;
+};
+
+export type GraphState = GraphStateInner;
+
+type GraphStateForDraft = Pick<
+  GraphStateInner,
+  "nodes" | "edges" | "serverGraphId" | "serverUpdatedAt" | "serverVersion"
+>;
+
+function readDraftFromStorage(): DraftSnapshot | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<DraftSnapshot>;
+    return {
+      nodes: Array.isArray(p.nodes) ? p.nodes : [],
+      edges: Array.isArray(p.edges) ? p.edges : [],
+      serverGraphId:
+        typeof p.serverGraphId === "string" ? p.serverGraphId : null,
+      serverUpdatedAt:
+        typeof p.serverUpdatedAt === "string" ? p.serverUpdatedAt : null,
+      serverVersion:
+        typeof p.serverVersion === "number" ? p.serverVersion : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeDraftToStorage(s: DraftSnapshot) {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(s));
+}
+
+let lastPersistedJson = "";
+
+export function persistDraftIfChanged(state: GraphStateForDraft) {
+  const snap: DraftSnapshot = {
+    nodes: state.nodes,
+    edges: state.edges,
+    serverGraphId: state.serverGraphId,
+    serverUpdatedAt: state.serverUpdatedAt,
+    serverVersion: state.serverVersion,
+  };
+  const json = JSON.stringify(snap);
+  if (json === lastPersistedJson) return;
+  lastPersistedJson = json;
+  writeDraftToStorage(snap);
+}
+
+export function hydrateDraftFromStorage(): Partial<GraphStateInner> | null {
+  const d = readDraftFromStorage();
+  if (!d) return null;
+  lastPersistedJson = JSON.stringify({
+    nodes: d.nodes,
+    edges: d.edges,
+    serverGraphId: d.serverGraphId,
+    serverUpdatedAt: d.serverUpdatedAt,
+    serverVersion: d.serverVersion,
+  });
+  return {
+    nodes: d.nodes,
+    edges: d.edges,
+    serverGraphId: d.serverGraphId,
+    serverUpdatedAt: d.serverUpdatedAt,
+    serverVersion: d.serverVersion,
+  };
+}
+
+function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
+  if (serviceId === "lambda") {
+    return { functionName: `fn-${nanoid(6)}` };
+  }
+  return {};
+}
+
+export const useGraphStore = create<GraphStateInner>((set, get) => ({
+  nodes: [],
+  edges: [],
+  selection: null,
+  pendingConnection: null,
+  serverGraphId: null,
+  serverUpdatedAt: null,
+  serverVersion: null,
+  saveStatus: "idle",
+  saveError: null,
+  palettePlacement: null,
+  inspectorDismissed: false,
+
+  setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
+
+  dismissInspector: () => set({ selection: null, inspectorDismissed: true }),
+
+  addNode: (serviceId, position) => {
+    const id = nanoid(10);
+    const node: GraphNode = {
+      id,
+      serviceId,
+      serviceVersion: SERVICE_VERSION,
+      position,
+      config: defaultNodeConfig(serviceId),
+    };
+    set((s) => ({
+      nodes: [...s.nodes, node],
+      selection: { kind: "node", id },
+      palettePlacement: null,
+      inspectorDismissed: false,
+    }));
+  },
+
+  updateNode: (id, patch) => {
+    set((s) => ({
+      nodes: s.nodes.map((n) => {
+        if (n.id !== id) return n;
+        return {
+          ...n,
+          ...(patch.position !== undefined ? { position: patch.position } : {}),
+          ...(patch.config !== undefined ? { config: patch.config } : {}),
+        };
+      }),
+    }));
+  },
+
+  removeNode: (id) => {
+    set((s) => {
+      const edges = s.edges.filter(
+        (e) => e.sourceNodeId !== id && e.targetNodeId !== id,
+      );
+      let selection = s.selection;
+      if (selection?.kind === "node" && selection.id === id) {
+        selection = null;
+      } else if (selection && selection.kind === "edge") {
+        const selectedEdgeId = selection.id;
+        const e = s.edges.find((x) => x.id === selectedEdgeId);
+        if (e && (e.sourceNodeId === id || e.targetNodeId === id)) {
+          selection = null;
+        }
+      }
+      return {
+        nodes: s.nodes.filter((n) => n.id !== id),
+        edges,
+        selection,
+      };
+    });
+  },
+
+  beginConnection: (sourceNodeId, targetNodeId, handles) => {
+    if (sourceNodeId === targetNodeId) return;
+    set({
+      pendingConnection: {
+        sourceNodeId,
+        targetNodeId,
+        ...(handles?.sourceHandleId
+          ? { sourceHandleId: handles.sourceHandleId }
+          : {}),
+        ...(handles?.targetHandleId
+          ? { targetHandleId: handles.targetHandleId }
+          : {}),
+      },
+    });
+  },
+
+  cancelPendingConnection: () => set({ pendingConnection: null }),
+
+  confirmRelationship: (relationshipId, config) => {
+    const pending = get().pendingConnection;
+    if (!pending) return;
+    const rel = getRelationship(relationshipId, RELATIONSHIP_VERSION);
+    if (!rel) {
+      set({ pendingConnection: null });
+      return;
+    }
+    const parsedConfig = rel.configSchema.parse(config ?? {});
+    const edge: GraphEdge = {
+      id: nanoid(10),
+      sourceNodeId: pending.sourceNodeId,
+      targetNodeId: pending.targetNodeId,
+      ...(pending.sourceHandleId
+        ? { sourceHandleId: pending.sourceHandleId }
+        : {}),
+      ...(pending.targetHandleId
+        ? { targetHandleId: pending.targetHandleId }
+        : {}),
+      relationshipId: rel.id,
+      relationshipVersion: rel.version,
+      config: parsedConfig,
+    };
+    set((s) => ({
+      edges: [...s.edges, edge],
+      pendingConnection: null,
+      selection: { kind: "edge", id: edge.id },
+      inspectorDismissed: false,
+    }));
+  },
+
+  select: (selection) =>
+    set({
+      selection,
+      ...(selection ? { inspectorDismissed: false } : {}),
+    }),
+
+  updateEdgeConfig: (edgeId, config) => {
+    set((s) => ({
+      edges: s.edges.map((e) => (e.id === edgeId ? { ...e, config } : e)),
+    }));
+  },
+
+  removeEdge: (edgeId) => {
+    set((s) => ({
+      edges: s.edges.filter((e) => e.id !== edgeId),
+      selection:
+        s.selection?.kind === "edge" && s.selection.id === edgeId
+          ? null
+          : s.selection,
+    }));
+  },
+
+  replaceFromGraphDocument: (doc) => {
+    set({
+      nodes: doc.nodes,
+      edges: doc.edges,
+      selection: null,
+      pendingConnection: null,
+      palettePlacement: null,
+      inspectorDismissed: false,
+    });
+  },
+
+  setServerMeta: (id, updatedAt, version) => {
+    set({
+      serverGraphId: id,
+      serverUpdatedAt: updatedAt,
+      serverVersion: version,
+    });
+  },
+
+  saveToServer: async () => {
+    set({ saveStatus: "saving", saveError: null });
+    try {
+      const { nodes, edges, serverGraphId } = get();
+      const graph: GraphDocument = { nodes, edges };
+      let record: graphApi.GraphRecord;
+      if (!serverGraphId) {
+        const created = await graphApi.postGraph();
+        record = await graphApi.putGraph(created.id, graph);
+      } else {
+        record = await graphApi.putGraph(serverGraphId, graph);
+      }
+      set({
+        serverGraphId: record.id,
+        serverUpdatedAt: record.updatedAt,
+        serverVersion: record.version,
+        saveStatus: "saved",
+        saveError: null,
+      });
+    } catch (e) {
+      set({
+        saveStatus: "error",
+        saveError: e instanceof Error ? e.message : String(e),
+      });
+    }
+  },
+
+  loadFromServer: async (id) => {
+    set({ saveStatus: "idle", saveError: null });
+    const record = await graphApi.getGraph(id);
+    set({
+      nodes: record.graph.nodes,
+      edges: record.graph.edges,
+      selection: null,
+      pendingConnection: null,
+      palettePlacement: null,
+      inspectorDismissed: false,
+      serverGraphId: record.id,
+      serverUpdatedAt: record.updatedAt,
+      serverVersion: record.version,
+    });
+  },
+
+  newLocalGraph: () => {
+    lastPersistedJson = "";
+    localStorage.removeItem(DRAFT_KEY);
+    set({
+      nodes: [],
+      edges: [],
+      selection: null,
+      pendingConnection: null,
+      palettePlacement: null,
+      inspectorDismissed: false,
+      serverGraphId: null,
+      serverUpdatedAt: null,
+      serverVersion: null,
+      saveStatus: "idle",
+      saveError: null,
+    });
+  },
+}));
+
+useGraphStore.subscribe((state) => {
+  persistDraftIfChanged(state);
+});

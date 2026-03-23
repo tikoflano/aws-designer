@@ -11,9 +11,9 @@ import { join } from "node:path";
 import archiver from "archiver";
 import { App } from "aws-cdk-lib";
 
-import type { GraphDocument } from "../../src/domain/types.ts";
-import { validateGraph } from "../../src/compile/validateGraph.ts";
-import { GraphCompilerStack } from "../../compiler/graphCompilerStack.ts";
+import type { GraphDocument } from "@shared/domain/graph.ts";
+import { validateGraph } from "../compiler/validateGraph.ts";
+import { GraphCompilerStack } from "../compiler/graphCompilerStack.ts";
 
 /**
  * Zips a directory into a buffer (zip archive).

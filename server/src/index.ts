@@ -2,7 +2,17 @@ import cors from "@fastify/cors";
 import Fastify from "fastify";
 
 import "./db.js";
-import type { GraphDocument } from "../../src/domain/types.ts";
+import { apiPaths } from "@shared/api/paths.ts";
+import {
+  graphsListResponseSchema,
+  graphVersionsListResponseSchema,
+  invalidBodyErrorSchema,
+  invalidVersionErrorSchema,
+  notFoundErrorSchema,
+  putGraphBodySchema,
+  validationFailedErrorSchema,
+  type GraphRecord,
+} from "@shared/api/schemas.ts";
 import {
   appendVersion,
   createGraph,
@@ -16,7 +26,7 @@ import {
 } from "./graphRepo.js";
 import { synthGraphToZipBuffer } from "./synthZip.js";
 
-function formatResponse(row: GraphRow) {
+function formatResponse(row: GraphRow): GraphRecord {
   return {
     id: row.id,
     createdAt: row.createdAt,
@@ -34,75 +44,96 @@ app.get("/health", async () => ({ ok: true }));
 await app.register(
   async (r) => {
     r.get("/graphs", async (_req, reply) => {
-      return reply.send({ graphs: listGraphSummaries() });
+      const payload = graphsListResponseSchema.parse({
+        graphs: listGraphSummaries(),
+      });
+      return reply.send(payload);
     });
 
     r.post("/graph", async (_req, reply) => {
       const row = createGraph();
       return reply
         .code(201)
-        .header("Location", `/api/graph/${row.id}`)
+        .header("Location", apiPaths.graph(row.id))
         .send(formatResponse(row));
     });
 
     r.get("/graph/:id", async (req, reply) => {
       const { id } = req.params as { id: string };
       const row = getLatestGraph(id);
-      if (!row) return reply.code(404).send({ error: "not_found" });
+      if (!row) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
       return reply.send(formatResponse(row));
     });
 
     r.put("/graph/:id", async (req, reply) => {
       const { id } = req.params as { id: string };
-      const body = req.body as { graph?: GraphDocument };
-      if (
-        !body?.graph ||
-        !Array.isArray(body.graph.nodes) ||
-        !Array.isArray(body.graph.edges)
-      ) {
-        return reply.code(400).send({
-          error: "invalid_body",
-          message: "Expected { graph: { nodes, edges } }",
-        });
+      const parsed = putGraphBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: "Expected { graph: { nodes, edges } }",
+          }),
+        );
       }
-      const row = appendVersion(id, body.graph);
-      if (!row) return reply.code(404).send({ error: "not_found" });
+      const row = appendVersion(id, parsed.data.graph);
+      if (!row) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
       return reply.send(formatResponse(row));
     });
 
     r.delete("/graph/:id", async (req, reply) => {
       const { id } = req.params as { id: string };
       const ok = deleteGraph(id);
-      if (!ok) return reply.code(404).send({ error: "not_found" });
+      if (!ok) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
       return reply.code(204).send();
     });
 
     r.get("/graph/:id/versions", async (req, reply) => {
       const { id } = req.params as { id: string };
-      if (!graphExists(id)) return reply.code(404).send({ error: "not_found" });
-      return reply.send({ versions: listGraphVersions(id) });
+      if (!graphExists(id)) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
+      const versionsPayload = graphVersionsListResponseSchema.parse({
+        versions: listGraphVersions(id),
+      });
+      return reply.send(versionsPayload);
     });
 
     r.get("/graph/:id/versions/:versionId", async (req, reply) => {
       const { id, versionId } = req.params as { id: string; versionId: string };
       const vid = parseInt(versionId, 10);
       if (Number.isNaN(vid)) {
-        return reply.code(400).send({ error: "invalid_version" });
+        return reply.code(400).send(
+          invalidVersionErrorSchema.parse({ error: "invalid_version" }),
+        );
       }
       const row = getGraphVersion(id, vid);
-      if (!row) return reply.code(404).send({ error: "not_found" });
+      if (!row) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
       return reply.send(formatResponse(row));
     });
 
     r.get("/graph/:id/compiled", async (req, reply) => {
       const { id } = req.params as { id: string };
       const row = getLatestGraph(id);
-      if (!row) return reply.code(404).send({ error: "not_found" });
+      if (!row) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
       const zip = await synthGraphToZipBuffer(row.graph);
       if (!zip.ok) {
-        return reply
-          .code(422)
-          .send({ error: "validation_failed", issues: zip.issues });
+        return reply.code(422).send(
+          validationFailedErrorSchema.parse({
+            error: "validation_failed",
+            issues: zip.issues,
+          }),
+        );
       }
       return reply
         .type("application/zip")

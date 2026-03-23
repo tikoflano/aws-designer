@@ -6,26 +6,9 @@ Visual AWS infrastructure builder (early MVP).
 
 1. **Author in the UI** — place S3/Lambda nodes, connect them with curated relationships, set configs in the inspector.
 2. **Export graph JSON** — downloads a versioned document (`formatVersion`, `kind: "aws-designer-graph"`). **Import graph JSON** restores the canvas.
-3. **Validate** (optional, in the UI) — runs the same checks the compiler runs (services, relationships, Zod configs).
-4. **Run the CDK compiler (Node)** — builds a real `aws-cdk-lib` `App` + `Stack`, instantiates **L2 constructs** (`s3.Bucket`, `lambda.Function`, grants, event notifications), then calls **`app.synth()`**. Output is a Cloud **assembly** under `cdk.out/` (templates + `tree.json` + assets), same as any CDK app.
+3. **Validate** (optional, in the UI) — runs the same checks the server compiler runs (services, relationships, Zod configs).
+4. **Synthesize via the API** — after **Save to server**, **Download cdk.out (zip)** calls `GET /api/graph/:id/compiled`. The server builds a real `aws-cdk-lib` `App` + `Stack` using [`server/compiler/graphCompilerStack.ts`](./server/compiler/graphCompilerStack.ts), instantiates **L2 constructs** (`s3.Bucket`, `lambda.Function`, grants, event notifications), runs **`app.synth()`**, and returns a zip of the Cloud **assembly** (templates + `tree.json` + assets).
 5. **Deploy** — use `cdk deploy` (or upload templates) so **AWS CloudFormation** applies the synthesized stack.
-
-### Compiler command
-
-From the repo root (after `npm install`):
-
-```bash
-npx tsx compiler/synth.ts path/to/aws-designer-graph.json
-npx tsx compiler/synth.ts path/to/aws-designer-graph.json --outdir ./my-cdk-out
-```
-
-Shortcut:
-
-```bash
-npm run compiler:synth -- path/to/aws-designer-graph.json
-```
-
-The compiler loads [`compiler/graphCompilerStack.ts`](./compiler/graphCompilerStack.ts), which maps graph nodes and edges to CDK APIs (no generated `.ts` file).
 
 ## MVP scope
 
@@ -48,7 +31,6 @@ npm run dev:server    # API + SQLite — http://localhost:8787
 npm run build
 npm test
 npm run lint
-npm run compiler:synth -- compiler/fixtures/lambda-reads-s3.json
 ```
 
 Graphs are stored in **`server/data/graphs.sqlite`** (gitignored). If you change the schema during development, delete that file and restart the server.

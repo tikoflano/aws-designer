@@ -1,4 +1,4 @@
-import type { GraphDocument } from "../../src/domain/types.ts";
+import type { GraphDocument } from "@shared/domain/graph.ts";
 import { db } from "./db.js";
 
 export type GraphRow = {

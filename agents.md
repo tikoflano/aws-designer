@@ -1,6 +1,6 @@
 # Agent guidelines: tech stack and coding practices
 
-This repository targets a **visual AWS infrastructure builder** (infinite canvas, versioned service nodes and relationships, graph-to-CDK generation, optional `cdk synth`). Agents must follow these defaults unless a task explicitly overrides them.
+This repository targets a **visual AWS infrastructure builder** (infinite canvas, versioned service nodes and relationships, graph-to-CDK generation). Synthesis runs on the **API** (`server/src/synthZip.ts` + `GraphCompilerStack` + `app.synth()`), not via a separate CLI. Agents must follow these defaults unless a task explicitly overrides them.
 
 ## Language and runtime
 
@@ -27,7 +27,7 @@ These are the default choices for this product unless the repo already committed
 | Forms + validation | **React Hook Form** + **Zod** | Co-locate Zod schemas with relationship/service `configSchema` where possible; use `@hookform/resolvers`. |
 | JSON Schema (when spec requires it) | **Ajv** (or Zod-from-JSON-schema pipeline) | Relationships/services may expose JSON Schema; validate consistently on server and client. |
 | State | **TanStack Query** for server/async state; **Zustand** or **Jotai** for local UI/graph if needed | Avoid global singletons for testability. |
-| Infra emission | **AWS CDK** (`aws-cdk-lib`) in TypeScript | Graph compiles to generated stack source; `cdk synth` produces CloudFormation artifacts. |
+| Infra emission | **AWS CDK** (`aws-cdk-lib`) in TypeScript | Graph compiles to real constructs in `server/compiler/`; the server zips the synthesized `cdk.out` assembly (`GET /api/graph/:id/compiled`). |
 | Testing | **Vitest** + **Testing Library** | Unit-test graph→CDK generation and critical UI flows. |
 | Lint/format | **ESLint** (typescript-eslint, react hooks) + **Prettier** | Single source of formatting truth. |
 
@@ -37,15 +37,15 @@ If the repository already uses different but equivalent libraries, **follow the 
 
 Prefer clarity over deep nesting:
 
-- `packages/` or `apps/` monorepo layout if UI and compiler deploy separately; otherwise a single `src/` with bounded modules.
-- Suggested logical modules (names illustrative): `graph/` (JSON file format), `registry/` (services + relationships), `compile/` (shared validation), `compiler/` (Node: graph → real CDK `App` + `synth()`), `server/` (Fastify + SQLite API), `ui/`.
+- `packages/` or `apps/` monorepo layout if UI and compiler deploy separately; otherwise bounded top-level folders (this repo uses `ui/` + `server/`).
+- Suggested layout for this repo: `ui/src/` (React app plus domain, registry, compile, graph modules consumed by the server), `server/src/` (Fastify + SQLite API), `server/compiler/` (graph → real CDK `App` + `synth()`).
 - **Barrel files** (`index.ts`): use sparingly; avoid circular imports.
 
 ## Code quality practices
 
 - **Types**: explicit public APIs; avoid `any`; use `unknown` + narrowing at boundaries (JSON, config).
 - **Immutability**: treat graph updates as immutable snapshots or use explicit update helpers; easier undo/redo and debugging.
-- **Pure functions** for graph validation in the web bundle; the Node **compiler** may call `aws-cdk-lib` and `app.synth()` (filesystem output under `cdk.out/`).
+- **Pure functions** for graph validation in the web bundle; the Node **compiler** (used by the server) may call `aws-cdk-lib` and `app.synth()` (temp `cdk.out` then zipped for download).
 - **Errors**: use typed errors or Result-style outcomes for compile/validation failures; include node id, edge id, and relationship id in messages.
 - **Versioning**: respect pinned **semver** on nodes and relationships; never silently change meaning of stored graph data.
 - **Security**: no secrets in graph JSON; use placeholders and environment/credential resolution at deploy time.
@@ -66,7 +66,7 @@ Prefer clarity over deep nesting:
 ## What agents should avoid
 
 - New custom graph engines, ad-hoc schema DSLs, or CSS frameworks parallel to the chosen UI system.
-- Generating CloudFormation by ad-hoc string concatenation from the graph; prefer **real CDK constructs** in Node (`compiler/`) plus `Template.fromStack` tests where useful.
+- Generating CloudFormation by ad-hoc string concatenation from the graph; prefer **real CDK constructs** in Node (`server/compiler/`) plus `Template.fromStack` tests where useful.
 - Dropping versioning from persisted nodes or edges.
 
 ---
