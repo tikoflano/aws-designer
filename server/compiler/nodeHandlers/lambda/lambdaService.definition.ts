@@ -31,6 +31,23 @@ export function defaultInlineSourceForRuntime(runtime: LambdaRuntime): string {
   return runtime.startsWith("python") ? DEFAULT_INLINE_PYTHON : DEFAULT_INLINE_NODE;
 }
 
+const envVarNameRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+
+function coerceIntInRange(
+  defaultVal: number,
+  min: number,
+  max: number,
+  minMsg: string,
+  maxMsg: string,
+) {
+  return z.preprocess((val) => {
+    if (val === "" || val === undefined || val === null) return defaultVal;
+    const n = typeof val === "number" ? val : Number(val);
+    if (!Number.isFinite(n)) return defaultVal;
+    return Math.trunc(n);
+  }, z.number().int().min(min, { message: minMsg }).max(max, { message: maxMsg }));
+}
+
 export const lambdaNodeConfigSchema = z.object({
   functionName: z
     .string()
@@ -45,6 +62,53 @@ export const lambdaNodeConfigSchema = z.object({
     .min(1, { message: "Handler is required (e.g. index.handler)." })
     .default("index.handler"),
   runtime: lambdaRuntimeSchema.default("nodejs20.x"),
+  /** Memory in MB (128–10240). */
+  memorySizeMb: coerceIntInRange(
+    128,
+    128,
+    10240,
+    "Memory must be at least 128 MB.",
+    "Memory must be at most 10240 MB.",
+  ),
+  /** Ephemeral storage in MB (512–10240). */
+  ephemeralStorageMb: coerceIntInRange(
+    512,
+    512,
+    10240,
+    "Ephemeral storage must be at least 512 MB.",
+    "Ephemeral storage must be at most 10240 MB.",
+  ),
+  /** Function timeout in seconds (1–900). */
+  timeoutSeconds: coerceIntInRange(
+    3,
+    1,
+    900,
+    "Timeout must be at least 1 second.",
+    "Timeout must be at most 900 seconds.",
+  ),
+  environmentVariables: z
+    .record(z.string(), z.string())
+    .default({})
+    .superRefine((env, ctx) => {
+      for (const k of Object.keys(env)) {
+        if (!envVarNameRegex.test(k)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Invalid environment variable name "${k}". Use [A-Za-z][A-Za-z0-9_]*.`,
+            path: ["environmentVariables"],
+          });
+          return;
+        }
+        if (k.startsWith("AWS_")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Environment variable "${k}" cannot start with AWS_.`,
+            path: ["environmentVariables"],
+          });
+          return;
+        }
+      }
+    }),
   inlineSource: z
     .string()
     .max(LAMBDA_INLINE_SOURCE_MAX, {
