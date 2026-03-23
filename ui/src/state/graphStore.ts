@@ -50,6 +50,9 @@ type GraphStateInner = {
   /** Tap a service, then tap the canvas (mobile / no HTML5 DnD). Not persisted. */
   palettePlacement: ServiceId | null;
   setPalettePlacement: (serviceId: ServiceId | null) => void;
+  /** When true, palette and canvas use AWS architecture icons (with delayed name tooltips). Not persisted. */
+  useServiceIcons: boolean;
+  setUseServiceIcons: (value: boolean) => void;
   /** Desktop: when true, inspector column is hidden. Starts true on load; cleared when selecting a node or edge. */
   inspectorDismissed: boolean;
   dismissInspector: () => void;
@@ -182,9 +185,12 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   saveStatus: "idle",
   saveError: null,
   palettePlacement: null,
+  useServiceIcons: false,
   inspectorDismissed: true,
 
   setPalettePlacement: (serviceId) => set({ palettePlacement: serviceId }),
+
+  setUseServiceIcons: (value) => set({ useServiceIcons: value }),
 
   dismissInspector: () => set({ selection: null, inspectorDismissed: true }),
 

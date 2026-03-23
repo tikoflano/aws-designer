@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Canvas: selected edges — match header / relationship UI orange (Tailwind orange-600) */
+.react-flow {
+  --xy-edge-stroke-selected: #ea580c;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 2.25;
+}
+
 html,
 body,
 #root {

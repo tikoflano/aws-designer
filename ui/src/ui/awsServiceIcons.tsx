@@ -1,0 +1,36 @@
+import ArchitectureServiceAmazonSimpleStorageService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleStorageService";
+import ArchitectureServiceAWSLambda from "aws-react-icons/icons/ArchitectureServiceAWSLambda";
+
+import type { ServiceId } from "../domain/types";
+
+const DEFAULT_SIZE = 48;
+
+export function AwsServiceArchitectureIcon({
+  serviceId,
+  size = DEFAULT_SIZE,
+  className,
+}: {
+  serviceId: ServiceId;
+  size?: number;
+  className?: string;
+}) {
+  const svgClass = ["pointer-events-none", className].filter(Boolean).join(" ");
+  switch (serviceId) {
+    case "lambda":
+      return (
+        <ArchitectureServiceAWSLambda
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+    case "s3":
+      return (
+        <ArchitectureServiceAmazonSimpleStorageService
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+  }
+}

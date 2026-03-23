@@ -26,7 +26,7 @@ import {
 } from "react";
 
 import type { ServiceId } from "../../domain/types";
-import { getRelationship } from "@compiler/catalog.ts";
+import { getRelationship, getService } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
 import { PALETTE_DRAG_MIME } from "../palette/ServicePalette";
 import { CanvasGraphMenu } from "./CanvasGraphMenu";
@@ -42,20 +42,20 @@ const nodeTypes: NodeTypes = {
 function toFlowNodes(
   nodes: ReturnType<typeof useGraphStore.getState>["nodes"],
   selection: ReturnType<typeof useGraphStore.getState>["selection"],
+  useServiceIcons: boolean,
 ): Node[] {
   return nodes.map((n) => {
     const title =
       n.serviceId === "s3"
         ? ((n.config.bucketName as string | undefined) ?? "Bucket")
         : String(n.config.functionName ?? "Lambda");
+    const svc = getService(n.serviceId, n.serviceVersion);
+    const serviceDisplayName = svc?.displayName ?? n.serviceId;
     return {
       id: n.id,
       type: n.serviceId,
       position: n.position,
-      data: {
-        title,
-        subtitle: `${n.serviceId} · ${n.id.slice(0, 6)}…`,
-      },
+      data: { title, useServiceIcons, serviceDisplayName },
       selected: selection?.kind === "node" && selection.id === n.id,
     };
   });
@@ -95,6 +95,7 @@ function FlowCanvasBody({
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
   const selection = useGraphStore((s) => s.selection);
+  const useServiceIcons = useGraphStore((s) => s.useServiceIcons);
   const addNode = useGraphStore((s) => s.addNode);
   const select = useGraphStore((s) => s.select);
   const beginConnection = useGraphStore((s) => s.beginConnection);
@@ -103,8 +104,8 @@ function FlowCanvasBody({
   const removeEdge = useGraphStore((s) => s.removeEdge);
 
   const flowNodes = useMemo(
-    () => toFlowNodes(nodes, selection),
-    [nodes, selection],
+    () => toFlowNodes(nodes, selection, useServiceIcons),
+    [nodes, selection, useServiceIcons],
   );
   const flowEdges = useMemo(
     () => toFlowEdges(edges, selection),
@@ -113,8 +114,9 @@ function FlowCanvasBody({
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      const { nodes: domainNodes, selection: sel } = useGraphStore.getState();
-      const current = toFlowNodes(domainNodes, sel);
+      const { nodes: domainNodes, selection: sel, useServiceIcons: icons } =
+        useGraphStore.getState();
+      const current = toFlowNodes(domainNodes, sel, icons);
       const next = applyNodeChanges(changes, current);
       next.forEach((n) => {
         const dom = domainNodes.find((g) => g.id === n.id);
