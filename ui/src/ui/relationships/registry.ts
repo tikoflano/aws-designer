@@ -10,6 +10,7 @@ import {
   Route53AliasCloudFrontEdgeFields,
   S3TriggersLambdaEdgeFields,
 } from "./customEdgeFields";
+import { SnsLambdaSubscriptionEdgeFields } from "./SnsLambdaSubscriptionEdgeFields";
 import type { UiRelationshipModule } from "./types";
 
 const BY_RELATIONSHIP_AND_VERSION: Partial<
@@ -46,6 +47,11 @@ registerUiRelationship(
   RelationshipIds.route53_alias_cloudfront,
   DEFINITION_VERSION_V1,
   { EdgeConfigFields: Route53AliasCloudFrontEdgeFields },
+);
+registerUiRelationship(
+  RelationshipIds.lambda_subscribes_sns_standard,
+  DEFINITION_VERSION_V1,
+  { EdgeConfigFields: SnsLambdaSubscriptionEdgeFields },
 );
 
 export function getUiRelationshipModule(

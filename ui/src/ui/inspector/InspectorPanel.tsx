@@ -170,7 +170,9 @@ function NodeInspectorForm({
 
   useEffect(() => {
     form.reset(nodeInspectorFormDefaults(node, svc));
-  }, [node.id, node.serviceVersion, node.config, svc, form]); // eslint-disable-line react-hooks/exhaustive-deps -- omit full `node` so drag updates do not reset the form
+    // Omit `form`: useForm’s return object is not referentially stable; listing it re-runs
+    // this effect every render and clears in-progress inspector edits.
+  }, [node.id, node.serviceVersion, node.config, svc]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const InspectorFields = uiMod?.InspectorFields;
 
@@ -273,7 +275,9 @@ function EdgeInspectorForm({
 
   useEffect(() => {
     form.reset(rel.configSchema.parse(edge.config) as FormValues);
-  }, [edge.id, edge.relationshipVersion, edge.config, rel, form]);
+    // Omit `form`: useForm’s return object is not referentially stable; listing it re-runs
+    // this effect every render and clears in-progress inspector edits.
+  }, [edge.id, edge.relationshipVersion, edge.config, rel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const relUi = getUiRelationshipModule(
     edge.relationshipId,

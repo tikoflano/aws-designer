@@ -660,6 +660,103 @@ describe("validateGraph", () => {
     expect(result.issues).toHaveLength(0);
   });
 
+  it("accepts lambda_subscribes_sns_standard with message attribute subscription filter", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsSubValidate" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-validate-sub-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_subscribes_sns_standard,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: {
+            subscriptionFilter: {
+              kind: "messageAttributes",
+              rules: [
+                {
+                  attributeName: "evt",
+                  filterKind: "exists",
+                },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
+  it("rejects lambda_subscribes_sns_standard when attribute names duplicate", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsDup" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-dup-attr-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_subscribes_sns_standard,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: {
+            subscriptionFilter: {
+              kind: "messageAttributes",
+              rules: [
+                {
+                  attributeName: "same",
+                  filterKind: "exists",
+                },
+                {
+                  attributeName: "same",
+                  filterKind: "notExists",
+                },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some(
+        (i) =>
+          i.code === "invalid_edge_config" &&
+          i.edgeId === "e1" &&
+          String(i.message).includes("Duplicate attribute name"),
+      ),
+    ).toBe(true);
+  });
+
   it("migrates legacy semver 1.0.0 version strings to integers", () => {
     const result = validateGraph({
       nodes: [

@@ -53,9 +53,9 @@ export function ServicePalette() {
                 }
                 paletteClickTimerRef.current = setTimeout(() => {
                   paletteClickTimerRef.current = null;
-                  setPalettePlacement((prev) =>
-                    prev === s.id ? null : s.id,
-                  );
+                  const { palettePlacement: placed, setPalettePlacement: setPlaced } =
+                    useGraphStore.getState();
+                  setPlaced(placed === s.id ? null : s.id);
                 }, PALETTE_CLICK_DELAY_MS);
               }}
               onDoubleClick={(e) => {

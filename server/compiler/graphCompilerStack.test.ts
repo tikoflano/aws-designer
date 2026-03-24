@@ -364,6 +364,121 @@ describe("GraphCompilerStack", () => {
     expect(json).toContain("lambda:InvokeFunction");
   });
 
+  it("adds message-attribute subscription filter on standard topic to Lambda", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsFilterFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-lambda-filter-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_subscribes_sns_standard,
+          relationshipVersion: 1,
+          config: {
+            subscriptionFilter: {
+              kind: "messageAttributes",
+              rules: [
+                {
+                  attributeName: "eventType",
+                  filterKind: "string",
+                  allowlist: ["order_created"],
+                },
+              ],
+            },
+          },
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsLambdaFilterAttrStack", {
+      graph: doc,
+    });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Subscription", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("eventType");
+    expect(json).toContain("order_created");
+    expect(json).toContain('"FilterPolicy"');
+    expect(json).not.toContain("MessageBody");
+  });
+
+  it("adds message-body subscription filter on standard topic to Lambda", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsBodyFilterFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-lambda-body-filter-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_subscribes_sns_standard,
+          relationshipVersion: 1,
+          config: {
+            subscriptionFilter: {
+              kind: "messageBody",
+              rules: [
+                {
+                  fieldName: "severity",
+                  filterKind: "string",
+                  allowlist: ["high"],
+                },
+              ],
+            },
+          },
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SnsLambdaFilterBodyStack", {
+      graph: doc,
+    });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::SNS::Subscription", 1);
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("severity");
+    expect(json).toContain("high");
+    expect(json).toContain("MessageBody");
+  });
+
   it("creates SNS subscription from FIFO topic to FIFO queue", () => {
     const raw = {
       formatVersion: 1,
