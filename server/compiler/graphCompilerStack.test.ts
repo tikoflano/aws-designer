@@ -571,4 +571,89 @@ describe("GraphCompilerStack", () => {
     const json = JSON.stringify(template.toJSON());
     expect(json).toContain("sqs:SendMessage");
   });
+
+  it("grants Lambda sns:Publish on standard topic via lambda_publishes_sns_standard", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsPublishStdFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-synth-pub-std" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_publishes_sns_standard,
+          relationshipVersion: 1,
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "LambdaSnsPublishStdStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("sns:Publish");
+  });
+
+  it("grants Lambda sns:Publish on FIFO topic via lambda_publishes_sns_fifo", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsPublishFifoFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_fifo",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture-synth-pub-fifo.fifo",
+            fifoThroughputScope: "message_group",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_publishes_sns_fifo,
+          relationshipVersion: 1,
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "LambdaSnsPublishFifoStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("sns:Publish");
+  });
 });

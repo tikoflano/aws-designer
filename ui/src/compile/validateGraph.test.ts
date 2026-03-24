@@ -591,6 +591,75 @@ describe("validateGraph", () => {
     expect(result.issues).toHaveLength(0);
   });
 
+  it("accepts lambda_publishes_sns_standard when Lambda and standard SNS exist", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsPublishStdFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_standard",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-pub-std-topic" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_publishes_sns_standard,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
+  it("accepts lambda_publishes_sns_fifo when Lambda and FIFO SNS exist", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSnsPublishFifoFn" },
+        },
+        {
+          id: "t1",
+          serviceId: "sns_fifo",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: {
+            name: "fixture-pub-fifo.fifo",
+            fifoThroughputScope: "message_group",
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "t1",
+          relationshipId: RelationshipIds.lambda_publishes_sns_fifo,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
   it("migrates legacy semver 1.0.0 version strings to integers", () => {
     const result = validateGraph({
       nodes: [

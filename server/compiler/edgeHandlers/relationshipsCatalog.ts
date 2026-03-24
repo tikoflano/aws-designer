@@ -13,6 +13,8 @@ import { s3TriggersLambdaDefinition } from "./s3-to-lambda/v1/s3TriggersLambda.d
 import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/v1/snsStandardToLambdaSubscription.definition.ts";
 import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/v1/snsFifoToSqsSubscription.definition.ts";
 import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/v1/snsStandardToSqsSubscription.definition.ts";
+import { lambdaPublishesSnsFifoDefinition } from "./lambda-to-sns/v1/lambdaPublishesSnsFifo.definition.ts";
+import { lambdaPublishesSnsStandardDefinition } from "./lambda-to-sns/v1/lambdaPublishesSnsStandard.definition.ts";
 import { lambdaSendsSqsDefinition } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
 import { sqsTriggersLambdaDefinition } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";
 import { RELATIONSHIP_ID_TUPLE } from "./relationshipIds.ts";
@@ -32,6 +34,8 @@ export const ALL_RELATIONSHIPS = [
   lambdaSubscribesSnsStandardDefinition,
   sqsTriggersLambdaDefinition,
   lambdaSendsSqsDefinition,
+  lambdaPublishesSnsStandardDefinition,
+  lambdaPublishesSnsFifoDefinition,
 ];
 
 if (ALL_RELATIONSHIPS.length !== RELATIONSHIP_ID_TUPLE.length) {

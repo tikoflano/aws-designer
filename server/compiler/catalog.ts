@@ -54,6 +54,8 @@ export { dynamodbTableNodeConfigSchema } from "./nodeHandlers/dynamodb/v1/dynamo
 
 export {
   cloudfrontOriginS3ConfigSchema,
+  lambdaPublishesSnsFifoConfigSchema,
+  lambdaPublishesSnsStandardConfigSchema,
   lambdaReadsDynamodbConfigSchema,
   lambdaReadsSecretsManagerConfigSchema,
   lambdaReadsS3ConfigSchema,
