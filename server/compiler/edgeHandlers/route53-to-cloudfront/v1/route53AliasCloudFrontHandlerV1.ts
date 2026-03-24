@@ -41,14 +41,12 @@ export class Route53AliasCloudFrontHandlerV1 implements EdgeRelationshipHandler 
 
     const domainName = normalizeFqdn(domainRaw);
     const zoneName = zoneRaw.replace(/\.$/, "");
-    const zone = route53.HostedZone.fromLookup(
-      ctx.stack,
-      NodeIds.cfnId("R53Zone", sourceNode.id),
-      {
+    const zone =
+      ctx.hostedZones.get(sourceNode.id) ??
+      route53.HostedZone.fromLookup(ctx.stack, NodeIds.cfnId("R53Zone", sourceNode.id), {
         domainName: zoneName,
         privateZone: nodeCfg.type === "private",
-      },
-    );
+      });
 
     const certificate = new acm.DnsValidatedCertificate(
       ctx.stack,

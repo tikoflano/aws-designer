@@ -68,6 +68,7 @@ describe("GraphCompilerStack", () => {
     const template = Template.fromStack(stack);
 
     template.resourceCountIs("AWS::CloudFront::Distribution", 1);
+    template.resourceCountIs("AWS::Route53::HostedZone", 1);
     template.resourceCountIs("AWS::Route53::RecordSet", 1);
   });
 
