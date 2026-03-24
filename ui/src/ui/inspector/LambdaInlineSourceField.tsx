@@ -82,7 +82,7 @@ function LambdaCodeExpandedModal({
   onClose: () => void;
   onFormat: () => void;
   onEditorMount: (ed: editor.IStandaloneCodeEditor) => void;
-  field: ControllerRenderProps<FormValues, "inlineSource">;
+  field: ControllerRenderProps<FormValues, "codeSource.inlineSource">;
   language: string;
   languageDisplay: string;
   modelPath: string;
@@ -214,10 +214,11 @@ export function LambdaInlineSourceField({
     void action
       .run()
       .then(() => {
-        setValue("inlineSource", ed.getValue(), {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
+        (setValue as (n: string, v: string, o?: object) => void)(
+          "codeSource.inlineSource",
+          ed.getValue(),
+          { shouldDirty: true, shouldValidate: true },
+        );
       })
       .catch(() => {
         /* no formatter for this language */
@@ -231,19 +232,32 @@ export function LambdaInlineSourceField({
     if (prev === null) return;
     if (prev === runtime) return;
 
-    const current = String(getValues("inlineSource") ?? "");
+    const cs = getValues("codeSource") as { type?: string; inlineSource?: string } | undefined;
+    if (cs?.type !== "inline") return;
+    const current = String(cs.inlineSource ?? "");
     if (current === defaultInlineSourceForRuntime(prev)) {
       setValue(
-        "inlineSource",
-        defaultInlineSourceForRuntime(runtime as LambdaRuntime),
+        "codeSource",
+        {
+          type: "inline",
+          inlineSource: defaultInlineSourceForRuntime(runtime as LambdaRuntime),
+        },
         { shouldDirty: true, shouldValidate: true },
       );
     }
   }, [runtime, getValues, setValue]);
 
-  const err = errors.inlineSource;
+  const errRecord = errors as Record<string, { message?: string } | undefined>;
+  const errDot = errRecord["codeSource.inlineSource"];
+  const nested = (
+    errors.codeSource as { inlineSource?: { message?: string } } | undefined
+  )?.inlineSource;
   const message =
-    typeof err?.message === "string" ? err.message : undefined;
+    typeof errDot?.message === "string"
+      ? errDot.message
+      : typeof nested?.message === "string"
+        ? nested.message
+        : undefined;
 
   const lang =
     runtime !== undefined
@@ -284,7 +298,7 @@ export function LambdaInlineSourceField({
           : " Python: syntax highlighting only (no full language service)."}
       </span>
       <Controller
-        name="inlineSource"
+        name="codeSource.inlineSource"
         control={control}
         render={({ field }) => (
           <>
@@ -305,7 +319,7 @@ export function LambdaInlineSourceField({
                   onMount={handleEditorMount}
                   options={editorOptionsInline}
                   aria-describedby={
-                    message ? `${formId}-inlineSource-err` : undefined
+                    message ? `${formId}-codeSource-inlineSource-err` : undefined
                   }
                 />
               </div>
@@ -341,7 +355,7 @@ export function LambdaInlineSourceField({
       />
       {message && !expandedOpen ? (
         <p
-          id={`${formId}-inlineSource-err`}
+          id={`${formId}-codeSource-inlineSource-err`}
           className="text-xs text-red-600"
           role="alert"
         >

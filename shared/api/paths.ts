@@ -8,5 +8,7 @@ export const apiPaths = {
     `/api/graph/${encodeURIComponent(id)}/versions/${encodeURIComponent(String(versionId))}`,
   graphCompiled: (id: string) =>
     `/api/graph/${encodeURIComponent(id)}/compiled`,
+  graphLambdaZip: (graphId: string, nodeId: string) =>
+    `/api/graph/${encodeURIComponent(graphId)}/nodes/${encodeURIComponent(nodeId)}/lambda-zip`,
   postGraph: "/api/graph",
 } as const;

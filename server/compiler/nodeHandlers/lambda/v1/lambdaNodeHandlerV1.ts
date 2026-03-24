@@ -6,6 +6,7 @@ import type { GraphNode } from "@shared/domain/graph.ts";
 import type { GraphCompileContext } from "../../../graphCompileContext.ts";
 import { NodeIds } from "../../nodeIds.ts";
 import type { NodeServiceHandler } from "../../types.ts";
+import { absolutePathToLambdaDeploymentZip } from "../../../lambdaZipPaths.ts";
 import {
   defaultInlineSourceForRuntime,
   lambdaNodeConfigSchema,
@@ -21,17 +22,36 @@ export class LambdaNodeHandlerV1 implements NodeServiceHandler {
     const handler = cfg.runtime.startsWith("python")
       ? "lambda_function.lambda_handler"
       : cfg.handler;
-    const inline = cfg.inlineSource?.trim();
-    const source =
-      inline && inline.length > 0
-        ? inline
-        : defaultInlineSourceForRuntime(cfg.runtime);
     const envKeys = Object.keys(cfg.environmentVariables);
+
+    let code: lambda.Code;
+    if (cfg.codeSource.type === "uploadedZip") {
+      const lz = ctx.lambdaZipCompile;
+      if (!lz?.graphId || !lz.lambdaZipAssetsRoot) {
+        throw new Error(
+          `Lambda "${node.id}": uploaded zip requires graph compile context (graphId and lambdaZipAssetsRoot).`,
+        );
+      }
+      const zipPath = absolutePathToLambdaDeploymentZip(
+        lz.lambdaZipAssetsRoot,
+        lz.graphId,
+        node.id,
+      );
+      code = lambda.Code.fromAsset(zipPath);
+    } else {
+      const inline = cfg.codeSource.inlineSource?.trim();
+      const source =
+        inline && inline.length > 0
+          ? inline
+          : defaultInlineSourceForRuntime(cfg.runtime);
+      code = lambda.Code.fromInline(source);
+    }
+
     const fn = new lambda.Function(stack, NodeIds.cfnId("Fn", node.id), {
       functionName: cfg.functionName,
       runtime: rt,
       handler,
-      code: lambda.Code.fromInline(source),
+      code,
       memorySize: cfg.memorySizeMb,
       ephemeralStorageSize: cdk.Size.mebibytes(cfg.ephemeralStorageMb),
       timeout: cdk.Duration.seconds(cfg.timeoutSeconds),

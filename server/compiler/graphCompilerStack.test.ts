@@ -1,7 +1,14 @@
-import { readFileSync } from "node:fs";
+import {
+  createWriteStream,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import archiver from "archiver";
 import { App } from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
 import { describe, expect, it } from "vitest";
@@ -9,10 +16,74 @@ import { describe, expect, it } from "vitest";
 import { graphFileToDocument, parseGraphFileJson } from "../../ui/src/graph/graphFile.ts";
 import { RelationshipIds } from "./catalog.ts";
 import { GraphCompilerStack } from "./graphCompilerStack.ts";
+import { lambdaDeploymentZipFileName } from "./lambdaZipConstants.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+function writeLambdaTestZip(dest: string, indexJs: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const out = createWriteStream(dest);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    archive.on("error", reject);
+    out.on("close", () => resolve());
+    archive.pipe(out);
+    archive.append(Buffer.from(indexJs), { name: "index.js" });
+    void archive.finalize();
+  });
+}
+
 describe("GraphCompilerStack", () => {
+  it("uses uploaded zip via Code.fromAsset (S3-key code, not inline ZipFile)", async () => {
+    const graphId = "g-compiler-zip";
+    const nodeId = "l-zip-node";
+    const assetRoot = mkdtempSync(join(tmpdir(), "lambda-zip-asset-"));
+    try {
+      const zipPath = join(assetRoot, lambdaDeploymentZipFileName(graphId, nodeId));
+      await writeLambdaTestZip(
+        zipPath,
+        'exports.handler = async () => ({ statusCode: 200, body: "zip-ok" });',
+      );
+
+      const raw = {
+        formatVersion: 1,
+        kind: "aws-designer-graph",
+        nodes: [
+          {
+            id: nodeId,
+            serviceId: "lambda",
+            serviceVersion: 1,
+            position: { x: 0, y: 0 },
+            config: {
+              functionName: "zipFn",
+              handler: "index.handler",
+              runtime: "nodejs20.x",
+              codeSource: { type: "uploadedZip" },
+            },
+          },
+        ],
+        edges: [],
+      };
+      const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+      const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+      const stack = new GraphCompilerStack(app, "ZipLambdaStack", {
+        graph: doc,
+        graphId,
+        lambdaZipAssetsRoot: assetRoot,
+      });
+      const template = Template.fromStack(stack);
+      template.resourceCountIs("AWS::Lambda::Function", 1);
+      const resources = template.findResources("AWS::Lambda::Function");
+      const first = Object.values(resources)[0] as {
+        Properties: { Code: Record<string, unknown> };
+      };
+      expect(first.Properties.Code.ZipFile).toBeUndefined();
+      expect(first.Properties.Code.S3Bucket).toBeDefined();
+    } finally {
+      rmSync(assetRoot, { recursive: true, force: true });
+    }
+  });
+
   it("synthesizes bucket, function, and policies for lambda_reads_s3 fixture", () => {
     const raw = JSON.parse(
       readFileSync(join(__dirname, "fixtures/lambda-reads-s3.json"), "utf-8"),

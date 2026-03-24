@@ -53,6 +53,7 @@ export function InspectorPanel() {
   const updateNode = useGraphStore((s) => s.updateNode);
   const updateEdgeConfig = useGraphStore((s) => s.updateEdgeConfig);
   const removeNode = useGraphStore((s) => s.removeNode);
+  const serverGraphId = useGraphStore((s) => s.serverGraphId);
   const removeEdge = useGraphStore((s) => s.removeEdge);
 
   const selectedNode =
@@ -98,6 +99,7 @@ export function InspectorPanel() {
           <NodeInspector
             key={selectedNode.id}
             node={selectedNode}
+            serverGraphId={serverGraphId}
             onSave={(config) => updateNode(selectedNode.id, { config })}
             onRemove={() => removeNode(selectedNode.id)}
           />
@@ -117,10 +119,12 @@ export function InspectorPanel() {
 
 function NodeInspector({
   node,
+  serverGraphId,
   onSave,
   onRemove,
 }: {
   node: GraphNode;
+  serverGraphId: string | null;
   onSave: (config: Record<string, unknown>) => void;
   onRemove: () => void;
 }) {
@@ -134,6 +138,7 @@ function NodeInspector({
     <NodeInspectorForm
       node={node}
       svc={svc}
+      serverGraphId={serverGraphId}
       onSave={onSave}
       onRemove={onRemove}
     />
@@ -143,11 +148,13 @@ function NodeInspector({
 function NodeInspectorForm({
   node,
   svc,
+  serverGraphId,
   onSave,
   onRemove,
 }: {
   node: GraphNode;
   svc: ServiceDefinition;
+  serverGraphId: string | null;
   onSave: (config: Record<string, unknown>) => void;
   onRemove: () => void;
 }) {
@@ -198,6 +205,7 @@ function NodeInspectorForm({
           formId={formId}
           node={node}
           svc={svc}
+          serverGraphId={serverGraphId}
           register={register}
           control={control}
           errors={errors}

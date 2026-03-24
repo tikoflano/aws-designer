@@ -1,3 +1,5 @@
+import { preprocessLambdaNodeConfig } from "@compiler/nodeHandlers/lambda/v1/lambdaService.definition.ts";
+
 import type { GraphDocument, GraphEdge, GraphNode } from "./graph.ts";
 
 const LEGACY_SEMVER_TO_INT: Record<string, number> = {
@@ -30,6 +32,7 @@ export function normalizeDefinitionVersion(raw: unknown): number {
 export function migrateLegacyGraphDocument(doc: GraphDocument): GraphDocument {
   const nodes = doc.nodes
     .map(migrateSnsNode)
+    .map(migrateLambdaConfig)
     .map((n) => ({ ...n, serviceVersion: normalizeDefinitionVersion(n.serviceVersion) }));
   const edges = doc.edges
     .map(migrateEdge)
@@ -45,6 +48,14 @@ function migrateEdge(edge: GraphEdge): GraphEdge {
   const copy = { ...edge } as GraphEdge & { labelOffset?: unknown };
   delete copy.labelOffset;
   return copy;
+}
+
+function migrateLambdaConfig(node: GraphNode): GraphNode {
+  if (node.serviceId !== "lambda") return node;
+  return {
+    ...node,
+    config: preprocessLambdaNodeConfig(node.config) as Record<string, unknown>,
+  };
 }
 
 function migrateSnsNode(node: GraphNode): GraphNode {

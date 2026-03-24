@@ -49,8 +49,46 @@ function coerceIntInRange(
   }, z.number().int().min(min, { message: minMsg }).max(max, { message: maxMsg }));
 }
 
-export const lambdaNodeConfigSchema = z.object({
-  functionName: z
+const lambdaCodeSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("inline"),
+    inlineSource: z
+      .string()
+      .max(LAMBDA_INLINE_SOURCE_MAX, {
+        message: `Inline source must be at most ${LAMBDA_INLINE_SOURCE_MAX} characters (CloudFormation inline limit).`,
+      })
+      .optional(),
+  }),
+  z.object({
+    type: z.literal("uploadedZip"),
+  }),
+]);
+
+export type LambdaCodeSource = z.infer<typeof lambdaCodeSourceSchema>;
+
+/** Maps legacy `inlineSource` at config root into `codeSource`. */
+export function preprocessLambdaNodeConfig(raw: unknown): unknown {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    return raw;
+  }
+  const o = { ...raw } as Record<string, unknown>;
+  if (o.codeSource !== undefined && typeof o.codeSource === "object" && o.codeSource !== null) {
+    return o;
+  }
+  const inlineSource = o.inlineSource;
+  delete o.inlineSource;
+  if (inlineSource !== undefined) {
+    o.codeSource = { type: "inline", inlineSource };
+  } else {
+    o.codeSource = { type: "inline" };
+  }
+  return o;
+}
+
+export const lambdaNodeConfigSchema = z.preprocess(
+  preprocessLambdaNodeConfig,
+  z.object({
+    functionName: z
     .string()
     .min(1, { message: "Function name is required." })
     .max(64, { message: "Function name must be at most 64 characters." })
@@ -58,36 +96,36 @@ export const lambdaNodeConfigSchema = z.object({
       message: "Use only letters, numbers, hyphens, and underscores.",
     })
     .default("function"),
-  handler: z
+    handler: z
     .string()
     .min(1, { message: "Handler is required (e.g. index.handler)." })
     .default("index.handler"),
-  runtime: lambdaRuntimeSchema.default("nodejs20.x"),
-  /** Memory in MB (128–10240). */
-  memorySizeMb: coerceIntInRange(
+    runtime: lambdaRuntimeSchema.default("nodejs20.x"),
+    /** Memory in MB (128–10240). */
+    memorySizeMb: coerceIntInRange(
     128,
     128,
     10240,
     "Memory must be at least 128 MB.",
     "Memory must be at most 10240 MB.",
-  ),
-  /** Ephemeral storage in MB (512–10240). */
-  ephemeralStorageMb: coerceIntInRange(
+    ),
+    /** Ephemeral storage in MB (512–10240). */
+    ephemeralStorageMb: coerceIntInRange(
     512,
     512,
     10240,
     "Ephemeral storage must be at least 512 MB.",
     "Ephemeral storage must be at most 10240 MB.",
-  ),
-  /** Function timeout in seconds (1–900). */
-  timeoutSeconds: coerceIntInRange(
+    ),
+    /** Function timeout in seconds (1–900). */
+    timeoutSeconds: coerceIntInRange(
     3,
     1,
     900,
     "Timeout must be at least 1 second.",
     "Timeout must be at most 900 seconds.",
-  ),
-  environmentVariables: z
+    ),
+    environmentVariables: z
     .record(z.string(), z.string())
     .default({})
     .superRefine((env, ctx) => {
@@ -110,13 +148,9 @@ export const lambdaNodeConfigSchema = z.object({
         }
       }
     }),
-  inlineSource: z
-    .string()
-    .max(LAMBDA_INLINE_SOURCE_MAX, {
-      message: `Inline source must be at most ${LAMBDA_INLINE_SOURCE_MAX} characters (CloudFormation inline limit).`,
-    })
-    .optional(),
-});
+    codeSource: lambdaCodeSourceSchema,
+  }),
+);
 
 export function logicalLambdaId(nodeId: string): string {
   return `lambda-fn-${sanitizeId(nodeId)}`;
@@ -135,6 +169,9 @@ export const lambdaServiceDefinition: ServiceDefinition = {
   version: DEFINITION_VERSION_V1,
   displayName: "Lambda function",
   description: "AWS Lambda function with an execution role.",
-  configSchema: lambdaNodeConfigSchema,
-  createDefaultConfig: () => ({ functionName: `fn-${randomShortId(6)}` }),
+  configSchema: lambdaNodeConfigSchema as z.ZodType<Record<string, unknown>>,
+  createDefaultConfig: () => ({
+    functionName: `fn-${randomShortId(6)}`,
+    codeSource: { type: "inline" as const },
+  }),
 };

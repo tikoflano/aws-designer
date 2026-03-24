@@ -8,8 +8,15 @@ import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type * as sns from "aws-cdk-lib/aws-sns";
 import type * as sqs from "aws-cdk-lib/aws-sqs";
 
+export type LambdaZipCompileContext = {
+  graphId: string;
+  lambdaZipAssetsRoot: string;
+};
+
 export type GraphCompileContext = {
   stack: cdk.Stack;
+  /** When set, Lambda nodes with `uploadedZip` resolve zips under this directory. */
+  lambdaZipCompile?: LambdaZipCompileContext;
   buckets: Map<string, s3.Bucket>;
   functions: Map<string, lambda.Function>;
   distributions: Map<string, cloudfront.Distribution>;

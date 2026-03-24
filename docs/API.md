@@ -87,6 +87,13 @@ Loads a specific historical **topology** (`nodes` / `edges` from that snapshot).
 
 - **Response:** `200` + format A, or `404` / `400`.
 
+## `POST /api/graph/:graphId/nodes/:nodeId/lambda-zip`
+
+Uploads a **Lambda deployment package** (a `.zip` file) for the given node. The file is stored on the API host under `server/data/lambda-assets/` (gitignored with the rest of `server/data/`). The graph’s **latest** version must already include that Lambda node with `codeSource.type === "uploadedZip"` before you rely on synthesis (save the graph after changing code mode, then upload).
+
+- **Body:** `multipart/form-data` with a single file field named **`file`** (max **50 MB**, must start with the ZIP local file header `PK`).
+- **Response:** `204` on success, or `400` / `404` with `{ "error": "invalid_body", "message": "..." }` or `not_found`.
+
 ## `GET /api/graph/:id/compiled`
 
 Synthesizes the **latest** graph with CDK, zips the `cdk.out` directory, returns the zip.

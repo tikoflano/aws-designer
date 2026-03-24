@@ -1,3 +1,4 @@
+import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 
@@ -26,7 +27,13 @@ import {
   updateGraphTitle,
   type GraphRow,
 } from "./graphRepo.js";
+import {
+  getDefaultLambdaZipAssetsRoot,
+  removeLambdaZipsForGraph,
+  saveLambdaZipBuffer,
+} from "./lambdaZipAssets.js";
 import { synthGraphToZipBuffer } from "./synthZip.js";
+import { LAMBDA_ZIP_MAX_BYTES } from "../compiler/lambdaZipConstants.ts";
 
 function formatResponse(row: GraphRow): GraphRecord {
   return {
@@ -41,6 +48,9 @@ function formatResponse(row: GraphRow): GraphRecord {
 
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true });
+await app.register(multipart, {
+  limits: { fileSize: LAMBDA_ZIP_MAX_BYTES },
+});
 
 app.get("/health", async () => ({ ok: true }));
 
@@ -112,6 +122,7 @@ await app.register(
       if (!ok) {
         return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
       }
+      removeLambdaZipsForGraph(id, getDefaultLambdaZipAssetsRoot());
       return reply.code(204).send();
     });
 
@@ -141,13 +152,72 @@ await app.register(
       return reply.send(formatResponse(row));
     });
 
+    r.post("/graph/:graphId/nodes/:nodeId/lambda-zip", async (req, reply) => {
+      const { graphId, nodeId } = req.params as { graphId: string; nodeId: string };
+      const row = getLatestGraph(graphId);
+      if (!row) {
+        return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
+      }
+      const node = row.graph.nodes.find((n) => n.id === nodeId);
+      if (!node || node.serviceId !== "lambda") {
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: "Target node must exist in this graph and be a Lambda function.",
+          }),
+        );
+      }
+      let mp;
+      try {
+        mp = await req.file();
+      } catch {
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: `Multipart upload failed or exceeded ${LAMBDA_ZIP_MAX_BYTES} bytes.`,
+          }),
+        );
+      }
+      if (!mp) {
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: "Expected multipart form field \"file\" with a .zip body.",
+          }),
+        );
+      }
+      let buffer: Buffer;
+      try {
+        buffer = await mp.toBuffer();
+      } catch {
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: `Upload exceeded ${LAMBDA_ZIP_MAX_BYTES} bytes or could not be read.`,
+          }),
+        );
+      }
+      try {
+        saveLambdaZipBuffer(graphId, nodeId, buffer);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Invalid zip upload.";
+        return reply.code(400).send(
+          invalidBodyErrorSchema.parse({
+            error: "invalid_body",
+            message: msg,
+          }),
+        );
+      }
+      return reply.code(204).send();
+    });
+
     r.get("/graph/:id/compiled", async (req, reply) => {
       const { id } = req.params as { id: string };
       const row = getLatestGraph(id);
       if (!row) {
         return reply.code(404).send(notFoundErrorSchema.parse({ error: "not_found" }));
       }
-      const zip = await synthGraphToZipBuffer(row.graph);
+      const zip = await synthGraphToZipBuffer(row.graph, { graphId: id });
       if (!zip.ok) {
         return reply.code(422).send(
           validationFailedErrorSchema.parse({

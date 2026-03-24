@@ -17,6 +17,8 @@ export type NodeInspectorFieldsProps = {
   formId: string;
   node: GraphNode;
   svc: ServiceDefinition;
+  /** Present when the graph has been saved to the server (Lambda zip upload). */
+  serverGraphId?: string | null;
   register: UseFormReturn<FormValues>["register"];
   control: Control<FormValues>;
   errors: FieldErrors<FormValues>;

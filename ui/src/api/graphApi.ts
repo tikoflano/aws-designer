@@ -3,6 +3,7 @@ import {
   graphRecordSchema,
   graphsListResponseSchema,
   graphVersionsListResponseSchema,
+  invalidBodyErrorSchema,
   notFoundErrorSchema,
   validationFailedErrorSchema,
   type GraphRecord,
@@ -160,6 +161,38 @@ export async function patchGraphTitle(
     throw new Error(`PATCH ${path} failed: ${res.status}`);
   }
   return parseGraphRecordResponse(res);
+}
+
+/**
+ * POST multipart zip for a Lambda deployment package (field name `file`).
+ */
+export async function uploadLambdaZip(
+  graphId: string,
+  nodeId: string,
+  file: File,
+): Promise<void> {
+  const path = apiPaths.graphLambdaZip(graphId, nodeId);
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(url(path), { method: "POST", body: fd });
+  if (res.status === 204) return;
+
+  const text = await res.text();
+  let json: unknown;
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`POST ${path} failed: ${res.status}`);
+  }
+
+  const invalid = invalidBodyErrorSchema.safeParse(json);
+  if (invalid.success) {
+    throw new Error(invalid.data.message);
+  }
+  if (notFoundErrorSchema.safeParse(json).success) {
+    throw new Error("Graph not found on the server.");
+  }
+  throw new Error(`POST ${path} failed: ${res.status}`);
 }
 
 /**

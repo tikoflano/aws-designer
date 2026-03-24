@@ -36,8 +36,10 @@ export {
   defaultInlineSourceForRuntime,
   lambdaNodeConfigSchema,
   LAMBDA_INLINE_SOURCE_MAX,
+  preprocessLambdaNodeConfig,
 } from "./nodeHandlers/lambda/v1/lambdaService.definition.ts";
-export type { LambdaRuntime } from "./nodeHandlers/lambda/v1/lambdaService.definition.ts";
+export type { LambdaCodeSource, LambdaRuntime } from "./nodeHandlers/lambda/v1/lambdaService.definition.ts";
+export { LAMBDA_ZIP_MAX_BYTES } from "./lambdaZipConstants.ts";
 export { logicalBucketId, s3NodeConfigSchema } from "./nodeHandlers/s3/v1/s3Service.definition.ts";
 export {
   cloudfrontNodeConfigSchema,

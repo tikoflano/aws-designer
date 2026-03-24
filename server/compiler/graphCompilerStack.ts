@@ -35,6 +35,9 @@ function applyEdge(
 
 export type GraphCompilerStackProps = cdk.StackProps & {
   graph: GraphDocument;
+  /** Required on the server when any Lambda uses `codeSource.type === "uploadedZip"`. */
+  graphId?: string;
+  lambdaZipAssetsRoot?: string;
 };
 
 /**
@@ -42,7 +45,7 @@ export type GraphCompilerStackProps = cdk.StackProps & {
  */
 export class GraphCompilerStack extends cdk.Stack {
   public constructor(scope: Construct, id: string, props: GraphCompilerStackProps) {
-    const { graph: rawGraph, ...stackProps } = props;
+    const { graph: rawGraph, graphId, lambdaZipAssetsRoot, ...stackProps } = props;
     const graph = migrateLegacyGraphDocument(rawGraph);
     super(scope, id, {
       ...stackProps,
@@ -60,6 +63,10 @@ export class GraphCompilerStack extends cdk.Stack {
     });
     const ctx: GraphCompileContext = {
       stack: this,
+      lambdaZipCompile:
+        graphId !== undefined && lambdaZipAssetsRoot !== undefined
+          ? { graphId, lambdaZipAssetsRoot }
+          : undefined,
       buckets: new Map<string, s3.Bucket>(),
       functions: new Map<string, lambda.Function>(),
       distributions: new Map<string, cloudfront.Distribution>(),
