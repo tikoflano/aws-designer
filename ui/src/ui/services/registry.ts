@@ -12,6 +12,7 @@ import { secretsmanagerUiModule } from "./secretsmanagerUiModule";
 import { snsFifoUiModule } from "./snsFifoUiModule";
 import { snsStandardUiModule } from "./snsStandardUiModule";
 import { sqsUiModule } from "./sqsUiModule";
+import { eventbridgeSchedulerUiModule } from "./eventbridgeSchedulerUiModule";
 
 const UI_SERVICE_MODULES_V1: Record<ServiceId, UiServiceModule> = {
   s3: s3UiModule,
@@ -23,6 +24,7 @@ const UI_SERVICE_MODULES_V1: Record<ServiceId, UiServiceModule> = {
   sns_fifo: snsFifoUiModule,
   sqs: sqsUiModule,
   dynamodb: dynamodbUiModule,
+  eventbridge_scheduler: eventbridgeSchedulerUiModule,
 };
 
 const BY_SERVICE_AND_VERSION: Partial<

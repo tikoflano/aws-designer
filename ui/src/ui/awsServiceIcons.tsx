@@ -6,6 +6,7 @@ import ArchitectureServiceAmazonSimpleNotificationService from "aws-react-icons/
 import ArchitectureServiceAmazonSimpleQueueService from "aws-react-icons/icons/ArchitectureServiceAmazonSimpleQueueService";
 import ArchitectureServiceAWSSecretsManager from "aws-react-icons/icons/ArchitectureServiceAWSSecretsManager";
 import ArchitectureServiceAmazonDynamoDB from "aws-react-icons/icons/ArchitectureServiceAmazonDynamoDB";
+import ResourceAmazonEventBridgeScheduler from "aws-react-icons/icons/ResourceAmazonEventBridgeScheduler";
 
 import type { ServiceId } from "../domain/types";
 
@@ -82,6 +83,14 @@ export function AwsServiceArchitectureIcon({
     case "dynamodb":
       return (
         <ArchitectureServiceAmazonDynamoDB
+          size={size}
+          className={svgClass}
+          aria-hidden
+        />
+      );
+    case "eventbridge_scheduler":
+      return (
+        <ResourceAmazonEventBridgeScheduler
           size={size}
           className={svgClass}
           aria-hidden

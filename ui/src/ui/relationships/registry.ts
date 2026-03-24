@@ -11,6 +11,7 @@ import {
   S3TriggersLambdaEdgeFields,
 } from "./customEdgeFields";
 import { SnsLambdaSubscriptionEdgeFields } from "./SnsLambdaSubscriptionEdgeFields";
+import { EventbridgeSchedulerTargetEdgeFields } from "./EventbridgeSchedulerTargetEdgeFields";
 import type { UiRelationshipModule } from "./types";
 
 const BY_RELATIONSHIP_AND_VERSION: Partial<
@@ -52,6 +53,31 @@ registerUiRelationship(
   RelationshipIds.lambda_subscribes_sns_standard,
   DEFINITION_VERSION_V1,
   { EdgeConfigFields: SnsLambdaSubscriptionEdgeFields },
+);
+
+const eventbridgeSchedulerEdgeUi: UiRelationshipModule = {
+  EdgeConfigFields: EventbridgeSchedulerTargetEdgeFields,
+};
+
+registerUiRelationship(
+  RelationshipIds.eventbridge_scheduler_invokes_lambda,
+  DEFINITION_VERSION_V1,
+  eventbridgeSchedulerEdgeUi,
+);
+registerUiRelationship(
+  RelationshipIds.eventbridge_scheduler_sends_sqs,
+  DEFINITION_VERSION_V1,
+  eventbridgeSchedulerEdgeUi,
+);
+registerUiRelationship(
+  RelationshipIds.eventbridge_scheduler_publishes_sns_standard,
+  DEFINITION_VERSION_V1,
+  eventbridgeSchedulerEdgeUi,
+);
+registerUiRelationship(
+  RelationshipIds.eventbridge_scheduler_publishes_sns_fifo,
+  DEFINITION_VERSION_V1,
+  eventbridgeSchedulerEdgeUi,
 );
 
 export function getUiRelationshipModule(

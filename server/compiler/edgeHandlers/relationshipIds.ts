@@ -20,6 +20,10 @@ import { lambdaPublishesSnsFifoDefinition } from "./lambda-to-sns/v1/lambdaPubli
 import { lambdaPublishesSnsStandardDefinition } from "./lambda-to-sns/v1/lambdaPublishesSnsStandard.definition.ts";
 import { lambdaSendsSqsDefinition } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
 import { sqsTriggersLambdaDefinition } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";
+import { eventbridgeSchedulerInvokesLambdaDefinition } from "./eventbridge-scheduler-to-lambda/v1/eventbridgeSchedulerInvokesLambda.definition.ts";
+import { eventbridgeSchedulerSendsSqsDefinition } from "./eventbridge-scheduler-to-sqs/v1/eventbridgeSchedulerSendsSqs.definition.ts";
+import { eventbridgeSchedulerPublishesSnsStandardDefinition } from "./eventbridge-scheduler-to-sns-standard/v1/eventbridgeSchedulerPublishesSnsStandard.definition.ts";
+import { eventbridgeSchedulerPublishesSnsFifoDefinition } from "./eventbridge-scheduler-to-sns-fifo/v1/eventbridgeSchedulerPublishesSnsFifo.definition.ts";
 
 export const RELATIONSHIP_ID_TUPLE = [
   lambdaReadsS3Definition.id,
@@ -38,6 +42,10 @@ export const RELATIONSHIP_ID_TUPLE = [
   lambdaSendsSqsDefinition.id,
   lambdaPublishesSnsStandardDefinition.id,
   lambdaPublishesSnsFifoDefinition.id,
+  eventbridgeSchedulerInvokesLambdaDefinition.id,
+  eventbridgeSchedulerSendsSqsDefinition.id,
+  eventbridgeSchedulerPublishesSnsStandardDefinition.id,
+  eventbridgeSchedulerPublishesSnsFifoDefinition.id,
 ] as const;
 
 export type RelationshipId = (typeof RELATIONSHIP_ID_TUPLE)[number];
@@ -64,4 +72,18 @@ export const RelationshipIds = {
   lambda_sends_sqs: lambdaSendsSqsDefinition.id,
   lambda_publishes_sns_standard: lambdaPublishesSnsStandardDefinition.id,
   lambda_publishes_sns_fifo: lambdaPublishesSnsFifoDefinition.id,
+  eventbridge_scheduler_invokes_lambda: eventbridgeSchedulerInvokesLambdaDefinition.id,
+  eventbridge_scheduler_sends_sqs: eventbridgeSchedulerSendsSqsDefinition.id,
+  eventbridge_scheduler_publishes_sns_standard:
+    eventbridgeSchedulerPublishesSnsStandardDefinition.id,
+  eventbridge_scheduler_publishes_sns_fifo:
+    eventbridgeSchedulerPublishesSnsFifoDefinition.id,
 } as const;
+
+/** Outgoing scheduler → target relationships (exactly one per `eventbridge_scheduler` node). */
+export const EVENTBRIDGE_SCHEDULER_TARGET_RELATIONSHIP_IDS: ReadonlySet<string> = new Set([
+  RelationshipIds.eventbridge_scheduler_invokes_lambda,
+  RelationshipIds.eventbridge_scheduler_sends_sqs,
+  RelationshipIds.eventbridge_scheduler_publishes_sns_standard,
+  RelationshipIds.eventbridge_scheduler_publishes_sns_fifo,
+]);

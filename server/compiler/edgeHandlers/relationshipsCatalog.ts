@@ -17,6 +17,10 @@ import { lambdaPublishesSnsFifoDefinition } from "./lambda-to-sns/v1/lambdaPubli
 import { lambdaPublishesSnsStandardDefinition } from "./lambda-to-sns/v1/lambdaPublishesSnsStandard.definition.ts";
 import { lambdaSendsSqsDefinition } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
 import { sqsTriggersLambdaDefinition } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";
+import { eventbridgeSchedulerInvokesLambdaDefinition } from "./eventbridge-scheduler-to-lambda/v1/eventbridgeSchedulerInvokesLambda.definition.ts";
+import { eventbridgeSchedulerSendsSqsDefinition } from "./eventbridge-scheduler-to-sqs/v1/eventbridgeSchedulerSendsSqs.definition.ts";
+import { eventbridgeSchedulerPublishesSnsStandardDefinition } from "./eventbridge-scheduler-to-sns-standard/v1/eventbridgeSchedulerPublishesSnsStandard.definition.ts";
+import { eventbridgeSchedulerPublishesSnsFifoDefinition } from "./eventbridge-scheduler-to-sns-fifo/v1/eventbridgeSchedulerPublishesSnsFifo.definition.ts";
 import { RELATIONSHIP_ID_TUPLE } from "./relationshipIds.ts";
 
 export const ALL_RELATIONSHIPS = [
@@ -36,6 +40,10 @@ export const ALL_RELATIONSHIPS = [
   lambdaSendsSqsDefinition,
   lambdaPublishesSnsStandardDefinition,
   lambdaPublishesSnsFifoDefinition,
+  eventbridgeSchedulerInvokesLambdaDefinition,
+  eventbridgeSchedulerSendsSqsDefinition,
+  eventbridgeSchedulerPublishesSnsStandardDefinition,
+  eventbridgeSchedulerPublishesSnsFifoDefinition,
 ];
 
 if (ALL_RELATIONSHIPS.length !== RELATIONSHIP_ID_TUPLE.length) {

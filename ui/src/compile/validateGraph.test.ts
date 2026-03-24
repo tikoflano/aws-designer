@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFINITION_VERSION_V1, RelationshipIds } from "@compiler/catalog.ts";
+import {
+  DEFINITION_VERSION_V1,
+  RelationshipIds,
+  eventbridgeSchedulerNodeConfigSchema,
+} from "@compiler/catalog.ts";
+import { eventbridgeSchedulerServiceDefinition } from "@compiler/nodeHandlers/eventbridge_scheduler/v1/eventbridgeSchedulerService.definition.ts";
 import { validateGraph } from "@compiler/validateGraph.ts";
 
 describe("validateGraph", () => {
@@ -787,6 +792,194 @@ describe("validateGraph", () => {
       ],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wire input before migration
     } as any);
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts eventbridge_scheduler with exactly one Lambda target edge", () => {
+    const schedCfg = eventbridgeSchedulerNodeConfigSchema.parse({
+      ...eventbridgeSchedulerServiceDefinition.createDefaultConfig(),
+      scheduleName: "val-sched",
+    });
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "sch1",
+          serviceId: "eventbridge_scheduler",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: schedCfg,
+        },
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "demo" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "sch1",
+          targetNodeId: "l1",
+          relationshipId: RelationshipIds.eventbridge_scheduler_invokes_lambda,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: { input: "" },
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects eventbridge_scheduler with no target edge", () => {
+    const schedCfg = eventbridgeSchedulerNodeConfigSchema.parse({
+      ...eventbridgeSchedulerServiceDefinition.createDefaultConfig(),
+      scheduleName: "orphan-sched",
+    });
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "sch1",
+          serviceId: "eventbridge_scheduler",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: schedCfg,
+        },
+      ],
+      edges: [],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some((i) => i.code === "eventbridge_scheduler_target_count"),
+    ).toBe(true);
+  });
+
+  it("rejects eventbridge_scheduler with more than one target edge", () => {
+    const schedCfg = eventbridgeSchedulerNodeConfigSchema.parse({
+      ...eventbridgeSchedulerServiceDefinition.createDefaultConfig(),
+      scheduleName: "multi-sched",
+    });
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "sch1",
+          serviceId: "eventbridge_scheduler",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: schedCfg,
+        },
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "a" },
+        },
+        {
+          id: "l2",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "b" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "sch1",
+          targetNodeId: "l1",
+          relationshipId: RelationshipIds.eventbridge_scheduler_invokes_lambda,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: { input: "" },
+        },
+        {
+          id: "e2",
+          sourceNodeId: "sch1",
+          targetNodeId: "l2",
+          relationshipId: RelationshipIds.eventbridge_scheduler_invokes_lambda,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: { input: "" },
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some((i) => i.code === "eventbridge_scheduler_target_count"),
+    ).toBe(true);
+  });
+
+  it("rejects scheduler → FIFO SQS without message group id", () => {
+    const schedCfg = eventbridgeSchedulerNodeConfigSchema.parse({
+      ...eventbridgeSchedulerServiceDefinition.createDefaultConfig(),
+      scheduleName: "sqs-fifo-sched",
+    });
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "sch1",
+          serviceId: "eventbridge_scheduler",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: schedCfg,
+        },
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fifo-q.fifo", queueType: "fifo" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "sch1",
+          targetNodeId: "q1",
+          relationshipId: RelationshipIds.eventbridge_scheduler_sends_sqs,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: { input: "", messageGroupId: "" },
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some((i) => i.code === "scheduler_sqs_fifo_requires_message_group_id"),
+    ).toBe(true);
+  });
+
+  it("accepts scheduler → FIFO SQS with message group id", () => {
+    const schedCfg = eventbridgeSchedulerNodeConfigSchema.parse({
+      ...eventbridgeSchedulerServiceDefinition.createDefaultConfig(),
+      scheduleName: "sqs-fifo-ok",
+    });
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "sch1",
+          serviceId: "eventbridge_scheduler",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: schedCfg,
+        },
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fifo-q2.fifo", queueType: "fifo" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "sch1",
+          targetNodeId: "q1",
+          relationshipId: RelationshipIds.eventbridge_scheduler_sends_sqs,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: { input: "", messageGroupId: "g1" },
+        },
+      ],
+    });
     expect(result.ok).toBe(true);
   });
 });

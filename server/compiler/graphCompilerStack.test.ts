@@ -14,7 +14,11 @@ import { Template } from "aws-cdk-lib/assertions";
 import { describe, expect, it } from "vitest";
 
 import { graphFileToDocument, parseGraphFileJson } from "../../ui/src/graph/graphFile.ts";
-import { RelationshipIds } from "./catalog.ts";
+import {
+  eventbridgeSchedulerNodeConfigSchema,
+  RelationshipIds,
+} from "./catalog.ts";
+import { eventbridgeSchedulerServiceDefinition } from "./nodeHandlers/eventbridge_scheduler/v1/eventbridgeSchedulerService.definition.ts";
 import { GraphCompilerStack } from "./graphCompilerStack.ts";
 import { lambdaDeploymentZipFileName } from "./lambdaZipConstants.ts";
 
@@ -842,5 +846,58 @@ describe("GraphCompilerStack", () => {
 
     const json = JSON.stringify(template.toJSON());
     expect(json).toContain("sns:Publish");
+  });
+
+  it("synthesizes EventBridge Scheduler schedule invoking Lambda", () => {
+    const schedCfg = eventbridgeSchedulerNodeConfigSchema.parse({
+      ...eventbridgeSchedulerServiceDefinition.createDefaultConfig(),
+      scheduleName: "synth-eb-sched",
+      scheduleKind: "rate",
+      rateValue: 5,
+      rateUnit: "minute",
+    });
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "sch1",
+          serviceId: "eventbridge_scheduler",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: schedCfg,
+        },
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "ebSchedTargetFn" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "sch1",
+          targetNodeId: "l1",
+          relationshipId: RelationshipIds.eventbridge_scheduler_invokes_lambda,
+          relationshipVersion: 1,
+          config: { input: '{"ping":true}' },
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "EbSchedLambdaStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::Scheduler::Schedule", 1);
+    const resources = template.findResources("AWS::Scheduler::Schedule");
+    const first = Object.values(resources)[0] as {
+      Properties: Record<string, unknown>;
+    };
+    expect(first.Properties.KmsKeyArn).toBeUndefined();
+    expect(first.Properties.GroupName).toBeUndefined();
   });
 });

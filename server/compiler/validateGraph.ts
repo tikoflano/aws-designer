@@ -2,7 +2,11 @@ import type { CompileIssue, ValidateGraphResult } from "@shared/compile/types.ts
 import type { GraphDocument } from "@shared/domain/graph.ts";
 import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 
-import { RelationshipIds } from "./edgeHandlers/relationshipIds.ts";
+import {
+  EVENTBRIDGE_SCHEDULER_TARGET_RELATIONSHIP_IDS,
+  RelationshipIds,
+} from "./edgeHandlers/relationshipIds.ts";
+import { eventbridgeSchedulerSendsSqsConfigSchema } from "./edgeHandlers/eventbridge-scheduler-to-sqs/v1/eventbridgeSchedulerSendsSqs.definition.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
 import { logicalBucketId } from "./nodeHandlers/s3/v1/s3Service.definition.ts";
 import { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/v1/sqsService.definition.ts";
@@ -122,6 +126,21 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
           });
         }
       }
+      if (rel.id === RelationshipIds.eventbridge_scheduler_sends_sqs) {
+        const q = sqsQueueNodeConfigSchema.safeParse(targetNode.config);
+        if (q.success && q.data.queueType === "fifo") {
+          const ec = eventbridgeSchedulerSendsSqsConfigSchema.safeParse(edge.config);
+          if (ec.success && ec.data.messageGroupId.trim() === "") {
+            issues.push({
+              code: "scheduler_sqs_fifo_requires_message_group_id",
+              message:
+                "Scheduler → FIFO SQS requires a message group ID on the edge (EventBridge Scheduler requirement).",
+              edgeId: edge.id,
+              nodeId: targetNode.id,
+            });
+          }
+        }
+      }
     } catch (e) {
       issues.push({
         code: "invalid_edge_config",
@@ -229,6 +248,29 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
           edgeId: eid,
         });
       }
+    }
+  }
+
+  const schedulerNodeIds = doc.nodes
+    .filter((n) => n.serviceId === "eventbridge_scheduler")
+    .map((n) => n.id);
+
+  for (const sid of schedulerNodeIds) {
+    const outgoing = doc.edges.filter(
+      (e) =>
+        e.sourceNodeId === sid &&
+        EVENTBRIDGE_SCHEDULER_TARGET_RELATIONSHIP_IDS.has(e.relationshipId) &&
+        getRelationship(e.relationshipId, e.relationshipVersion) != null,
+    );
+    if (outgoing.length !== 1) {
+      issues.push({
+        code: "eventbridge_scheduler_target_count",
+        message:
+          outgoing.length === 0
+            ? `EventBridge Scheduler node "${sid}" needs exactly one connection to Lambda, SQS, or SNS.`
+            : `EventBridge Scheduler node "${sid}" may only have one target schedule edge (found ${String(outgoing.length)}).`,
+        nodeId: sid,
+      });
     }
   }
 

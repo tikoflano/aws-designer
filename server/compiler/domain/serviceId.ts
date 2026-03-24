@@ -13,6 +13,7 @@ export const SERVICE_ID_VALUES = [
   "sns_fifo",
   "sqs",
   "dynamodb",
+  "eventbridge_scheduler",
 ] as const;
 
 export type ServiceId = (typeof SERVICE_ID_VALUES)[number];

@@ -14,6 +14,10 @@ import { LambdaPublishesSnsFifoHandlerV1 } from "./lambda-to-sns/v1/lambdaPublis
 import { LambdaPublishesSnsStandardHandlerV1 } from "./lambda-to-sns/v1/lambdaPublishesSnsStandardHandlerV1.ts";
 import { LambdaSendsSqsHandlerV1 } from "./lambda-to-sqs/v1/lambdaSendsSqsHandlerV1.ts";
 import { SqsTriggersLambdaHandlerV1 } from "./sqs-to-lambda/v1/sqsTriggersLambdaHandlerV1.ts";
+import { EventbridgeSchedulerInvokesLambdaHandlerV1 } from "./eventbridge-scheduler-to-lambda/v1/eventbridgeSchedulerInvokesLambdaHandlerV1.ts";
+import { EventbridgeSchedulerSendsSqsHandlerV1 } from "./eventbridge-scheduler-to-sqs/v1/eventbridgeSchedulerSendsSqsHandlerV1.ts";
+import { EventbridgeSchedulerPublishesSnsStandardHandlerV1 } from "./eventbridge-scheduler-to-sns-standard/v1/eventbridgeSchedulerPublishesSnsStandardHandlerV1.ts";
+import { EventbridgeSchedulerPublishesSnsFifoHandlerV1 } from "./eventbridge-scheduler-to-sns-fifo/v1/eventbridgeSchedulerPublishesSnsFifoHandlerV1.ts";
 import type { EdgeRelationshipHandler } from "./types.ts";
 
 const ALL_HANDLERS: EdgeRelationshipHandler[] = [
@@ -33,6 +37,10 @@ const ALL_HANDLERS: EdgeRelationshipHandler[] = [
   new LambdaSendsSqsHandlerV1(),
   new LambdaPublishesSnsStandardHandlerV1(),
   new LambdaPublishesSnsFifoHandlerV1(),
+  new EventbridgeSchedulerInvokesLambdaHandlerV1(),
+  new EventbridgeSchedulerSendsSqsHandlerV1(),
+  new EventbridgeSchedulerPublishesSnsStandardHandlerV1(),
+  new EventbridgeSchedulerPublishesSnsFifoHandlerV1(),
 ];
 
 const BY_RELATIONSHIP_AND_VERSION: Record<string, Record<number, EdgeRelationshipHandler>> =

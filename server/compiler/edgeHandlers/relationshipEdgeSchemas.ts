@@ -15,3 +15,7 @@ export { lambdaPublishesSnsFifoConfigSchema } from "./lambda-to-sns/v1/lambdaPub
 export { lambdaPublishesSnsStandardConfigSchema } from "./lambda-to-sns/v1/lambdaPublishesSnsStandard.definition.ts";
 export { lambdaSendsSqsConfigSchema } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
 export { sqsTriggersLambdaConfigSchema } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";
+export { eventbridgeSchedulerInvokesLambdaConfigSchema } from "./eventbridge-scheduler-to-lambda/v1/eventbridgeSchedulerInvokesLambda.definition.ts";
+export { eventbridgeSchedulerSendsSqsConfigSchema } from "./eventbridge-scheduler-to-sqs/v1/eventbridgeSchedulerSendsSqs.definition.ts";
+export { eventbridgeSchedulerPublishesSnsStandardConfigSchema } from "./eventbridge-scheduler-to-sns-standard/v1/eventbridgeSchedulerPublishesSnsStandard.definition.ts";
+export { eventbridgeSchedulerPublishesSnsFifoConfigSchema } from "./eventbridge-scheduler-to-sns-fifo/v1/eventbridgeSchedulerPublishesSnsFifo.definition.ts";

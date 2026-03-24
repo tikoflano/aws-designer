@@ -7,6 +7,7 @@ import { SnsStandardNodeHandlerV1 } from "./sns/v1/snsStandardNodeHandlerV1.ts";
 import { SecretsManagerNodeHandlerV1 } from "./secretsmanager/v1/secretsManagerNodeHandlerV1.ts";
 import { S3NodeHandlerV1 } from "./s3/v1/s3NodeHandlerV1.ts";
 import { SqsNodeHandlerV1 } from "./sqs/v1/sqsNodeHandlerV1.ts";
+import { EventbridgeSchedulerNodeHandlerV1 } from "./eventbridge_scheduler/v1/eventbridgeSchedulerNodeHandlerV1.ts";
 import type { ServiceId } from "../domain/serviceId.ts";
 import type { NodeServiceHandler } from "./types.ts";
 
@@ -20,6 +21,7 @@ const ALL_HANDLERS: NodeServiceHandler[] = [
   new SnsFifoNodeHandlerV1(),
   new SqsNodeHandlerV1(),
   new DynamodbNodeHandlerV1(),
+  new EventbridgeSchedulerNodeHandlerV1(),
 ];
 
 const BY_SERVICE_AND_VERSION: Partial<

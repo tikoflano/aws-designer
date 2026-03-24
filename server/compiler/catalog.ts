@@ -53,6 +53,7 @@ export { snsFifoTopicNodeConfigSchema } from "./nodeHandlers/sns/v1/snsFifoServi
 export { snsStandardTopicNodeConfigSchema } from "./nodeHandlers/sns/v1/snsStandardService.definition.ts";
 export { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/v1/sqsService.definition.ts";
 export { dynamodbTableNodeConfigSchema } from "./nodeHandlers/dynamodb/v1/dynamodbService.definition.ts";
+export { eventbridgeSchedulerNodeConfigSchema } from "./nodeHandlers/eventbridge_scheduler/v1/eventbridgeSchedulerService.definition.ts";
 
 export {
   cloudfrontOriginS3ConfigSchema,
@@ -71,4 +72,8 @@ export {
   sqsSubscribesSnsStandardConfigSchema,
   lambdaSendsSqsConfigSchema,
   sqsTriggersLambdaConfigSchema,
+  eventbridgeSchedulerInvokesLambdaConfigSchema,
+  eventbridgeSchedulerSendsSqsConfigSchema,
+  eventbridgeSchedulerPublishesSnsStandardConfigSchema,
+  eventbridgeSchedulerPublishesSnsFifoConfigSchema,
 } from "./edgeHandlers/relationshipEdgeSchemas.ts";

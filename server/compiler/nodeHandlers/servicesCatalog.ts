@@ -10,6 +10,7 @@ import { snsStandardServiceDefinition } from "./sns/v1/snsStandardService.defini
 import { secretsManagerServiceDefinition } from "./secretsmanager/v1/secretsManagerService.definition.ts";
 import { s3ServiceDefinition } from "./s3/v1/s3Service.definition.ts";
 import { sqsServiceDefinition } from "./sqs/v1/sqsService.definition.ts";
+import { eventbridgeSchedulerServiceDefinition } from "./eventbridge_scheduler/v1/eventbridgeSchedulerService.definition.ts";
 
 const SERVICE_ORDER: ServiceId[] = [...SERVICE_ID_VALUES];
 
@@ -23,6 +24,7 @@ const BY_ID: Record<ServiceId, ServiceDefinition> = {
   sns_fifo: snsFifoServiceDefinition,
   sqs: sqsServiceDefinition,
   dynamodb: dynamodbServiceDefinition,
+  eventbridge_scheduler: eventbridgeSchedulerServiceDefinition,
 };
 
 export const ALL_SERVICES = SERVICE_ORDER.map((id) => BY_ID[id]);
