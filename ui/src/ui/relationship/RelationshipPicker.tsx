@@ -20,13 +20,13 @@ type Props = {
   onSelect: (relationshipId: RelationshipId, reversed: boolean) => void;
 };
 
-function formatServiceLabel(id: string): string {
+export function formatServiceLabel(id: string): string {
   return (
     getService(id as ServiceId, DEFINITION_VERSION_V1)?.displayName ?? id
   );
 }
 
-function DirectionBadge({
+export function DirectionBadge({
   source,
   target,
 }: {

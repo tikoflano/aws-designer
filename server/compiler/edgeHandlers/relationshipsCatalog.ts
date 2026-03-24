@@ -13,6 +13,8 @@ import { s3TriggersLambdaDefinition } from "./s3-to-lambda/v1/s3TriggersLambda.d
 import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/v1/snsStandardToLambdaSubscription.definition.ts";
 import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/v1/snsFifoToSqsSubscription.definition.ts";
 import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/v1/snsStandardToSqsSubscription.definition.ts";
+import { lambdaSendsSqsDefinition } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
+import { sqsTriggersLambdaDefinition } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";
 import { RELATIONSHIP_ID_TUPLE } from "./relationshipIds.ts";
 
 export const ALL_RELATIONSHIPS = [
@@ -28,6 +30,8 @@ export const ALL_RELATIONSHIPS = [
   sqsSubscribesSnsFifoDefinition,
   sqsSubscribesSnsStandardDefinition,
   lambdaSubscribesSnsStandardDefinition,
+  sqsTriggersLambdaDefinition,
+  lambdaSendsSqsDefinition,
 ];
 
 if (ALL_RELATIONSHIPS.length !== RELATIONSHIP_ID_TUPLE.length) {
@@ -45,6 +49,16 @@ for (let i = 0; i < ALL_RELATIONSHIPS.length; i++) {
 
 export function listRelationships(source: ServiceId, target: ServiceId) {
   return ALL_RELATIONSHIPS.filter((r) => r.source === source && r.target === target);
+}
+
+/** Catalog edges that start at this service (this → other). */
+export function listOutgoingRelationships(serviceId: ServiceId) {
+  return ALL_RELATIONSHIPS.filter((r) => r.source === serviceId);
+}
+
+/** Catalog edges that end at this service (other → this). */
+export function listIncomingRelationships(serviceId: ServiceId) {
+  return ALL_RELATIONSHIPS.filter((r) => r.target === serviceId);
 }
 
 /** True if any catalog relationship allows an edge between the two service types (either direction). */

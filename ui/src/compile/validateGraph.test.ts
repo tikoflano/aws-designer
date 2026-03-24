@@ -525,6 +525,72 @@ describe("validateGraph", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("accepts sqs_triggers_lambda when SQS and Lambda nodes exist", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-lambda-trigger-q", queueType: "standard" },
+        },
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSqsConsumer" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "q1",
+          targetNodeId: "l1",
+          relationshipId: RelationshipIds.sqs_triggers_lambda,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
+  it("accepts lambda_sends_sqs when Lambda and SQS nodes exist", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSqsProducer" },
+        },
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: DEFINITION_VERSION_V1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-lambda-send-q", queueType: "standard" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "q1",
+          relationshipId: RelationshipIds.lambda_sends_sqs,
+          relationshipVersion: DEFINITION_VERSION_V1,
+          config: {},
+        },
+      ],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
   it("migrates legacy semver 1.0.0 version strings to integers", () => {
     const result = validateGraph({
       nodes: [

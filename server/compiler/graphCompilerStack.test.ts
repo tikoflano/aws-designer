@@ -490,4 +490,85 @@ describe("GraphCompilerStack", () => {
     expect(json).toContain("dynamodb:GetItem");
     expect(json).toContain("dynamodb:PutItem");
   });
+
+  it("creates Lambda event source mapping from SQS queue", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-esm-q", queueType: "standard" },
+        },
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSqsEsmFn" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "q1",
+          targetNodeId: "l1",
+          relationshipId: RelationshipIds.sqs_triggers_lambda,
+          relationshipVersion: 1,
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "SqsLambdaEsmStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    template.resourceCountIs("AWS::Lambda::EventSourceMapping", 1);
+  });
+
+  it("grants Lambda sqs:SendMessage on queue via lambda_sends_sqs edge", () => {
+    const raw = {
+      formatVersion: 1,
+      kind: "aws-designer-graph",
+      nodes: [
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { functionName: "fixtureSqsSendFn" },
+        },
+        {
+          id: "q1",
+          serviceId: "sqs",
+          serviceVersion: 1,
+          position: { x: 0, y: 0 },
+          config: { name: "fixture-send-target-q", queueType: "standard" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "q1",
+          relationshipId: RelationshipIds.lambda_sends_sqs,
+          relationshipVersion: 1,
+          config: {},
+        },
+      ],
+    };
+    const doc = graphFileToDocument(parseGraphFileJson(raw));
+
+    const app = new App({ outdir: join(__dirname, "../../cdk.out.test") });
+    const stack = new GraphCompilerStack(app, "LambdaSqsSendStack", { graph: doc });
+    const template = Template.fromStack(stack);
+
+    const json = JSON.stringify(template.toJSON());
+    expect(json).toContain("sqs:SendMessage");
+  });
 });

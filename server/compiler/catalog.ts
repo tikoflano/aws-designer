@@ -16,6 +16,8 @@ export { DEFINITION_VERSION_V1 } from "./domain/catalogTypes.ts";
 export {
   getRelationship,
   hasRelationshipBetween,
+  listIncomingRelationships,
+  listOutgoingRelationships,
   listRelationships,
 } from "./edgeHandlers/relationshipsCatalog.ts";
 
@@ -63,4 +65,6 @@ export {
   s3TriggersLambdaConfigSchema,
   sqsSubscribesSnsFifoConfigSchema,
   sqsSubscribesSnsStandardConfigSchema,
+  lambdaSendsSqsConfigSchema,
+  sqsTriggersLambdaConfigSchema,
 } from "./edgeHandlers/relationshipEdgeSchemas.ts";

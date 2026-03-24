@@ -10,6 +10,8 @@ import { S3TriggersLambdaHandlerV1 } from "./s3-to-lambda/v1/s3TriggersLambdaHan
 import { LambdaSubscribesSnsStandardHandlerV1 } from "./sns-to-lambda/v1/snsStandardToLambdaSubscriptionHandlerV1.ts";
 import { SqsSubscribesSnsFifoHandlerV1 } from "./sns-to-sqs/v1/snsFifoToSqsSubscriptionHandlerV1.ts";
 import { SqsSubscribesSnsStandardHandlerV1 } from "./sns-to-sqs/v1/snsStandardToSqsSubscriptionHandlerV1.ts";
+import { LambdaSendsSqsHandlerV1 } from "./lambda-to-sqs/v1/lambdaSendsSqsHandlerV1.ts";
+import { SqsTriggersLambdaHandlerV1 } from "./sqs-to-lambda/v1/sqsTriggersLambdaHandlerV1.ts";
 import type { EdgeRelationshipHandler } from "./types.ts";
 
 const ALL_HANDLERS: EdgeRelationshipHandler[] = [
@@ -25,6 +27,8 @@ const ALL_HANDLERS: EdgeRelationshipHandler[] = [
   new SqsSubscribesSnsFifoHandlerV1(),
   new SqsSubscribesSnsStandardHandlerV1(),
   new LambdaSubscribesSnsStandardHandlerV1(),
+  new SqsTriggersLambdaHandlerV1(),
+  new LambdaSendsSqsHandlerV1(),
 ];
 
 const BY_RELATIONSHIP_AND_VERSION: Record<string, Record<number, EdgeRelationshipHandler>> =

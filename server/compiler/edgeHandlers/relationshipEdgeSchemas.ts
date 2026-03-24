@@ -11,3 +11,5 @@ export { route53AliasCloudFrontConfigSchema } from "./route53-to-cloudfront/v1/r
 export { lambdaSubscribesSnsStandardConfigSchema } from "./sns-to-lambda/v1/snsStandardToLambdaSubscription.definition.ts";
 export { sqsSubscribesSnsFifoConfigSchema } from "./sns-to-sqs/v1/snsFifoToSqsSubscription.definition.ts";
 export { sqsSubscribesSnsStandardConfigSchema } from "./sns-to-sqs/v1/snsStandardToSqsSubscription.definition.ts";
+export { lambdaSendsSqsConfigSchema } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
+export { sqsTriggersLambdaConfigSchema } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";

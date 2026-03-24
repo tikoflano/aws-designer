@@ -16,6 +16,8 @@ import { s3TriggersLambdaDefinition } from "./s3-to-lambda/v1/s3TriggersLambda.d
 import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/v1/snsStandardToLambdaSubscription.definition.ts";
 import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/v1/snsFifoToSqsSubscription.definition.ts";
 import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/v1/snsStandardToSqsSubscription.definition.ts";
+import { lambdaSendsSqsDefinition } from "./lambda-to-sqs/v1/lambdaSendsSqs.definition.ts";
+import { sqsTriggersLambdaDefinition } from "./sqs-to-lambda/v1/sqsTriggersLambda.definition.ts";
 
 export const RELATIONSHIP_ID_TUPLE = [
   lambdaReadsS3Definition.id,
@@ -30,6 +32,8 @@ export const RELATIONSHIP_ID_TUPLE = [
   sqsSubscribesSnsFifoDefinition.id,
   sqsSubscribesSnsStandardDefinition.id,
   lambdaSubscribesSnsStandardDefinition.id,
+  sqsTriggersLambdaDefinition.id,
+  lambdaSendsSqsDefinition.id,
 ] as const;
 
 export type RelationshipId = (typeof RELATIONSHIP_ID_TUPLE)[number];
@@ -52,4 +56,6 @@ export const RelationshipIds = {
   sqs_subscribes_sns_fifo: sqsSubscribesSnsFifoDefinition.id,
   sqs_subscribes_sns_standard: sqsSubscribesSnsStandardDefinition.id,
   lambda_subscribes_sns_standard: lambdaSubscribesSnsStandardDefinition.id,
+  sqs_triggers_lambda: sqsTriggersLambdaDefinition.id,
+  lambda_sends_sqs: lambdaSendsSqsDefinition.id,
 } as const;
