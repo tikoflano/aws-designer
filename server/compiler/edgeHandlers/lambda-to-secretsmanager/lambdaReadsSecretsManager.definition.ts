@@ -11,6 +11,7 @@ export const lambdaReadsSecretsManagerDefinition: RelationshipDefinition = {
   id: "lambda_reads_secretsmanager",
   version: RELATIONSHIP_VERSION,
   name: "Lambda reads from Secrets Manager",
+  verb: "reads",
   description:
     "Grants the Lambda execution role permission to read the target secret value.",
   source: "lambda",

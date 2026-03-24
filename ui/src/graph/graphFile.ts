@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  RELATIONSHIP_VERSION,
+  relationshipIdZodSchema,
+  serviceIdGraphSchema,
+} from "@compiler/catalog.ts";
 import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 import type { GraphDocument, GraphEdge, GraphNode } from "../domain/types";
 
@@ -12,22 +17,9 @@ const positionSchema = z.object({
   y: z.number(),
 });
 
-const serviceIdSchemaV1 = z.enum([
-  "s3",
-  "lambda",
-  "cloudfront",
-  "route53",
-  "secretsmanager",
-  "sns",
-  "sns_standard",
-  "sns_fifo",
-  "sqs",
-  "dynamodb",
-]);
-
 const graphNodeSchema = z.object({
   id: z.string().min(1),
-  serviceId: serviceIdSchemaV1,
+  serviceId: serviceIdGraphSchema,
   serviceVersion: z.string().min(1),
   position: positionSchema,
   config: z.record(z.string(), z.unknown()),
@@ -39,9 +31,10 @@ const graphEdgeSchema = z.object({
   targetNodeId: z.string().min(1),
   sourceHandleId: z.string().min(1).optional(),
   targetHandleId: z.string().min(1).optional(),
-  relationshipId: z.string().min(1),
-  relationshipVersion: z.string().min(1),
+  relationshipId: relationshipIdZodSchema,
+  relationshipVersion: z.literal(RELATIONSHIP_VERSION),
   config: z.record(z.string(), z.unknown()),
+  labelAlongPath: z.number().min(0).max(1).optional(),
 });
 
 export const graphFileSchema = z.object({

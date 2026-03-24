@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "../domain/catalogTypes.ts";
-import type { ServiceId } from "../domain/serviceId.ts";
+import { SERVICE_ID_VALUES, type ServiceId } from "../domain/serviceId.ts";
 
 import { dynamodbServiceDefinition } from "./dynamodb/dynamodbService.definition.ts";
 import { cloudfrontServiceDefinition } from "./cloudfront/cloudfrontService.definition.ts";
@@ -11,17 +11,7 @@ import { secretsManagerServiceDefinition } from "./secretsmanager/secretsManager
 import { s3ServiceDefinition } from "./s3/s3Service.definition.ts";
 import { sqsServiceDefinition } from "./sqs/sqsService.definition.ts";
 
-const SERVICE_ORDER: ServiceId[] = [
-  "s3",
-  "lambda",
-  "cloudfront",
-  "route53",
-  "secretsmanager",
-  "sns_standard",
-  "sns_fifo",
-  "sqs",
-  "dynamodb",
-];
+const SERVICE_ORDER: ServiceId[] = [...SERVICE_ID_VALUES];
 
 const BY_ID: Record<ServiceId, ServiceDefinition> = {
   s3: s3ServiceDefinition,

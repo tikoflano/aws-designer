@@ -1,6 +1,9 @@
 import { useState } from "react";
 
-import type { RelationshipDefinition } from "@compiler/catalog.ts";
+import type {
+  RelationshipDefinition,
+  RelationshipId,
+} from "@compiler/catalog.ts";
 
 type DirectionFilter = "both" | "forward" | "reverse";
 
@@ -11,7 +14,7 @@ type Props = {
   forwardRelationships: RelationshipDefinition[];
   reverseRelationships: RelationshipDefinition[];
   onCancel: () => void;
-  onSelect: (relationshipId: string, reversed: boolean) => void;
+  onSelect: (relationshipId: RelationshipId, reversed: boolean) => void;
 };
 
 function formatServiceLabel(id: string): string {
@@ -152,7 +155,7 @@ export function RelationshipPicker({
                   key={`${r.id}-${reversed ? "r" : "f"}`}
                   type="button"
                   className="flex flex-col gap-1.5 rounded-lg border border-orange-200 bg-white px-3.5 py-3 text-left shadow-sm transition-colors hover:border-orange-400 hover:bg-orange-50"
-                  onClick={() => onSelect(r.id, reversed)}
+                  onClick={() => onSelect(r.id as RelationshipId, reversed)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-sm font-semibold text-slate-900">

@@ -8,7 +8,7 @@ import {
 import { toast, Toaster } from "sonner";
 
 import { useGraphStore } from "../state/graphStore";
-import { listRelationships } from "@compiler/catalog.ts";
+import { listRelationships, type RelationshipId } from "@compiler/catalog.ts";
 import { FlowCanvas } from "./flow/FlowCanvas";
 import { InspectorPanel } from "./inspector/InspectorPanel";
 import { GraphToasts } from "./notifications/GraphToasts";
@@ -201,7 +201,7 @@ export function App() {
       : [];
 
   const handleSelectRelationship = useCallback(
-    (relationshipId: string, reversed: boolean) => {
+    (relationshipId: RelationshipId, reversed: boolean) => {
       if (reversed && pendingConnection) {
         beginConnection(
           pendingConnection.targetNodeId,

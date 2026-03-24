@@ -8,6 +8,7 @@ import type { Construct } from "constructs";
 
 import type { GraphDocument } from "@shared/domain/graph.ts";
 import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
+import { RelationshipIds } from "./edgeHandlers/relationshipIds.ts";
 import { edgeRelationshipHandlers } from "./edgeHandlers/registry.ts";
 import type { GraphCompileContext } from "./graphCompileContext.ts";
 import { nodeServiceHandlers } from "./nodeHandlers/registry.ts";
@@ -15,8 +16,6 @@ import { nodeServiceHandlers } from "./nodeHandlers/registry.ts";
 function nodeById(doc: GraphDocument, id: string) {
   return doc.nodes.find((n) => n.id === id);
 }
-
-const CLOUDFRONT_ORIGIN_S3_ID = "cloudfront_origin_s3";
 
 function applyEdge(
   graph: GraphDocument,
@@ -73,8 +72,12 @@ export class GraphCompilerStack extends cdk.Stack {
       nodeServiceHandlers[node.serviceId]?.apply(this, ctx, node);
     }
 
-    const originEdges = graph.edges.filter((e) => e.relationshipId === CLOUDFRONT_ORIGIN_S3_ID);
-    const otherEdges = graph.edges.filter((e) => e.relationshipId !== CLOUDFRONT_ORIGIN_S3_ID);
+    const originEdges = graph.edges.filter(
+      (e) => e.relationshipId === RelationshipIds.cloudfront_origin_s3,
+    );
+    const otherEdges = graph.edges.filter(
+      (e) => e.relationshipId !== RelationshipIds.cloudfront_origin_s3,
+    );
 
     for (const edge of originEdges) {
       applyEdge(graph, ctx, edge);

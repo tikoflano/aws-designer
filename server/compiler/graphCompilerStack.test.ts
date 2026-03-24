@@ -7,6 +7,7 @@ import { Template } from "aws-cdk-lib/assertions";
 import { describe, expect, it } from "vitest";
 
 import { graphFileToDocument, parseGraphFileJson } from "../../ui/src/graph/graphFile.ts";
+import { RelationshipIds } from "./catalog.ts";
 import { GraphCompilerStack } from "./graphCompilerStack.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -131,7 +132,7 @@ describe("GraphCompilerStack", () => {
           id: "er",
           sourceNodeId: "l1",
           targetNodeId: "sm1",
-          relationshipId: "lambda_reads_secretsmanager",
+          relationshipId: RelationshipIds.lambda_reads_secretsmanager,
           relationshipVersion: "1.0.0",
           config: {},
         },
@@ -139,7 +140,7 @@ describe("GraphCompilerStack", () => {
           id: "ew",
           sourceNodeId: "l1",
           targetNodeId: "sm1",
-          relationshipId: "lambda_writes_secretsmanager",
+          relationshipId: RelationshipIds.lambda_writes_secretsmanager,
           relationshipVersion: "1.0.0",
           config: {},
         },
@@ -305,7 +306,7 @@ describe("GraphCompilerStack", () => {
           id: "e1",
           sourceNodeId: "q1",
           targetNodeId: "t1",
-          relationshipId: "sqs_subscribes_sns_standard",
+          relationshipId: RelationshipIds.sqs_subscribes_sns_standard,
           relationshipVersion: "1.0.0",
           config: {},
         },
@@ -345,7 +346,7 @@ describe("GraphCompilerStack", () => {
           id: "e1",
           sourceNodeId: "l1",
           targetNodeId: "t1",
-          relationshipId: "lambda_subscribes_sns_standard",
+          relationshipId: RelationshipIds.lambda_subscribes_sns_standard,
           relationshipVersion: "1.0.0",
           config: {},
         },
@@ -390,7 +391,7 @@ describe("GraphCompilerStack", () => {
           id: "e1",
           sourceNodeId: "q1",
           targetNodeId: "t1",
-          relationshipId: "sqs_subscribes_sns_fifo",
+          relationshipId: RelationshipIds.sqs_subscribes_sns_fifo,
           relationshipVersion: "1.0.0",
           config: {},
         },
@@ -465,7 +466,7 @@ describe("GraphCompilerStack", () => {
           id: "er",
           sourceNodeId: "l1",
           targetNodeId: "d1",
-          relationshipId: "lambda_reads_dynamodb",
+          relationshipId: RelationshipIds.lambda_reads_dynamodb,
           relationshipVersion: "1.0.0",
           config: {},
         },
@@ -473,7 +474,7 @@ describe("GraphCompilerStack", () => {
           id: "ew",
           sourceNodeId: "l1",
           targetNodeId: "d1",
-          relationshipId: "lambda_writes_dynamodb",
+          relationshipId: RelationshipIds.lambda_writes_dynamodb,
           relationshipVersion: "1.0.0",
           config: {},
         },

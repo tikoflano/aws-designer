@@ -14,6 +14,7 @@ export const lambdaReadsS3Definition: RelationshipDefinition = {
   id: "lambda_reads_s3",
   version: RELATIONSHIP_VERSION,
   name: "Lambda reads from S3",
+  verb: "reads",
   description:
     "Grants the Lambda execution role permission to read objects in the bucket (and optionally list by prefix).",
   source: "lambda",

@@ -3,6 +3,10 @@
  */
 
 export type { ServiceId } from "./domain/serviceId.ts";
+export {
+  SERVICE_ID_VALUES,
+  serviceIdGraphSchema,
+} from "./domain/serviceId.ts";
 export type {
   RelationshipDefinition,
   ServiceDefinition,
@@ -17,6 +21,13 @@ export {
   hasRelationshipBetween,
   listRelationships,
 } from "./edgeHandlers/relationshipsCatalog.ts";
+
+export type { RelationshipId } from "./edgeHandlers/relationshipIds.ts";
+export {
+  RELATIONSHIP_ID_TUPLE,
+  RelationshipIds,
+  relationshipIdZodSchema,
+} from "./edgeHandlers/relationshipIds.ts";
 
 export { getService, listServices } from "./nodeHandlers/servicesCatalog.ts";
 
@@ -42,15 +53,17 @@ export { snsStandardTopicNodeConfigSchema } from "./nodeHandlers/sns/snsStandard
 export { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/sqsService.definition.ts";
 export { dynamodbTableNodeConfigSchema } from "./nodeHandlers/dynamodb/dynamodbService.definition.ts";
 
-export { lambdaReadsS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaReadsS3.definition.ts";
-export { lambdaWritesS3ConfigSchema } from "./edgeHandlers/lambda-to-s3/lambdaWritesS3.definition.ts";
-export { lambdaReadsDynamodbConfigSchema } from "./edgeHandlers/lambda-to-dynamodb/lambdaReadsDynamodb.definition.ts";
-export { lambdaWritesDynamodbConfigSchema } from "./edgeHandlers/lambda-to-dynamodb/lambdaWritesDynamodb.definition.ts";
-export { lambdaReadsSecretsManagerConfigSchema } from "./edgeHandlers/lambda-to-secretsmanager/lambdaReadsSecretsManager.definition.ts";
-export { lambdaWritesSecretsManagerConfigSchema } from "./edgeHandlers/lambda-to-secretsmanager/lambdaWritesSecretsManager.definition.ts";
-export { s3TriggersLambdaConfigSchema } from "./edgeHandlers/s3-to-lambda/s3TriggersLambda.definition.ts";
-export { cloudfrontOriginS3ConfigSchema } from "./edgeHandlers/cloudfront-to-s3/cloudfrontOriginS3.definition.ts";
-export { route53AliasCloudFrontConfigSchema } from "./edgeHandlers/route53-to-cloudfront/route53AliasCloudFront.definition.ts";
-export { lambdaSubscribesSnsStandardConfigSchema } from "./edgeHandlers/sns-to-lambda/snsStandardToLambdaSubscription.definition.ts";
-export { sqsSubscribesSnsFifoConfigSchema } from "./edgeHandlers/sns-to-sqs/snsFifoToSqsSubscription.definition.ts";
-export { sqsSubscribesSnsStandardConfigSchema } from "./edgeHandlers/sns-to-sqs/snsStandardToSqsSubscription.definition.ts";
+export {
+  cloudfrontOriginS3ConfigSchema,
+  lambdaReadsDynamodbConfigSchema,
+  lambdaReadsSecretsManagerConfigSchema,
+  lambdaReadsS3ConfigSchema,
+  lambdaSubscribesSnsStandardConfigSchema,
+  lambdaWritesDynamodbConfigSchema,
+  lambdaWritesSecretsManagerConfigSchema,
+  lambdaWritesS3ConfigSchema,
+  route53AliasCloudFrontConfigSchema,
+  s3TriggersLambdaConfigSchema,
+  sqsSubscribesSnsFifoConfigSchema,
+  sqsSubscribesSnsStandardConfigSchema,
+} from "./edgeHandlers/relationshipEdgeSchemas.ts";

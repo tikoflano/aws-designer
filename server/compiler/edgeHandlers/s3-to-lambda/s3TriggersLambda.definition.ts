@@ -18,6 +18,7 @@ export const s3TriggersLambdaDefinition: RelationshipDefinition = {
   id: "s3_triggers_lambda",
   version: RELATIONSHIP_VERSION,
   name: "S3 invokes Lambda",
+  verb: "invokes",
   description:
     "Object create/remove events in the bucket invoke the target Lambda (notification + invoke permission).",
   source: "s3",

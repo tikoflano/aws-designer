@@ -3,14 +3,12 @@ import type { GraphDocument } from "@shared/domain/graph.ts";
 import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 
 import { RELATIONSHIP_VERSION } from "./domain/catalogTypes.ts";
+import { RelationshipIds } from "./edgeHandlers/relationshipIds.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
 import { logicalBucketId } from "./nodeHandlers/s3/s3Service.definition.ts";
 import { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/sqsService.definition.ts";
 import { domainInHostedZone } from "./nodeHandlers/route53/route53Service.definition.ts";
 import { getService } from "./nodeHandlers/servicesCatalog.ts";
-
-const CLOUDFRONT_ORIGIN_S3 = "cloudfront_origin_s3";
-const ROUTE53_ALIAS_CLOUDFRONT = "route53_alias_cloudfront";
 
 function nodeById(doc: GraphDocument, id: string) {
   return doc.nodes.find((n) => n.id === id);
@@ -20,10 +18,6 @@ function nodeById(doc: GraphDocument, id: string) {
  * Validates node/edge shapes, known service and relationship versions, and Zod configs.
  * Used by the UI and by the Node CDK compiler before synthesis.
  */
-const LAMBDA_READS_SECRETSMANAGER = "lambda_reads_secretsmanager";
-const LAMBDA_WRITES_SECRETSMANAGER = "lambda_writes_secretsmanager";
-const SQS_SUBSCRIBES_SNS_FIFO = "sqs_subscribes_sns_fifo";
-
 export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   const issues: CompileIssue[] = [];
   const bucketLogicalIds = new Set<string>();
@@ -95,7 +89,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
 
     try {
       rel.configSchema.parse(edge.config);
-      if (rel.id === "s3_triggers_lambda") {
+      if (rel.id === RelationshipIds.s3_triggers_lambda) {
         const b = logicalBucketId(sourceNode.id);
         if (!bucketLogicalIds.has(b)) {
           issues.push({
@@ -106,8 +100,8 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
         }
       }
       if (
-        rel.id === LAMBDA_READS_SECRETSMANAGER ||
-        rel.id === LAMBDA_WRITES_SECRETSMANAGER
+        rel.id === RelationshipIds.lambda_reads_secretsmanager ||
+        rel.id === RelationshipIds.lambda_writes_secretsmanager
       ) {
         if (!validSecretsManagerNodeIds.has(targetNode.id)) {
           issues.push({
@@ -117,7 +111,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
           });
         }
       }
-      if (rel.id === SQS_SUBSCRIBES_SNS_FIFO) {
+      if (rel.id === RelationshipIds.sqs_subscribes_sns_fifo) {
         const q = sqsQueueNodeConfigSchema.safeParse(sourceNode.config);
         if (q.success && q.data.queueType !== "fifo") {
           issues.push({
@@ -161,13 +155,13 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
     const originEdges = doc.edges.filter(
       (e) =>
         e.sourceNodeId === cfId &&
-        e.relationshipId === CLOUDFRONT_ORIGIN_S3 &&
+        e.relationshipId === RelationshipIds.cloudfront_origin_s3 &&
         e.relationshipVersion === RELATIONSHIP_VERSION,
     );
     if (originEdges.length > 1) {
       issues.push({
         code: "cloudfront_origin_s3_duplicate",
-        message: `CloudFront node "${cfId}" may have at most one "${CLOUDFRONT_ORIGIN_S3}" edge (found ${originEdges.length}).`,
+        message: `CloudFront node "${cfId}" may have at most one "${RelationshipIds.cloudfront_origin_s3}" edge (found ${originEdges.length}).`,
         nodeId: cfId,
       });
     }
@@ -176,7 +170,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   const route53AliasTargets = new Map<string, string[]>();
   for (const edge of doc.edges) {
     if (
-      edge.relationshipId !== ROUTE53_ALIAS_CLOUDFRONT ||
+      edge.relationshipId !== RelationshipIds.route53_alias_cloudfront ||
       edge.relationshipVersion !== RELATIONSHIP_VERSION
     ) {
       continue;
@@ -188,13 +182,13 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
     const hasOrigin = doc.edges.some(
       (e) =>
         e.sourceNodeId === edge.targetNodeId &&
-        e.relationshipId === CLOUDFRONT_ORIGIN_S3 &&
+        e.relationshipId === RelationshipIds.cloudfront_origin_s3 &&
         e.relationshipVersion === RELATIONSHIP_VERSION,
     );
     if (!hasOrigin) {
       issues.push({
         code: "route53_alias_without_distribution",
-        message: `Route 53 alias targets CloudFront node "${edge.targetNodeId}" but that node has no "${CLOUDFRONT_ORIGIN_S3}" edge (distribution would not be created).`,
+        message: `Route 53 alias targets CloudFront node "${edge.targetNodeId}" but that node has no "${RelationshipIds.cloudfront_origin_s3}" edge (distribution would not be created).`,
         edgeId: edge.id,
       });
     }
@@ -232,7 +226,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
       for (const eid of edgeIds.slice(1)) {
         issues.push({
           code: "duplicate_route53_alias_cloudfront",
-          message: `At most one "${ROUTE53_ALIAS_CLOUDFRONT}" edge may target CloudFront node "${targetId}".`,
+          message: `At most one "${RelationshipIds.route53_alias_cloudfront}" edge may target CloudFront node "${targetId}".`,
           edgeId: eid,
         });
       }

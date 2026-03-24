@@ -13,6 +13,7 @@ import { s3TriggersLambdaDefinition } from "./s3-to-lambda/s3TriggersLambda.defi
 import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/snsStandardToLambdaSubscription.definition.ts";
 import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/snsFifoToSqsSubscription.definition.ts";
 import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/snsStandardToSqsSubscription.definition.ts";
+import { RELATIONSHIP_ID_TUPLE } from "./relationshipIds.ts";
 
 export const ALL_RELATIONSHIPS = [
   lambdaReadsS3Definition,
@@ -28,6 +29,19 @@ export const ALL_RELATIONSHIPS = [
   sqsSubscribesSnsStandardDefinition,
   lambdaSubscribesSnsStandardDefinition,
 ];
+
+if (ALL_RELATIONSHIPS.length !== RELATIONSHIP_ID_TUPLE.length) {
+  throw new Error(
+    "ALL_RELATIONSHIPS and RELATIONSHIP_ID_TUPLE length mismatch — update relationshipIds.ts",
+  );
+}
+for (let i = 0; i < ALL_RELATIONSHIPS.length; i++) {
+  if (ALL_RELATIONSHIPS[i].id !== RELATIONSHIP_ID_TUPLE[i]) {
+    throw new Error(
+      `Relationship id drift at index ${i}: catalog "${ALL_RELATIONSHIPS[i].id}" vs RELATIONSHIP_ID_TUPLE "${String(RELATIONSHIP_ID_TUPLE[i])}"`,
+    );
+  }
+}
 
 export function listRelationships(source: ServiceId, target: ServiceId) {
   return ALL_RELATIONSHIPS.filter((r) => r.source === source && r.target === target);

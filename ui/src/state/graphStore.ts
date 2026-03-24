@@ -1,8 +1,15 @@
+import type { Connection } from "@xyflow/react";
 import { customAlphabet, nanoid } from "nanoid";
 import { create } from "zustand";
 
 import * as graphApi from "../api/graphApi";
-import type { GraphDocument, GraphEdge, GraphNode, ServiceId } from "../domain/types";
+import type {
+  GraphDocument,
+  GraphEdge,
+  GraphNode,
+  RelationshipId,
+  ServiceId,
+} from "../domain/types";
 import {
   getRelationship,
   RELATIONSHIP_VERSION,
@@ -78,11 +85,15 @@ type GraphStateInner = {
   ) => void;
   cancelPendingConnection: () => void;
   confirmRelationship: (
-    relationshipId: string,
+    relationshipId: RelationshipId,
     config?: Record<string, unknown>,
   ) => void;
   select: (selection: Selection | null) => void;
   updateEdgeConfig: (edgeId: string, config: Record<string, unknown>) => void;
+  /** Persist label position as fraction [0,1] along the edge path (by SVG path length). */
+  updateEdgeLabelAlongPath: (edgeId: string, labelAlongPath: number) => void;
+  /** React Flow reconnect: updates endpoints when directed relationship still matches. */
+  reconnectEdge: (edgeId: string, connection: Connection) => void;
   removeEdge: (edgeId: string) => void;
   replaceFromGraphDocument: (doc: GraphDocument) => void;
   setGraphTitle: (title: string) => void;
@@ -334,8 +345,8 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       ...(pending.targetHandleId
         ? { targetHandleId: pending.targetHandleId }
         : {}),
-      relationshipId: rel.id,
-      relationshipVersion: rel.version,
+      relationshipId: rel.id as RelationshipId,
+      relationshipVersion: rel.version as typeof RELATIONSHIP_VERSION,
       config: parsedConfig,
     };
     set((s) => ({
@@ -355,6 +366,47 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   updateEdgeConfig: (edgeId, config) => {
     set((s) => ({
       edges: s.edges.map((e) => (e.id === edgeId ? { ...e, config } : e)),
+    }));
+  },
+
+  updateEdgeLabelAlongPath: (edgeId, labelAlongPath) => {
+    const t = Math.min(1, Math.max(0, labelAlongPath));
+    set((s) => ({
+      edges: s.edges.map((e) =>
+        e.id === edgeId ? { ...e, labelAlongPath: t } : e,
+      ),
+    }));
+  },
+
+  reconnectEdge: (edgeId, connection) => {
+    const { source, target, sourceHandle, targetHandle } = connection;
+    if (!source || !target) return;
+    const { nodes, edges } = get();
+    const edge = edges.find((e) => e.id === edgeId);
+    if (!edge) return;
+    const rel = getRelationship(edge.relationshipId, edge.relationshipVersion);
+    if (!rel) return;
+    const srcNode = nodes.find((n) => n.id === source);
+    const tgtNode = nodes.find((n) => n.id === target);
+    if (!srcNode || !tgtNode) return;
+    if (srcNode.serviceId !== rel.source || tgtNode.serviceId !== rel.target) {
+      return;
+    }
+    const next: GraphEdge = {
+      id: edge.id,
+      sourceNodeId: source,
+      targetNodeId: target,
+      relationshipId: edge.relationshipId,
+      relationshipVersion: edge.relationshipVersion,
+      config: edge.config,
+    };
+    if (edge.labelAlongPath !== undefined) {
+      next.labelAlongPath = edge.labelAlongPath;
+    }
+    if (sourceHandle) next.sourceHandleId = sourceHandle;
+    if (targetHandle) next.targetHandleId = targetHandle;
+    set((s) => ({
+      edges: s.edges.map((e) => (e.id === edgeId ? next : e)),
     }));
   },
 

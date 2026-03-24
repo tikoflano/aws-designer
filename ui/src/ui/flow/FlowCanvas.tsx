@@ -3,7 +3,6 @@ import {
   Controls,
   ConnectionMode,
   MarkerType,
-  MiniMap,
   Panel,
   ReactFlow,
   ReactFlowProvider,
@@ -12,6 +11,7 @@ import {
   useStoreApi,
   type Connection,
   type Edge,
+  type EdgeTypes,
   type IsValidConnection,
   type Node,
   type NodeChange,
@@ -47,6 +47,7 @@ import { SnsCanvasNode } from "./nodes/SnsCanvasNode";
 import { SqsCanvasNode } from "./nodes/SqsCanvasNode";
 import { DynamodbCanvasNode } from "./nodes/DynamodbCanvasNode";
 import { S3CanvasNode } from "./nodes/S3CanvasNode";
+import { CanvasSmoothStepEdge } from "./edges/CanvasSmoothStepEdge";
 
 const PALETTE_SERVICE_IDS = new Set<ServiceId>(
   listServices().map((s) => s.id),
@@ -63,6 +64,10 @@ const nodeTypes: NodeTypes = {
   sqs: SqsCanvasNode,
   dynamodb: DynamodbCanvasNode,
 };
+
+const edgeTypes = {
+  canvasSmoothstep: CanvasSmoothStepEdge,
+} satisfies EdgeTypes;
 
 function toFlowNodes(
   nodes: ReturnType<typeof useGraphStore.getState>["nodes"],
@@ -138,10 +143,11 @@ function toFlowEdges(
       target: e.targetNodeId,
       ...(e.sourceHandleId ? { sourceHandle: e.sourceHandleId } : {}),
       ...(e.targetHandleId ? { targetHandle: e.targetHandleId } : {}),
-      label: rel?.name ?? e.relationshipId,
-      type: "smoothstep",
+      label: rel?.verb ?? rel?.name ?? e.relationshipId,
+      type: "canvasSmoothstep",
       animated: true,
       selected,
+      data: { labelAlongPath: e.labelAlongPath },
       markerEnd: {
         type: MarkerType.ArrowClosed,
         color: selected ? EDGE_MARKER_SELECTED : EDGE_MARKER_SLATE,
@@ -176,6 +182,7 @@ function FlowCanvasBody({
   const updateNode = useGraphStore((s) => s.updateNode);
   const removeNode = useGraphStore((s) => s.removeNode);
   const removeEdge = useGraphStore((s) => s.removeEdge);
+  const reconnectEdgeInStore = useGraphStore((s) => s.reconnectEdge);
 
   const flowNodes = useMemo(
     () => toFlowNodes(nodes, selection, connectingMode),
@@ -228,6 +235,13 @@ function FlowCanvasBody({
       });
     },
     [beginConnection, setConnectingMode, setConnectionOriginNodeId],
+  );
+
+  const onReconnect = useCallback(
+    (oldEdge: Edge, c: Connection) => {
+      reconnectEdgeInStore(oldEdge.id, c);
+    },
+    [reconnectEdgeInStore],
   );
 
   const onConnectStart = useCallback<OnConnectStart>((_event, params) => {
@@ -345,8 +359,9 @@ function FlowCanvasBody({
       nodes={flowNodes}
       edges={flowEdges}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       defaultEdgeOptions={{
-        type: "smoothstep",
+        type: "canvasSmoothstep",
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: EDGE_MARKER_SLATE,
@@ -359,6 +374,7 @@ function FlowCanvasBody({
       onConnectStart={onConnectStart}
       onConnectEnd={onConnectEnd}
       onConnect={onConnect}
+      onReconnect={onReconnect}
       onNodeClick={onNodeClick}
       onEdgeClick={onEdgeClick}
       onPaneClick={onPaneClick}
@@ -379,11 +395,6 @@ function FlowCanvasBody({
         <CanvasGraphMenu />
       </Panel>
       <Controls />
-      <MiniMap
-        pannable
-        zoomable
-        className="hidden md:block"
-      />
     </ReactFlow>
   );
 }

@@ -13,6 +13,7 @@ export const cloudfrontOriginS3Definition: RelationshipDefinition = {
   id: "cloudfront_origin_s3",
   version: RELATIONSHIP_VERSION,
   name: "CloudFront origin from S3",
+  verb: "origin",
   description: "Uses the bucket as the default origin for this CloudFront distribution.",
   source: "cloudfront",
   target: "s3",
