@@ -1,7 +1,10 @@
 {
-  "name": "aws-designer",
+  "name": "aws-designer-dev",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
-  "forwardPorts": [5173, 8787],
+  "forwardPorts": [
+    5173,
+    8787
+  ],
   "portsAttributes": {
     "5173": {
       "label": "Vite",
@@ -13,6 +16,7 @@
     }
   },
   "postCreateCommand": "npm ci",
+  "postStartCommand": "npm run dev",
   "customizations": {
     "vscode": {
       "extensions": [
