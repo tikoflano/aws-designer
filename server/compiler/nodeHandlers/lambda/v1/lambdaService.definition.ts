@@ -4,6 +4,7 @@ import {
   DEFINITION_VERSION_V1,
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
+import { randomShortId } from "../../randomNodeDefaults.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
 import { NodeIds } from "../../nodeIds.ts";
 
@@ -135,4 +136,5 @@ export const lambdaServiceDefinition: ServiceDefinition = {
   displayName: "Lambda function",
   description: "AWS Lambda function with an execution role.",
   configSchema: lambdaNodeConfigSchema,
+  createDefaultConfig: () => ({ functionName: `fn-${randomShortId(6)}` }),
 };

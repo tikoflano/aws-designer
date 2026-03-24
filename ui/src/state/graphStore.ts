@@ -1,5 +1,5 @@
 import type { Connection } from "@xyflow/react";
-import { customAlphabet, nanoid } from "nanoid";
+import { nanoid } from "nanoid";
 import { create } from "zustand";
 
 import * as graphApi from "../api/graphApi";
@@ -31,8 +31,6 @@ export type PendingConnection = {
 };
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
-
-const s3BucketNameSuffix = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
 
 const DRAFT_KEY = "aws-designer-draft-v1";
 
@@ -185,52 +183,6 @@ export function hydrateDraftFromStorage(): Partial<GraphStateInner> | null {
   };
 }
 
-function defaultNodeConfig(serviceId: ServiceId): Record<string, unknown> {
-  if (serviceId === "s3") {
-    return { name: `b-${s3BucketNameSuffix()}` };
-  }
-  if (serviceId === "lambda") {
-    return { functionName: `fn-${nanoid(6)}` };
-  }
-  if (serviceId === "route53") {
-    return { name: "", type: "public" };
-  }
-  if (serviceId === "cloudfront") {
-    return { name: `cf-${nanoid(6)}` };
-  }
-  if (serviceId === "secretsmanager") {
-    return {
-      name: `sec-${s3BucketNameSuffix()}`,
-      secretKey: "key",
-      secretValue: "",
-    };
-  }
-  if (serviceId === "sns_standard") {
-    return { name: `topic-${s3BucketNameSuffix()}` };
-  }
-  if (serviceId === "sns_fifo") {
-    return {
-      name: `topic-${s3BucketNameSuffix()}.fifo`,
-      fifoThroughputScope: "message_group",
-    };
-  }
-  if (serviceId === "sqs") {
-    return {
-      name: `q-${s3BucketNameSuffix()}`,
-      queueType: "standard",
-    };
-  }
-  if (serviceId === "dynamodb") {
-    return {
-      name: `tbl-${s3BucketNameSuffix()}`,
-      partitionKeyName: "pk",
-      partitionKeyType: "string",
-      sortKeyName: "",
-    };
-  }
-  return {};
-}
-
 export const useGraphStore = create<GraphStateInner>((set, get) => ({
   nodes: [],
   edges: [],
@@ -264,7 +216,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
       serviceId,
       serviceVersion: svc.version,
       position,
-      config: defaultNodeConfig(serviceId),
+      config: svc.createDefaultConfig(),
     };
     set((s) => ({
       nodes: [...s.nodes, node],

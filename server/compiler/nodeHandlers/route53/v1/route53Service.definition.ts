@@ -19,6 +19,7 @@ export const route53ServiceDefinition: ServiceDefinition = {
   displayName: "Route 53",
   description: "Route 53 hosted zone (public or private).",
   configSchema: route53NodeConfigSchema,
+  createDefaultConfig: () => ({ name: "", type: "public" }),
 };
 
 function normalizeZoneName(z: string): string {

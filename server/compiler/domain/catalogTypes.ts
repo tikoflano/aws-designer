@@ -11,6 +11,8 @@ export type ServiceDefinition = {
   displayName: string;
   description: string;
   configSchema: ZodType<Record<string, unknown>>;
+  /** Fresh node config when the user adds this service on the canvas (UI). */
+  createDefaultConfig: () => Record<string, unknown>;
 };
 
 export type RelationshipDefinition = {

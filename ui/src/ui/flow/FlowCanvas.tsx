@@ -36,34 +36,17 @@ import {
   listServices,
 } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
+import { buildNodeTypes, getUiServiceModule } from "../services/registry";
 import { PALETTE_DRAG_MIME } from "../palette/ServicePalette";
 import { CanvasGraphMenu } from "./CanvasGraphMenu";
 import { CanvasPaletteToggle } from "./CanvasPaletteToggle";
-import { CloudFrontCanvasNode } from "./nodes/CloudFrontCanvasNode";
-import { LambdaCanvasNode } from "./nodes/LambdaCanvasNode";
-import { Route53CanvasNode } from "./nodes/Route53CanvasNode";
-import { SecretsManagerCanvasNode } from "./nodes/SecretsManagerCanvasNode";
-import { SnsCanvasNode } from "./nodes/SnsCanvasNode";
-import { SqsCanvasNode } from "./nodes/SqsCanvasNode";
-import { DynamodbCanvasNode } from "./nodes/DynamodbCanvasNode";
-import { S3CanvasNode } from "./nodes/S3CanvasNode";
 import { CanvasSmoothStepEdge } from "./edges/CanvasSmoothStepEdge";
 
 const PALETTE_SERVICE_IDS = new Set<ServiceId>(
   listServices().map((s) => s.id),
 );
 
-const nodeTypes: NodeTypes = {
-  s3: S3CanvasNode,
-  lambda: LambdaCanvasNode,
-  cloudfront: CloudFrontCanvasNode,
-  route53: Route53CanvasNode,
-  secretsmanager: SecretsManagerCanvasNode,
-  sns_standard: SnsCanvasNode,
-  sns_fifo: SnsCanvasNode,
-  sqs: SqsCanvasNode,
-  dynamodb: DynamodbCanvasNode,
-};
+const nodeTypes: NodeTypes = buildNodeTypes();
 
 const edgeTypes = {
   canvasSmoothstep: CanvasSmoothStepEdge,
@@ -75,45 +58,9 @@ function toFlowNodes(
   connectingMode: boolean,
 ): Node[] {
   return nodes.map((n) => {
-    const title =
-      n.serviceId === "s3"
-        ? String(
-            (n.config.name as string | undefined)?.trim() ||
-              (n.config.bucketName as string | undefined)?.trim() ||
-              "Bucket",
-          )
-        : n.serviceId === "lambda"
-          ? String(n.config.functionName ?? "Lambda")
-          : n.serviceId === "route53"
-            ? String(
-                (n.config.name as string | undefined)?.trim() || "DNS",
-              )
-            : n.serviceId === "cloudfront"
-              ? String(
-                  (n.config.name as string | undefined)?.trim() ||
-                    (n.config.comment as string | undefined)?.trim() ||
-                    "Distribution",
-                )
-              : n.serviceId === "secretsmanager"
-                ? String(
-                    (n.config.name as string | undefined)?.trim() || "Secret",
-                  )
-                : n.serviceId === "sns_standard" || n.serviceId === "sns_fifo"
-                  ? String(
-                      (n.config.name as string | undefined)?.trim() || "Topic",
-                    )
-                  : n.serviceId === "sqs"
-                    ? String(
-                        (n.config.name as string | undefined)?.trim() ||
-                          "Queue",
-                      )
-                    : n.serviceId === "dynamodb"
-                      ? String(
-                          (n.config.name as string | undefined)?.trim() ||
-                            "Table",
-                        )
-                      : n.serviceId;
     const svc = getService(n.serviceId, n.serviceVersion);
+    const uiMod = getUiServiceModule(n.serviceId, n.serviceVersion);
+    const title = uiMod?.canvasTitle(n) ?? n.serviceId;
     const serviceDisplayName = svc?.displayName ?? n.serviceId;
     return {
       id: n.id,

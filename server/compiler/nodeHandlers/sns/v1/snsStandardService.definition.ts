@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomAlnum12 } from "../../randomNodeDefaults.ts";
 
 export const snsStandardTopicNodeConfigSchema = z
   .object({
@@ -52,4 +53,5 @@ export const snsStandardServiceDefinition: ServiceDefinition = {
   description:
     "Standard SNS topic with AWS-managed encryption (alias/aws/sns).",
   configSchema: snsStandardTopicNodeConfigSchema,
+  createDefaultConfig: () => ({ name: `topic-${randomAlnum12()}` }),
 };

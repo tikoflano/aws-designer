@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomAlnum12 } from "../../randomNodeDefaults.ts";
 
 export const sqsQueueTypeSchema = z.enum(["standard", "fifo"]);
 
@@ -94,4 +95,8 @@ export const sqsServiceDefinition: ServiceDefinition = {
   description:
     "Standard or FIFO queue with SSE-SQS, 4-day retention, 30s visibility, 1024 KiB max message, and an auto-created DLQ (max receives 10).",
   configSchema: sqsQueueNodeConfigSchema,
+  createDefaultConfig: () => ({
+    name: `q-${randomAlnum12()}`,
+    queueType: "standard",
+  }),
 };

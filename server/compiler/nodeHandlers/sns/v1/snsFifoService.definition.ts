@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomAlnum12 } from "../../randomNodeDefaults.ts";
 
 export const snsFifoThroughputScopeSchema = z.enum(["message_group", "topic"]);
 
@@ -67,4 +68,8 @@ export const snsFifoServiceDefinition: ServiceDefinition = {
   description:
     "FIFO SNS topic: topic- or message-group-scope throughput, content-based deduplication, AWS-managed encryption.",
   configSchema: snsFifoTopicNodeConfigSchema,
+  createDefaultConfig: () => ({
+    name: `topic-${randomAlnum12()}.fifo`,
+    fifoThroughputScope: "message_group",
+  }),
 };

@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomShortId } from "../../randomNodeDefaults.ts";
 
 const cloudfrontNodeConfigRawSchema = z.object({
   name: z.string().default(""),
@@ -26,4 +27,5 @@ export const cloudfrontServiceDefinition: ServiceDefinition = {
   displayName: "CloudFront",
   description: "Amazon CloudFront CDN distribution (S3 origin via graph edge).",
   configSchema: cloudfrontNodeConfigSchema,
+  createDefaultConfig: () => ({ name: `cf-${randomShortId(6)}` }),
 };

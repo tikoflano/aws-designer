@@ -1,23 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useId } from "react";
-import { useForm, useWatch, type UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import type { GraphEdge, GraphNode } from "../../domain/types";
 import {
-  defaultInlineSourceForRuntime,
   getRelationship,
   getService,
-  type LambdaRuntime,
   type RelationshipDefinition,
   type ServiceDefinition,
 } from "@compiler/catalog.ts";
 import { useGraphStore } from "../../state/graphStore";
-
-import { HelpInfoPopover } from "../common/HelpInfoPopover";
-import { LambdaEnvVarsField } from "./LambdaEnvVarsField";
-import { LambdaInlineSourceField } from "./LambdaInlineSourceField";
-
-type FormValues = Record<string, unknown>;
+import { getUiRelationshipModule } from "../relationships/registry";
+import { getUiServiceModule } from "../services/registry";
+import type { FormValues } from "../services/types";
 
 function nodeInspectorFormDefaults(
   node: GraphNode,
@@ -27,38 +22,8 @@ function nodeInspectorFormDefaults(
   const base = (
     result.success ? result.data : { ...node.config }
   ) as FormValues;
-  if (node.serviceId !== "lambda") return base;
-  return {
-    ...base,
-    inlineSource:
-      (base.inlineSource as string | undefined) ??
-      defaultInlineSourceForRuntime(base.runtime as LambdaRuntime),
-  };
-}
-
-function fieldErrorId(baseId: string, field: string) {
-  return `${baseId}-${field}-err`;
-}
-
-function FieldError({
-  baseId,
-  field,
-  message,
-}: {
-  baseId: string;
-  field: string;
-  message?: string;
-}) {
-  if (!message) return null;
-  return (
-    <p
-      id={fieldErrorId(baseId, field)}
-      className="text-xs text-red-600"
-      role="alert"
-    >
-      {message}
-    </p>
-  );
+  const mod = getUiServiceModule(node.serviceId, node.serviceVersion);
+  return mod?.inspectorFormDefaults?.(node, base, svc) ?? base;
 }
 
 function CloseCrossIcon({ className }: { className?: string }) {
@@ -188,6 +153,7 @@ function NodeInspectorForm({
 }) {
   const formId = useId();
   const defaults = nodeInspectorFormDefaults(node, svc);
+  const uiMod = getUiServiceModule(node.serviceId, node.serviceVersion);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(svc.configSchema),
@@ -202,14 +168,11 @@ function NodeInspectorForm({
     formState: { errors },
   } = form;
 
-  const dynamodbSortKeyNameWatch = useWatch({
-    control,
-    name: "sortKeyName",
-  }) as string | undefined;
-
   useEffect(() => {
     form.reset(nodeInspectorFormDefaults(node, svc));
   }, [node.id, node.serviceVersion, node.config, svc, form]); // eslint-disable-line react-hooks/exhaustive-deps -- omit full `node` so drag updates do not reset the form
+
+  const InspectorFields = uiMod?.InspectorFields;
 
   return (
     <form
@@ -228,571 +191,21 @@ function NodeInspectorForm({
         </div>
       </div>
 
-      {node.serviceId === "s3" && (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Name</span>
-          <span className="text-xs text-slate-500">
-            Global S3 bucket name: 3–63 characters, lowercase letters, digits, dots,
-            and hyphens only. SSE-S3 encryption is always enabled on the bucket.
-          </span>
-          <input
-            className={`rounded border px-2 py-1 text-sm ${
-              errors.name ? "border-red-300" : "border-slate-200"
-            }`}
-            aria-invalid={errors.name ? true : undefined}
-            aria-describedby={
-              errors.name?.message ? fieldErrorId(formId, "name") : undefined
-            }
-            {...register("name")}
-          />
-          <FieldError
-            baseId={formId}
-            field="name"
-            message={errors.name?.message}
-          />
-        </label>
-      )}
-
-      {node.serviceId === "lambda" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Function name</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.functionName ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.functionName ? true : undefined}
-              aria-describedby={
-                errors.functionName?.message
-                  ? fieldErrorId(formId, "functionName")
-                  : undefined
-              }
-              {...register("functionName")}
-            />
-            <FieldError
-              baseId={formId}
-              field="functionName"
-              message={errors.functionName?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Handler</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.handler ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.handler ? true : undefined}
-              aria-describedby={
-                errors.handler?.message
-                  ? fieldErrorId(formId, "handler")
-                  : undefined
-              }
-              {...register("handler")}
-            />
-            <FieldError
-              baseId={formId}
-              field="handler"
-              message={errors.handler?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Runtime</span>
-            <select
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.runtime ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.runtime ? true : undefined}
-              aria-describedby={
-                errors.runtime?.message
-                  ? fieldErrorId(formId, "runtime")
-                  : undefined
-              }
-              {...register("runtime")}
-            >
-              <option value="nodejs18.x">nodejs18.x</option>
-              <option value="nodejs20.x">nodejs20.x</option>
-              <option value="nodejs22.x">nodejs22.x</option>
-              <option value="python3.12">python3.12</option>
-              <option value="python3.13">python3.13</option>
-            </select>
-            <FieldError
-              baseId={formId}
-              field="runtime"
-              message={errors.runtime?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Memory (MB)</span>
-            <span className="text-xs text-slate-500">128–10240</span>
-            <input
-              type="number"
-              min={128}
-              max={10240}
-              step={1}
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.memorySizeMb ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.memorySizeMb ? true : undefined}
-              aria-describedby={
-                errors.memorySizeMb?.message
-                  ? fieldErrorId(formId, "memorySizeMb")
-                  : undefined
-              }
-              {...register("memorySizeMb", { valueAsNumber: true })}
-            />
-            <FieldError
-              baseId={formId}
-              field="memorySizeMb"
-              message={errors.memorySizeMb?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Ephemeral storage (MB)</span>
-            <span className="text-xs text-slate-500">512–10240 (/tmp)</span>
-            <input
-              type="number"
-              min={512}
-              max={10240}
-              step={1}
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.ephemeralStorageMb ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.ephemeralStorageMb ? true : undefined}
-              aria-describedby={
-                errors.ephemeralStorageMb?.message
-                  ? fieldErrorId(formId, "ephemeralStorageMb")
-                  : undefined
-              }
-              {...register("ephemeralStorageMb", { valueAsNumber: true })}
-            />
-            <FieldError
-              baseId={formId}
-              field="ephemeralStorageMb"
-              message={errors.ephemeralStorageMb?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Timeout (seconds)</span>
-            <span className="text-xs text-slate-500">1–900</span>
-            <input
-              type="number"
-              min={1}
-              max={900}
-              step={1}
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.timeoutSeconds ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.timeoutSeconds ? true : undefined}
-              aria-describedby={
-                errors.timeoutSeconds?.message
-                  ? fieldErrorId(formId, "timeoutSeconds")
-                  : undefined
-              }
-              {...register("timeoutSeconds", { valueAsNumber: true })}
-            />
-            <FieldError
-              baseId={formId}
-              field="timeoutSeconds"
-              message={errors.timeoutSeconds?.message}
-            />
-          </label>
-          <LambdaEnvVarsField control={control} formId={formId} errors={errors} />
-          <LambdaInlineSourceField
-            control={control}
-            getValues={getValues}
-            setValue={setValue}
-            errors={errors}
-            formId={formId}
-          />
-        </>
-      )}
-
-      {node.serviceId === "cloudfront" && (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Name</span>
-          <span className="text-xs text-slate-500">
-            Identifies this distribution on the canvas and is sent to AWS as the
-            distribution comment.
-          </span>
-          <input
-            className={`rounded border px-2 py-1 text-sm ${
-              errors.name ? "border-red-300" : "border-slate-200"
-            }`}
-            aria-invalid={errors.name ? true : undefined}
-            aria-describedby={
-              errors.name?.message ? fieldErrorId(formId, "name") : undefined
-            }
-            {...register("name")}
-          />
-          <FieldError
-            baseId={formId}
-            field="name"
-            message={errors.name?.message}
-          />
-        </label>
-      )}
-
-      {node.serviceId === "route53" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Zone name</span>
-            <span className="text-xs text-slate-500">
-              Hosted zone domain, e.g. example.com
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.name ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={
-                errors.name?.message
-                  ? fieldErrorId(formId, "name")
-                  : undefined
-              }
-              {...register("name")}
-            />
-            <FieldError
-              baseId={formId}
-              field="name"
-              message={errors.name?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Type</span>
-            <select
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-              {...register("type")}
-            >
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-            </select>
-          </label>
-        </>
-      )}
-
-      {node.serviceId === "sns_standard" && (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Topic name</span>
-          <span className="text-xs text-slate-500">
-            Letters, numbers, hyphens, underscores. Do not use a{" "}
-            <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code> suffix.
-            Encryption uses AWS-managed KMS (alias/aws/sns).
-          </span>
-          <input
-            className={`rounded border px-2 py-1 text-sm ${
-              errors.name ? "border-red-300" : "border-slate-200"
-            }`}
-            aria-invalid={errors.name ? true : undefined}
-            aria-describedby={
-              errors.name?.message ? fieldErrorId(formId, "name") : undefined
-            }
-            {...register("name")}
-          />
-          <FieldError
-            baseId={formId}
-            field="name"
-            message={errors.name?.message}
-          />
-        </label>
-      )}
-
-      {node.serviceId === "sns_fifo" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">High throughput</span>
-            <span className="text-xs text-slate-500">
-              FIFO throughput and deduplication scope. Content-based deduplication
-              is enabled.
-            </span>
-            <select
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.fifoThroughputScope ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.fifoThroughputScope ? true : undefined}
-              aria-describedby={
-                errors.fifoThroughputScope?.message
-                  ? fieldErrorId(formId, "fifoThroughputScope")
-                  : undefined
-              }
-              {...register("fifoThroughputScope")}
-            >
-              <option value="message_group">Message group scope (default)</option>
-              <option value="topic">Topic scope</option>
-            </select>
-            <FieldError
-              baseId={formId}
-              field="fifoThroughputScope"
-              message={errors.fifoThroughputScope?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Topic name</span>
-            <span className="text-xs text-slate-500">
-              Letters, numbers, hyphens, underscores.{" "}
-              <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code> is
-              appended if missing. Encryption uses AWS-managed KMS (alias/aws/sns).
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.name ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={
-                errors.name?.message ? fieldErrorId(formId, "name") : undefined
-              }
-              {...register("name")}
-            />
-            <FieldError
-              baseId={formId}
-              field="name"
-              message={errors.name?.message}
-            />
-          </label>
-        </>
-      )}
-
-      {node.serviceId === "sqs" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Queue type</span>
-            <select
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.queueType ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.queueType ? true : undefined}
-              aria-describedby={
-                errors.queueType?.message
-                  ? fieldErrorId(formId, "queueType")
-                  : undefined
-              }
-              {...register("queueType")}
-            >
-              <option value="standard">Standard (default)</option>
-              <option value="fifo">FIFO</option>
-            </select>
-            <FieldError
-              baseId={formId}
-              field="queueType"
-              message={errors.queueType?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Queue name</span>
-            <span className="text-xs text-slate-500">
-              Letters, numbers, hyphens, underscores. Standard: no{" "}
-              <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code>. FIFO:
-              <code className="rounded bg-slate-100 px-1 font-mono">.fifo</code> added if
-              missing. A matching DLQ is created (
-              <code className="font-mono text-[11px]">-dlq</code> suffix). Defaults:
-              visibility 30s, retention 4 days, max message 1024 KiB, SSE-SQS, DLQ max
-              receives 10.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.name ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={
-                errors.name?.message ? fieldErrorId(formId, "name") : undefined
-              }
-              {...register("name")}
-            />
-            <FieldError
-              baseId={formId}
-              field="name"
-              message={errors.name?.message}
-            />
-          </label>
-        </>
-      )}
-
-      {node.serviceId === "dynamodb" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Table name</span>
-            <span className="text-xs text-slate-500">
-              3–255 characters; letters, numbers, underscores, hyphens, dots. On-demand
-              billing, AWS-managed encryption, point-in-time recovery enabled.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.name ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={
-                errors.name?.message ? fieldErrorId(formId, "name") : undefined
-              }
-              {...register("name")}
-            />
-            <FieldError
-              baseId={formId}
-              field="name"
-              message={errors.name?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Partition key</span>
-            <input
-              className={`rounded border px-2 py-1 font-mono text-sm ${
-                errors.partitionKeyName ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.partitionKeyName ? true : undefined}
-              aria-describedby={
-                errors.partitionKeyName?.message
-                  ? fieldErrorId(formId, "partitionKeyName")
-                  : undefined
-              }
-              {...register("partitionKeyName")}
-            />
-            <FieldError
-              baseId={formId}
-              field="partitionKeyName"
-              message={errors.partitionKeyName?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Partition key type</span>
-            <select
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.partitionKeyType ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.partitionKeyType ? true : undefined}
-              aria-describedby={
-                errors.partitionKeyType?.message
-                  ? fieldErrorId(formId, "partitionKeyType")
-                  : undefined
-              }
-              {...register("partitionKeyType")}
-            >
-              <option value="string">String</option>
-              <option value="number">Number</option>
-              <option value="binary">Binary</option>
-            </select>
-            <FieldError
-              baseId={formId}
-              field="partitionKeyType"
-              message={errors.partitionKeyType?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Sort key (optional)</span>
-            <span className="text-xs text-slate-500">
-              Leave blank for partition-key-only table. If set, choose a sort key type
-              below.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 font-mono text-sm ${
-                errors.sortKeyName ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.sortKeyName ? true : undefined}
-              aria-describedby={
-                errors.sortKeyName?.message
-                  ? fieldErrorId(formId, "sortKeyName")
-                  : undefined
-              }
-              {...register("sortKeyName")}
-            />
-            <FieldError
-              baseId={formId}
-              field="sortKeyName"
-              message={errors.sortKeyName?.message}
-            />
-          </label>
-          {String(dynamodbSortKeyNameWatch ?? "").trim() !== "" ? (
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-slate-700">Sort key type</span>
-              <select
-                className={`rounded border px-2 py-1 text-sm ${
-                  errors.sortKeyType ? "border-red-300" : "border-slate-200"
-                }`}
-                aria-invalid={errors.sortKeyType ? true : undefined}
-                aria-describedby={
-                  errors.sortKeyType?.message
-                    ? fieldErrorId(formId, "sortKeyType")
-                    : undefined
-                }
-                {...register("sortKeyType")}
-              >
-                <option value="string">String</option>
-                <option value="number">Number</option>
-                <option value="binary">Binary</option>
-              </select>
-              <FieldError
-                baseId={formId}
-                field="sortKeyType"
-                message={errors.sortKeyType?.message}
-              />
-            </label>
-          ) : null}
-        </>
-      )}
-
-      {node.serviceId === "secretsmanager" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Secret name</span>
-            <span className="text-xs text-slate-500">
-              AWS secret name (other type of secret; value stored as JSON with one
-              key). Appears in templates—avoid real production secrets in the graph.
-            </span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.name ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={
-                errors.name?.message ? fieldErrorId(formId, "name") : undefined
-              }
-              {...register("name")}
-            />
-            <FieldError
-              baseId={formId}
-              field="name"
-              message={errors.name?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Key</span>
-            <input
-              className={`rounded border px-2 py-1 font-mono text-sm ${
-                errors.secretKey ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.secretKey ? true : undefined}
-              aria-describedby={
-                errors.secretKey?.message
-                  ? fieldErrorId(formId, "secretKey")
-                  : undefined
-              }
-              {...register("secretKey")}
-            />
-            <FieldError
-              baseId={formId}
-              field="secretKey"
-              message={errors.secretKey?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Value</span>
-            <textarea
-              rows={3}
-              className={`rounded border px-2 py-1 font-mono text-xs ${
-                errors.secretValue ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.secretValue ? true : undefined}
-              aria-describedby={
-                errors.secretValue?.message
-                  ? fieldErrorId(formId, "secretValue")
-                  : undefined
-              }
-              {...register("secretValue")}
-            />
-            <FieldError
-              baseId={formId}
-              field="secretValue"
-              message={errors.secretValue?.message}
-            />
-          </label>
-        </>
+      {InspectorFields ? (
+        <InspectorFields
+          formId={formId}
+          node={node}
+          svc={svc}
+          register={register}
+          control={control}
+          errors={errors}
+          getValues={getValues}
+          setValue={setValue}
+        />
+      ) : (
+        <p className="text-sm text-amber-800">
+          No inspector UI is registered for this service version.
+        </p>
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -858,14 +271,15 @@ function EdgeInspectorForm({
     defaultValues: defaults,
   });
 
-  const {
-    register,
-    formState: { errors },
-  } = form;
-
   useEffect(() => {
     form.reset(rel.configSchema.parse(edge.config) as FormValues);
   }, [edge.id, edge.relationshipVersion, edge.config, rel, form]);
+
+  const relUi = getUiRelationshipModule(
+    edge.relationshipId,
+    edge.relationshipVersion,
+  );
+  const EdgeFields = relUi?.EdgeConfigFields;
 
   return (
     <form
@@ -883,207 +297,9 @@ function EdgeInspectorForm({
         <div className="mt-1 text-xs text-slate-600">{rel.description}</div>
       </div>
 
-      {rel.id === "lambda_reads_s3" && (
-        <>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Object key prefix</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.objectKeyPrefix ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.objectKeyPrefix ? true : undefined}
-              aria-describedby={
-                errors.objectKeyPrefix?.message
-                  ? fieldErrorId(formId, "objectKeyPrefix")
-                  : undefined
-              }
-              {...register("objectKeyPrefix")}
-            />
-            <FieldError
-              baseId={formId}
-              field="objectKeyPrefix"
-              message={errors.objectKeyPrefix?.message}
-            />
-          </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" {...register("includeListBucket")} />
-            Include s3:ListBucket
-          </label>
-        </>
-      )}
-
-      {rel.id === "lambda_writes_s3" && (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Object key prefix</span>
-          <input
-            className={`rounded border px-2 py-1 text-sm ${
-              errors.objectKeyPrefix ? "border-red-300" : "border-slate-200"
-            }`}
-            aria-invalid={errors.objectKeyPrefix ? true : undefined}
-            aria-describedby={
-              errors.objectKeyPrefix?.message
-                ? fieldErrorId(formId, "objectKeyPrefix")
-                : undefined
-            }
-            {...register("objectKeyPrefix")}
-          />
-          <FieldError
-            baseId={formId}
-            field="objectKeyPrefix"
-            message={errors.objectKeyPrefix?.message}
-          />
-        </label>
-      )}
-
-      {rel.id === "s3_triggers_lambda" && (
-        <>
-          <div className="flex flex-col gap-2 text-sm">
-            <span className="text-slate-700">Events</span>
-            <span className="text-xs text-slate-500">
-              Select at least one event type.
-            </span>
-            <S3EventsField
-              form={form}
-              baseId={formId}
-              eventsError={errors.events?.message}
-            />
-          </div>
-          <div className="flex items-center gap-1.5 text-sm">
-            <span className="font-medium text-slate-700">
-              Prefix and suffix filters
-            </span>
-            <HelpInfoPopover
-              ariaLabel="About S3 prefix and suffix filters"
-              title="S3 notification filters"
-            >
-              <p>
-                Optional limits on which object keys trigger Lambda for the
-                events you selected. Leave both blank to react to any key in the
-                bucket.
-              </p>
-              <p>
-                <span className="font-medium text-slate-800">Prefix</span> —
-                only keys that{" "}
-                <span className="font-medium text-slate-800">start</span> with
-                this value. Example:{" "}
-                <code className="rounded bg-slate-100 px-1 font-mono text-xs">
-                  uploads/
-                </code>{" "}
-                for objects under that path.
-              </p>
-              <p>
-                <span className="font-medium text-slate-800">Suffix</span> —
-                only keys that{" "}
-                <span className="font-medium text-slate-800">end</span> with
-                this value. Example:{" "}
-                <code className="rounded bg-slate-100 px-1 font-mono text-xs">
-                  .json
-                </code>
-                .
-              </p>
-              <p>
-                If both are set, the key must match both. That matches
-                AWS S3 event notification filter behavior.
-              </p>
-            </HelpInfoPopover>
-          </div>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Prefix filter</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.prefix ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.prefix ? true : undefined}
-              aria-describedby={
-                errors.prefix?.message
-                  ? fieldErrorId(formId, "prefix")
-                  : undefined
-              }
-              {...register("prefix")}
-            />
-            <FieldError
-              baseId={formId}
-              field="prefix"
-              message={errors.prefix?.message}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-700">Suffix filter</span>
-            <input
-              className={`rounded border px-2 py-1 text-sm ${
-                errors.suffix ? "border-red-300" : "border-slate-200"
-              }`}
-              aria-invalid={errors.suffix ? true : undefined}
-              aria-describedby={
-                errors.suffix?.message
-                  ? fieldErrorId(formId, "suffix")
-                  : undefined
-              }
-              {...register("suffix")}
-            />
-            <FieldError
-              baseId={formId}
-              field="suffix"
-              message={errors.suffix?.message}
-            />
-          </label>
-        </>
-      )}
-
-      {rel.id === "cloudfront_origin_s3" && (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Origin path (optional)</span>
-          <span className="text-xs text-slate-500">
-            Prefix within the bucket served as the root, e.g.{" "}
-            <code className="rounded bg-slate-100 px-1 font-mono">static</code>
-          </span>
-          <input
-            className={`rounded border px-2 py-1 text-sm ${
-              errors.originPath ? "border-red-300" : "border-slate-200"
-            }`}
-            aria-invalid={errors.originPath ? true : undefined}
-            aria-describedby={
-              errors.originPath?.message
-                ? fieldErrorId(formId, "originPath")
-                : undefined
-            }
-            {...register("originPath")}
-          />
-          <FieldError
-            baseId={formId}
-            field="originPath"
-            message={errors.originPath?.message}
-          />
-        </label>
-      )}
-
-      {rel.id === "route53_alias_cloudfront" && (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-slate-700">Domain name (FQDN)</span>
-          <span className="text-xs text-slate-500">
-            Alias and TLS name for CloudFront, e.g. www.example.com or the zone
-            apex. Must sit under the hosted zone on the Route 53 node; ACM issues
-            a certificate automatically via DNS validation.
-          </span>
-          <input
-            className={`rounded border px-2 py-1 text-sm ${
-              errors.domainName ? "border-red-300" : "border-slate-200"
-            }`}
-            aria-invalid={errors.domainName ? true : undefined}
-            aria-describedby={
-              errors.domainName?.message
-                ? fieldErrorId(formId, "domainName")
-                : undefined
-            }
-            {...register("domainName")}
-          />
-          <FieldError
-            baseId={formId}
-            field="domainName"
-            message={errors.domainName?.message}
-          />
-        </label>
-      )}
+      {EdgeFields ? (
+        <EdgeFields formId={formId} edge={edge} rel={rel} form={form} />
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         <button
@@ -1101,45 +317,5 @@ function EdgeInspectorForm({
         </button>
       </div>
     </form>
-  );
-}
-
-function S3EventsField({
-  form,
-  baseId,
-  eventsError,
-}: {
-  form: UseFormReturn<FormValues>;
-  baseId: string;
-  eventsError?: string;
-}) {
-  const events = (form.watch("events") as string[] | undefined) ?? [];
-  const toggle = (value: string) => {
-    const set = new Set(events);
-    if (set.has(value)) set.delete(value);
-    else set.add(value);
-    form.setValue("events", [...set], { shouldValidate: true });
-  };
-
-  return (
-    <div
-      className="flex flex-col gap-1"
-      aria-invalid={eventsError ? true : undefined}
-      aria-describedby={
-        eventsError ? fieldErrorId(baseId, "events") : undefined
-      }
-    >
-      {(["s3:ObjectCreated:*", "s3:ObjectRemoved:*"] as const).map((ev) => (
-        <label key={ev} className="flex items-center gap-2 text-slate-700">
-          <input
-            type="checkbox"
-            checked={events.includes(ev)}
-            onChange={() => toggle(ev)}
-          />
-          <span className="text-xs font-mono">{ev}</span>
-        </label>
-      ))}
-      <FieldError baseId={baseId} field="events" message={eventsError} />
-    </div>
   );
 }

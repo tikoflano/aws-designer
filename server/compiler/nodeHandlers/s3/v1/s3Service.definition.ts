@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomAlnum12 } from "../../randomNodeDefaults.ts";
 import { NodeIds } from "../../nodeIds.ts";
 
 const bucketNameRules = z
@@ -43,4 +44,5 @@ export const s3ServiceDefinition: ServiceDefinition = {
   displayName: "S3 bucket",
   description: "Amazon S3 bucket for object storage (SSE-S3 encryption enabled).",
   configSchema: s3NodeConfigSchema,
+  createDefaultConfig: () => ({ name: `b-${randomAlnum12()}` }),
 };

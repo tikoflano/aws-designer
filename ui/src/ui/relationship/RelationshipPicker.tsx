@@ -1,8 +1,11 @@
 import { useState } from "react";
 
-import type {
-  RelationshipDefinition,
-  RelationshipId,
+import {
+  DEFINITION_VERSION_V1,
+  getService,
+  type RelationshipDefinition,
+  type RelationshipId,
+  type ServiceId,
 } from "@compiler/catalog.ts";
 
 type DirectionFilter = "both" | "forward" | "reverse";
@@ -18,16 +21,9 @@ type Props = {
 };
 
 function formatServiceLabel(id: string): string {
-  if (id === "s3") return "S3";
-  if (id === "lambda") return "Lambda";
-  if (id === "cloudfront") return "CloudFront";
-  if (id === "route53") return "Route 53";
-  if (id === "secretsmanager") return "Secrets Manager";
-  if (id === "sns_standard") return "SNS (standard)";
-  if (id === "sns_fifo") return "SNS (FIFO)";
-  if (id === "sqs") return "SQS";
-  if (id === "dynamodb") return "DynamoDB";
-  return id;
+  return (
+    getService(id as ServiceId, DEFINITION_VERSION_V1)?.displayName ?? id
+  );
 }
 
 function DirectionBadge({

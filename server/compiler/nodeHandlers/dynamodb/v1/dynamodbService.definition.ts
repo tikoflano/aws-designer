@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomAlnum12 } from "../../randomNodeDefaults.ts";
 
 const attrName = z
   .string()
@@ -106,4 +107,10 @@ export const dynamodbServiceDefinition: ServiceDefinition = {
   description:
     "Single-table design with partition key and optional sort key; on-demand capacity and AWS-managed encryption.",
   configSchema: dynamodbTableNodeConfigSchema,
+  createDefaultConfig: () => ({
+    name: `tbl-${randomAlnum12()}`,
+    partitionKeyName: "pk",
+    partitionKeyType: "string",
+    sortKeyName: "",
+  }),
 };

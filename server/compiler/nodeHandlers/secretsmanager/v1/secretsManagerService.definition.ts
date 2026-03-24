@@ -5,6 +5,7 @@ import {
   type ServiceDefinition,
 } from "../../../domain/catalogTypes.ts";
 import type { ServiceId } from "../../../domain/serviceId.ts";
+import { randomAlnum12 } from "../../randomNodeDefaults.ts";
 
 /** AWS CreateSecret Name: letters, digits, path separators, and limited punctuation. */
 const secretNameRegex = /^[a-zA-Z0-9/_+=.@,-]+$/;
@@ -32,4 +33,9 @@ export const secretsManagerServiceDefinition: ServiceDefinition = {
   description:
     "Stores a key/value pair as an other-type secret (plain JSON payload).",
   configSchema: secretsManagerNodeConfigSchema,
+  createDefaultConfig: () => ({
+    name: `sec-${randomAlnum12()}`,
+    secretKey: "key",
+    secretValue: "",
+  }),
 };
