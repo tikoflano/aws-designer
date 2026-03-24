@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  RELATIONSHIP_VERSION,
-  RelationshipIds,
-  SERVICE_VERSION,
-} from "@compiler/catalog.ts";
+import { DEFINITION_VERSION_V1, RelationshipIds } from "@compiler/catalog.ts";
 import { validateGraph } from "@compiler/validateGraph.ts";
 
 describe("validateGraph", () => {
@@ -14,14 +10,14 @@ describe("validateGraph", () => {
         {
           id: "s1",
           serviceId: "s3",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "validate-test-bucket" },
         },
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { functionName: "demo" },
         },
@@ -32,7 +28,7 @@ describe("validateGraph", () => {
           sourceNodeId: "l1",
           targetNodeId: "s1",
           relationshipId: RelationshipIds.lambda_reads_s3,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
@@ -47,14 +43,14 @@ describe("validateGraph", () => {
         {
           id: "s1",
           serviceId: "s3",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "validate-test-bucket" },
         },
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { functionName: "demo" },
         },
@@ -65,7 +61,7 @@ describe("validateGraph", () => {
           sourceNodeId: "s1",
           targetNodeId: "l1",
           relationshipId: RelationshipIds.s3_triggers_lambda,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
@@ -79,7 +75,7 @@ describe("validateGraph", () => {
         {
           id: "cf1",
           serviceId: "cloudfront",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: {},
         },
@@ -96,7 +92,7 @@ describe("validateGraph", () => {
         {
           id: "cf1",
           serviceId: "cloudfront",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "cdn" },
         },
@@ -112,21 +108,21 @@ describe("validateGraph", () => {
         {
           id: "b1",
           serviceId: "s3",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
           serviceId: "cloudfront",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "app-cdn" },
         },
         {
           id: "r1",
           serviceId: "route53",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: {
             name: "example.com",
@@ -140,7 +136,7 @@ describe("validateGraph", () => {
           sourceNodeId: "cf1",
           targetNodeId: "b1",
           relationshipId: RelationshipIds.cloudfront_origin_s3,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
         {
@@ -148,7 +144,7 @@ describe("validateGraph", () => {
           sourceNodeId: "r1",
           targetNodeId: "cf1",
           relationshipId: RelationshipIds.route53_alias_cloudfront,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {
             domainName: "www.example.com",
           },
@@ -164,28 +160,28 @@ describe("validateGraph", () => {
         {
           id: "b1",
           serviceId: "s3",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
           serviceId: "cloudfront",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "app-cdn" },
         },
         {
           id: "r1",
           serviceId: "route53",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "example.com", type: "public" },
         },
         {
           id: "r2",
           serviceId: "route53",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "example.com", type: "public" },
         },
@@ -196,7 +192,7 @@ describe("validateGraph", () => {
           sourceNodeId: "cf1",
           targetNodeId: "b1",
           relationshipId: RelationshipIds.cloudfront_origin_s3,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
         {
@@ -204,7 +200,7 @@ describe("validateGraph", () => {
           sourceNodeId: "r1",
           targetNodeId: "cf1",
           relationshipId: RelationshipIds.route53_alias_cloudfront,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {
             domainName: "www.example.com",
           },
@@ -214,7 +210,7 @@ describe("validateGraph", () => {
           sourceNodeId: "r2",
           targetNodeId: "cf1",
           relationshipId: RelationshipIds.route53_alias_cloudfront,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {
             domainName: "app.example.com",
           },
@@ -233,7 +229,7 @@ describe("validateGraph", () => {
         {
           id: "r1",
           serviceId: "route53",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "", type: "public" },
         },
@@ -249,21 +245,21 @@ describe("validateGraph", () => {
         {
           id: "b1",
           serviceId: "s3",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
           serviceId: "cloudfront",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "app-cdn" },
         },
         {
           id: "r1",
           serviceId: "route53",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "example.com", type: "public" },
         },
@@ -274,7 +270,7 @@ describe("validateGraph", () => {
           sourceNodeId: "cf1",
           targetNodeId: "b1",
           relationshipId: RelationshipIds.cloudfront_origin_s3,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
         {
@@ -282,7 +278,7 @@ describe("validateGraph", () => {
           sourceNodeId: "r1",
           targetNodeId: "cf1",
           relationshipId: RelationshipIds.route53_alias_cloudfront,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {
             domainName: "",
           },
@@ -301,21 +297,21 @@ describe("validateGraph", () => {
         {
           id: "b1",
           serviceId: "s3",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "validate-test-bucket" },
         },
         {
           id: "cf1",
           serviceId: "cloudfront",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "app-cdn" },
         },
         {
           id: "r1",
           serviceId: "route53",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "example.com", type: "public" },
         },
@@ -326,7 +322,7 @@ describe("validateGraph", () => {
           sourceNodeId: "cf1",
           targetNodeId: "b1",
           relationshipId: RelationshipIds.cloudfront_origin_s3,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
         {
@@ -334,7 +330,7 @@ describe("validateGraph", () => {
           sourceNodeId: "r1",
           targetNodeId: "cf1",
           relationshipId: RelationshipIds.route53_alias_cloudfront,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {
             domainName: "www.other.com",
           },
@@ -353,14 +349,14 @@ describe("validateGraph", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { functionName: "demo" },
         },
         {
           id: "sm1",
           serviceId: "secretsmanager",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: {
             name: "app/other",
@@ -375,7 +371,7 @@ describe("validateGraph", () => {
           sourceNodeId: "l1",
           targetNodeId: "sm1",
           relationshipId: RelationshipIds.lambda_reads_secretsmanager,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
@@ -389,14 +385,14 @@ describe("validateGraph", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { functionName: "demo" },
         },
         {
           id: "sm1",
           serviceId: "secretsmanager",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: {},
         },
@@ -407,7 +403,7 @@ describe("validateGraph", () => {
           sourceNodeId: "l1",
           targetNodeId: "sm1",
           relationshipId: RelationshipIds.lambda_reads_secretsmanager,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
@@ -424,14 +420,14 @@ describe("validateGraph", () => {
         {
           id: "q1",
           serviceId: "sqs",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "std-q", queueType: "standard" },
         },
         {
           id: "t1",
           serviceId: "sns_fifo",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "ev.fifo", fifoThroughputScope: "message_group" },
         },
@@ -442,7 +438,7 @@ describe("validateGraph", () => {
           sourceNodeId: "q1",
           targetNodeId: "t1",
           relationshipId: RelationshipIds.sqs_subscribes_sns_fifo,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
@@ -459,14 +455,14 @@ describe("validateGraph", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { functionName: "demo" },
         },
         {
           id: "d1",
           serviceId: "dynamodb",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: {
             name: "app-items",
@@ -481,7 +477,7 @@ describe("validateGraph", () => {
           sourceNodeId: "l1",
           targetNodeId: "d1",
           relationshipId: RelationshipIds.lambda_reads_dynamodb,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
         {
@@ -489,7 +485,7 @@ describe("validateGraph", () => {
           sourceNodeId: "l1",
           targetNodeId: "d1",
           relationshipId: RelationshipIds.lambda_writes_dynamodb,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
@@ -503,14 +499,14 @@ describe("validateGraph", () => {
         {
           id: "q1",
           serviceId: "sqs",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "jobs.fifo", queueType: "fifo" },
         },
         {
           id: "t1",
           serviceId: "sns_fifo",
-          serviceVersion: SERVICE_VERSION,
+          serviceVersion: DEFINITION_VERSION_V1,
           position: { x: 0, y: 0 },
           config: { name: "ev.fifo", fifoThroughputScope: "message_group" },
         },
@@ -521,11 +517,44 @@ describe("validateGraph", () => {
           sourceNodeId: "q1",
           targetNodeId: "t1",
           relationshipId: RelationshipIds.sqs_subscribes_sns_fifo,
-          relationshipVersion: RELATIONSHIP_VERSION,
+          relationshipVersion: DEFINITION_VERSION_V1,
           config: {},
         },
       ],
     });
+    expect(result.ok).toBe(true);
+  });
+
+  it("migrates legacy semver 1.0.0 version strings to integers", () => {
+    const result = validateGraph({
+      nodes: [
+        {
+          id: "s1",
+          serviceId: "s3",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { name: "legacy-ver-bucket" },
+        },
+        {
+          id: "l1",
+          serviceId: "lambda",
+          serviceVersion: "1.0.0",
+          position: { x: 0, y: 0 },
+          config: { functionName: "demo" },
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          sourceNodeId: "l1",
+          targetNodeId: "s1",
+          relationshipId: RelationshipIds.lambda_reads_s3,
+          relationshipVersion: "1.0.0",
+          config: {},
+        },
+      ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wire input before migration
+    } as any);
     expect(result.ok).toBe(true);
   });
 });

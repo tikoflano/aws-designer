@@ -16,7 +16,7 @@ describe("graphFile", () => {
         {
           id: "n1",
           serviceId: "s3" as const,
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 1, y: 2 },
           config: { name: "roundtrip-bucket-name" },
         },
@@ -70,8 +70,10 @@ describe("graphFile", () => {
     };
     const parsed = parseGraphFileJson(raw);
     expect(parsed.nodes[0].serviceId).toBe("sns_standard");
+    expect(parsed.nodes[0].serviceVersion).toBe(1);
     expect(parsed.nodes[0].config).toEqual({ name: "std" });
     expect(parsed.nodes[1].serviceId).toBe("sns_fifo");
+    expect(parsed.nodes[1].serviceVersion).toBe(1);
     expect(parsed.nodes[1].config).toEqual({
       name: "q.fifo",
       fifoThroughputScope: "topic",

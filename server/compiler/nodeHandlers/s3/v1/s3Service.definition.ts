@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
-import { NodeIds } from "../nodeIds.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
+import { NodeIds } from "../../nodeIds.ts";
 
 const bucketNameRules = z
   .string()
@@ -39,7 +39,7 @@ function sanitizeId(nodeId: string): string {
 
 export const s3ServiceDefinition: ServiceDefinition = {
   id: "s3" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "S3 bucket",
   description: "Amazon S3 bucket for object storage (SSE-S3 encryption enabled).",
   configSchema: s3NodeConfigSchema,

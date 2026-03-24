@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
 
 export const snsFifoThroughputScopeSchema = z.enum(["message_group", "topic"]);
 
@@ -62,7 +62,7 @@ export const snsFifoTopicNodeConfigSchema = z
 
 export const snsFifoServiceDefinition: ServiceDefinition = {
   id: "sns_fifo" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "SNS (FIFO)",
   description:
     "FIFO SNS topic: topic- or message-group-scope throughput, content-based deduplication, AWS-managed encryption.",

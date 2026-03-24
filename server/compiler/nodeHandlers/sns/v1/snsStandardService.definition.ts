@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
 
 export const snsStandardTopicNodeConfigSchema = z
   .object({
@@ -47,7 +47,7 @@ export const snsStandardTopicNodeConfigSchema = z
 
 export const snsStandardServiceDefinition: ServiceDefinition = {
   id: "sns_standard" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "SNS (standard)",
   description:
     "Standard SNS topic with AWS-managed encryption (alias/aws/sns).",

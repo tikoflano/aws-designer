@@ -11,10 +11,7 @@ export type {
   RelationshipDefinition,
   ServiceDefinition,
 } from "./domain/catalogTypes.ts";
-export {
-  RELATIONSHIP_VERSION,
-  SERVICE_VERSION,
-} from "./domain/catalogTypes.ts";
+export { DEFINITION_VERSION_V1 } from "./domain/catalogTypes.ts";
 
 export {
   getRelationship,
@@ -37,21 +34,21 @@ export {
   defaultInlineSourceForRuntime,
   lambdaNodeConfigSchema,
   LAMBDA_INLINE_SOURCE_MAX,
-} from "./nodeHandlers/lambda/lambdaService.definition.ts";
-export type { LambdaRuntime } from "./nodeHandlers/lambda/lambdaService.definition.ts";
-export { logicalBucketId, s3NodeConfigSchema } from "./nodeHandlers/s3/s3Service.definition.ts";
+} from "./nodeHandlers/lambda/v1/lambdaService.definition.ts";
+export type { LambdaRuntime } from "./nodeHandlers/lambda/v1/lambdaService.definition.ts";
+export { logicalBucketId, s3NodeConfigSchema } from "./nodeHandlers/s3/v1/s3Service.definition.ts";
 export {
   cloudfrontNodeConfigSchema,
-} from "./nodeHandlers/cloudfront/cloudfrontService.definition.ts";
+} from "./nodeHandlers/cloudfront/v1/cloudfrontService.definition.ts";
 export {
   route53NodeConfigSchema,
   route53RecordNameFromDomain,
-} from "./nodeHandlers/route53/route53Service.definition.ts";
-export { secretsManagerNodeConfigSchema } from "./nodeHandlers/secretsmanager/secretsManagerService.definition.ts";
-export { snsFifoTopicNodeConfigSchema } from "./nodeHandlers/sns/snsFifoService.definition.ts";
-export { snsStandardTopicNodeConfigSchema } from "./nodeHandlers/sns/snsStandardService.definition.ts";
-export { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/sqsService.definition.ts";
-export { dynamodbTableNodeConfigSchema } from "./nodeHandlers/dynamodb/dynamodbService.definition.ts";
+} from "./nodeHandlers/route53/v1/route53Service.definition.ts";
+export { secretsManagerNodeConfigSchema } from "./nodeHandlers/secretsmanager/v1/secretsManagerService.definition.ts";
+export { snsFifoTopicNodeConfigSchema } from "./nodeHandlers/sns/v1/snsFifoService.definition.ts";
+export { snsStandardTopicNodeConfigSchema } from "./nodeHandlers/sns/v1/snsStandardService.definition.ts";
+export { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/v1/sqsService.definition.ts";
+export { dynamodbTableNodeConfigSchema } from "./nodeHandlers/dynamodb/v1/dynamodbService.definition.ts";
 
 export {
   cloudfrontOriginS3ConfigSchema,

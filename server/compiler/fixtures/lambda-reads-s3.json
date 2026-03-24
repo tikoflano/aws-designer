@@ -5,14 +5,14 @@
     {
       "id": "s1",
       "serviceId": "s3",
-      "serviceVersion": "1.0.0",
+      "serviceVersion": 1,
       "position": { "x": 0, "y": 0 },
       "config": { "name": "fixture-lambda-reads-bucket" }
     },
     {
       "id": "l1",
       "serviceId": "lambda",
-      "serviceVersion": "1.0.0",
+      "serviceVersion": 1,
       "position": { "x": 0, "y": 0 },
       "config": { "functionName": "demoFn" }
     }
@@ -23,7 +23,7 @@
       "sourceNodeId": "l1",
       "targetNodeId": "s1",
       "relationshipId": "lambda_reads_s3",
-      "relationshipVersion": "1.0.0",
+      "relationshipVersion": 1,
       "config": {}
     }
   ]

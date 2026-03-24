@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
 
 export const sqsQueueTypeSchema = z.enum(["standard", "fifo"]);
 
@@ -89,7 +89,7 @@ export const sqsQueueNodeConfigSchema = z
 
 export const sqsServiceDefinition: ServiceDefinition = {
   id: "sqs" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "SQS queue",
   description:
     "Standard or FIFO queue with SSE-SQS, 4-day retention, 30s visibility, 1024 KiB max message, and an auto-created DLQ (max receives 10).",

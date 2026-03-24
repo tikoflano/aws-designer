@@ -1,18 +1,18 @@
 import type { ServiceId } from "../domain/serviceId.ts";
 
 // Keep definition list in sync with handlers in registry.ts when adding a relationship.
-import { cloudfrontOriginS3Definition } from "./cloudfront-to-s3/cloudfrontOriginS3.definition.ts";
-import { lambdaReadsSecretsManagerDefinition } from "./lambda-to-secretsmanager/lambdaReadsSecretsManager.definition.ts";
-import { lambdaWritesSecretsManagerDefinition } from "./lambda-to-secretsmanager/lambdaWritesSecretsManager.definition.ts";
-import { lambdaReadsDynamodbDefinition } from "./lambda-to-dynamodb/lambdaReadsDynamodb.definition.ts";
-import { lambdaWritesDynamodbDefinition } from "./lambda-to-dynamodb/lambdaWritesDynamodb.definition.ts";
-import { lambdaReadsS3Definition } from "./lambda-to-s3/lambdaReadsS3.definition.ts";
-import { lambdaWritesS3Definition } from "./lambda-to-s3/lambdaWritesS3.definition.ts";
-import { route53AliasCloudFrontDefinition } from "./route53-to-cloudfront/route53AliasCloudFront.definition.ts";
-import { s3TriggersLambdaDefinition } from "./s3-to-lambda/s3TriggersLambda.definition.ts";
-import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/snsStandardToLambdaSubscription.definition.ts";
-import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/snsFifoToSqsSubscription.definition.ts";
-import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/snsStandardToSqsSubscription.definition.ts";
+import { cloudfrontOriginS3Definition } from "./cloudfront-to-s3/v1/cloudfrontOriginS3.definition.ts";
+import { lambdaReadsSecretsManagerDefinition } from "./lambda-to-secretsmanager/v1/lambdaReadsSecretsManager.definition.ts";
+import { lambdaWritesSecretsManagerDefinition } from "./lambda-to-secretsmanager/v1/lambdaWritesSecretsManager.definition.ts";
+import { lambdaReadsDynamodbDefinition } from "./lambda-to-dynamodb/v1/lambdaReadsDynamodb.definition.ts";
+import { lambdaWritesDynamodbDefinition } from "./lambda-to-dynamodb/v1/lambdaWritesDynamodb.definition.ts";
+import { lambdaReadsS3Definition } from "./lambda-to-s3/v1/lambdaReadsS3.definition.ts";
+import { lambdaWritesS3Definition } from "./lambda-to-s3/v1/lambdaWritesS3.definition.ts";
+import { route53AliasCloudFrontDefinition } from "./route53-to-cloudfront/v1/route53AliasCloudFront.definition.ts";
+import { s3TriggersLambdaDefinition } from "./s3-to-lambda/v1/s3TriggersLambda.definition.ts";
+import { lambdaSubscribesSnsStandardDefinition } from "./sns-to-lambda/v1/snsStandardToLambdaSubscription.definition.ts";
+import { sqsSubscribesSnsFifoDefinition } from "./sns-to-sqs/v1/snsFifoToSqsSubscription.definition.ts";
+import { sqsSubscribesSnsStandardDefinition } from "./sns-to-sqs/v1/snsStandardToSqsSubscription.definition.ts";
 import { RELATIONSHIP_ID_TUPLE } from "./relationshipIds.ts";
 
 export const ALL_RELATIONSHIPS = [
@@ -56,6 +56,6 @@ export function hasRelationshipBetween(a: ServiceId, b: ServiceId): boolean {
   );
 }
 
-export function getRelationship(id: string, version: string) {
+export function getRelationship(id: string, version: number) {
   return ALL_RELATIONSHIPS.find((r) => r.id === id && r.version === version);
 }

@@ -6,9 +6,9 @@ import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
-export class LambdaReadsDynamodbHandler implements EdgeRelationshipHandler {
+export class LambdaReadsDynamodbHandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = lambdaReadsDynamodbDefinition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

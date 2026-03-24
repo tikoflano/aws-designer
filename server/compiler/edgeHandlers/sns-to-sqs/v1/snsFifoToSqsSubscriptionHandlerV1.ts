@@ -8,9 +8,9 @@ import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
-export class SqsSubscribesSnsFifoHandler implements EdgeRelationshipHandler {
+export class SqsSubscribesSnsFifoHandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = sqsSubscribesSnsFifoDefinition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

@@ -3,15 +3,15 @@ import * as kms from "aws-cdk-lib/aws-kms";
 import * as sns from "aws-cdk-lib/aws-sns";
 
 import type { GraphNode } from "@shared/domain/graph.ts";
-import type { GraphCompileContext } from "../../graphCompileContext.ts";
-import { NodeIds } from "../nodeIds.ts";
-import type { NodeServiceHandler } from "../types.ts";
+import type { GraphCompileContext } from "../../../graphCompileContext.ts";
+import { NodeIds } from "../../nodeIds.ts";
+import type { NodeServiceHandler } from "../../types.ts";
 import {
   snsStandardServiceDefinition,
   snsStandardTopicNodeConfigSchema,
 } from "./snsStandardService.definition.ts";
 
-export class SnsStandardNodeHandler implements NodeServiceHandler {
+export class SnsStandardNodeHandlerV1 implements NodeServiceHandler {
   public readonly definition = snsStandardServiceDefinition;
 
   public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {

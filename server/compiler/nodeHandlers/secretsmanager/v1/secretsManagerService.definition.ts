@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
 
 /** AWS CreateSecret Name: letters, digits, path separators, and limited punctuation. */
 const secretNameRegex = /^[a-zA-Z0-9/_+=.@,-]+$/;
@@ -27,7 +27,7 @@ export const secretsManagerNodeConfigSchema = z.object({
 
 export const secretsManagerServiceDefinition: ServiceDefinition = {
   id: "secretsmanager" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "Secrets Manager",
   description:
     "Stores a key/value pair as an other-type secret (plain JSON payload).",

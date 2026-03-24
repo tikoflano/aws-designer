@@ -5,21 +5,21 @@
     {
       "id": "b1",
       "serviceId": "s3",
-      "serviceVersion": "1.0.0",
+      "serviceVersion": 1,
       "position": { "x": 0, "y": 0 },
       "config": { "name": "fixture-cf-origin-bucket" }
     },
     {
       "id": "cf1",
       "serviceId": "cloudfront",
-      "serviceVersion": "1.0.0",
+      "serviceVersion": 1,
       "position": { "x": 100, "y": 0 },
       "config": { "name": "fixture dist" }
     },
     {
       "id": "r53a",
       "serviceId": "route53",
-      "serviceVersion": "1.0.0",
+      "serviceVersion": 1,
       "position": { "x": 200, "y": 0 },
       "config": {
         "name": "example.com",
@@ -33,7 +33,7 @@
       "sourceNodeId": "cf1",
       "targetNodeId": "b1",
       "relationshipId": "cloudfront_origin_s3",
-      "relationshipVersion": "1.0.0",
+      "relationshipVersion": 1,
       "config": {}
     },
     {
@@ -41,7 +41,7 @@
       "sourceNodeId": "r53a",
       "targetNodeId": "cf1",
       "relationshipId": "route53_alias_cloudfront",
-      "relationshipVersion": "1.0.0",
+      "relationshipVersion": 1,
       "config": {
         "domainName": "www.example.com"
       }

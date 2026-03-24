@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
 
 export const route53ZoneType = z.enum(["public", "private"]);
 
@@ -15,7 +15,7 @@ export const route53NodeConfigSchema = z.object({
 
 export const route53ServiceDefinition: ServiceDefinition = {
   id: "route53" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "Route 53",
   description: "Route 53 hosted zone (public or private).",
   configSchema: route53NodeConfigSchema,

@@ -1,5 +1,4 @@
 import type { ServiceId } from "@compiler/domain/serviceId.ts";
-import { RELATIONSHIP_VERSION } from "@compiler/domain/catalogTypes.ts";
 import type { RelationshipId } from "@compiler/edgeHandlers/relationshipIds.ts";
 
 export type { RelationshipId, ServiceId };
@@ -7,7 +6,7 @@ export type { RelationshipId, ServiceId };
 export type GraphNode = {
   id: string;
   serviceId: ServiceId;
-  serviceVersion: string;
+  serviceVersion: number;
   position: { x: number; y: number };
   config: Record<string, unknown>;
 };
@@ -21,7 +20,7 @@ export type GraphEdge = {
   /** React Flow handle id on the target node. */
   targetHandleId?: string;
   relationshipId: RelationshipId;
-  relationshipVersion: typeof RELATIONSHIP_VERSION;
+  relationshipVersion: number;
   config: Record<string, unknown>;
   /**
    * Position of the edge label along the connection path, 0 = start → 1 = end (by path length).

@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
   relationshipIdZodSchema,
   serviceIdGraphSchema,
 } from "@compiler/catalog.ts";
@@ -17,10 +16,15 @@ const positionSchema = z.object({
   y: z.number(),
 });
 
+const definitionVersionWireSchema = z.union([
+  z.number().int().positive(),
+  z.string().min(1),
+]);
+
 const graphNodeSchema = z.object({
   id: z.string().min(1),
   serviceId: serviceIdGraphSchema,
-  serviceVersion: z.string().min(1),
+  serviceVersion: definitionVersionWireSchema,
   position: positionSchema,
   config: z.record(z.string(), z.unknown()),
 });
@@ -32,7 +36,7 @@ const graphEdgeSchema = z.object({
   sourceHandleId: z.string().min(1).optional(),
   targetHandleId: z.string().min(1).optional(),
   relationshipId: relationshipIdZodSchema,
-  relationshipVersion: z.literal(RELATIONSHIP_VERSION),
+  relationshipVersion: definitionVersionWireSchema,
   config: z.record(z.string(), z.unknown()),
   labelAlongPath: z.number().min(0).max(1).optional(),
 });
@@ -64,7 +68,7 @@ export function graphDocumentToFile(
 export function graphFileToDocument(file: GraphFileV1): GraphDocument {
   return migrateLegacyGraphDocument({
     nodes: file.nodes as GraphNode[],
-    edges: file.edges,
+    edges: file.edges as GraphEdge[],
   });
 }
 
@@ -72,11 +76,12 @@ export function parseGraphFileJson(raw: unknown): GraphFileV1 {
   const parsed = graphFileSchema.parse(raw);
   const migrated = migrateLegacyGraphDocument({
     nodes: parsed.nodes as GraphNode[],
-    edges: parsed.edges,
+    edges: parsed.edges as GraphEdge[],
   });
   return {
     ...parsed,
     nodes: migrated.nodes as GraphFileV1["nodes"],
+    edges: migrated.edges as GraphFileV1["edges"],
   };
 }
 

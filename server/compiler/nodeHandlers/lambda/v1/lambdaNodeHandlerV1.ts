@@ -3,16 +3,16 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 
 import type { GraphNode } from "@shared/domain/graph.ts";
-import type { GraphCompileContext } from "../../graphCompileContext.ts";
-import { NodeIds } from "../nodeIds.ts";
-import type { NodeServiceHandler } from "../types.ts";
+import type { GraphCompileContext } from "../../../graphCompileContext.ts";
+import { NodeIds } from "../../nodeIds.ts";
+import type { NodeServiceHandler } from "../../types.ts";
 import {
   defaultInlineSourceForRuntime,
   lambdaNodeConfigSchema,
   lambdaServiceDefinition,
 } from "./lambdaService.definition.ts";
 
-export class LambdaNodeHandler implements NodeServiceHandler {
+export class LambdaNodeHandlerV1 implements NodeServiceHandler {
   public readonly definition = lambdaServiceDefinition;
 
   public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {

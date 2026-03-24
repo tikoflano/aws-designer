@@ -2,15 +2,15 @@ import * as cdk from "aws-cdk-lib";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import type { GraphNode } from "@shared/domain/graph.ts";
-import type { GraphCompileContext } from "../../graphCompileContext.ts";
-import { NodeIds } from "../nodeIds.ts";
-import type { NodeServiceHandler } from "../types.ts";
+import type { GraphCompileContext } from "../../../graphCompileContext.ts";
+import { NodeIds } from "../../nodeIds.ts";
+import type { NodeServiceHandler } from "../../types.ts";
 import {
   secretsManagerNodeConfigSchema,
   secretsManagerServiceDefinition,
 } from "./secretsManagerService.definition.ts";
 
-export class SecretsManagerNodeHandler implements NodeServiceHandler {
+export class SecretsManagerNodeHandlerV1 implements NodeServiceHandler {
   public readonly definition = secretsManagerServiceDefinition;
 
   public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {

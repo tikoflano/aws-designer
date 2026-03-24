@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
+  DEFINITION_VERSION_V1,
   type RelationshipDefinition,
-} from "../../domain/catalogTypes.ts";
+} from "../../../domain/catalogTypes.ts";
 
 export const sqsSubscribesSnsStandardConfigSchema = z.object({});
 
 export const sqsSubscribesSnsStandardDefinition: RelationshipDefinition = {
   id: "sqs_subscribes_sns_standard",
-  version: RELATIONSHIP_VERSION,
+  version: DEFINITION_VERSION_V1,
   name: "SQS subscribes to SNS (standard)",
   verb: "subscribes",
   description:

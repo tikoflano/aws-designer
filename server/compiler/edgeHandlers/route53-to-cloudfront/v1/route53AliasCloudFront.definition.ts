@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
+  DEFINITION_VERSION_V1,
   type RelationshipDefinition,
-} from "../../domain/catalogTypes.ts";
+} from "../../../domain/catalogTypes.ts";
 
 export const route53AliasCloudFrontConfigSchema = z.object({
   domainName: z.string().default(""),
@@ -11,7 +11,7 @@ export const route53AliasCloudFrontConfigSchema = z.object({
 
 export const route53AliasCloudFrontDefinition: RelationshipDefinition = {
   id: "route53_alias_cloudfront",
-  version: RELATIONSHIP_VERSION,
+  version: DEFINITION_VERSION_V1,
   name: "Route 53 alias to CloudFront",
   verb: "aliases",
   description:

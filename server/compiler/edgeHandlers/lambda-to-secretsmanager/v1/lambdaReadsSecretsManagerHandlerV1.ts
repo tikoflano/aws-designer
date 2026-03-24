@@ -6,9 +6,9 @@ import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
-export class LambdaReadsSecretsManagerHandler implements EdgeRelationshipHandler {
+export class LambdaReadsSecretsManagerHandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = lambdaReadsSecretsManagerDefinition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

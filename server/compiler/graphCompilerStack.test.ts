@@ -37,7 +37,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             functionName: "customInlineFn",
@@ -79,7 +79,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "sm1",
           serviceId: "secretsmanager",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             name: "fixture/other-secret",
@@ -111,14 +111,14 @@ describe("GraphCompilerStack", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { functionName: "fnWithSecrets" },
         },
         {
           id: "sm1",
           serviceId: "secretsmanager",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             name: "fixture/lambda-secret",
@@ -133,7 +133,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "l1",
           targetNodeId: "sm1",
           relationshipId: RelationshipIds.lambda_reads_secretsmanager,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
         {
@@ -141,7 +141,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "l1",
           targetNodeId: "sm1",
           relationshipId: RelationshipIds.lambda_writes_secretsmanager,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
       ],
@@ -166,7 +166,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "n1",
           serviceId: "sns_fifo",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             name: "fixture-events.fifo",
@@ -199,7 +199,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "n1",
           serviceId: "sns_standard",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-standard" },
         },
@@ -228,7 +228,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "q1",
           serviceId: "sqs",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-work", queueType: "standard" },
         },
@@ -261,7 +261,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "q1",
           serviceId: "sqs",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-jobs.fifo", queueType: "fifo" },
         },
@@ -289,14 +289,14 @@ describe("GraphCompilerStack", () => {
         {
           id: "q1",
           serviceId: "sqs",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-sub-q", queueType: "standard" },
         },
         {
           id: "t1",
           serviceId: "sns_standard",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-sub-topic" },
         },
@@ -307,7 +307,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "q1",
           targetNodeId: "t1",
           relationshipId: RelationshipIds.sqs_subscribes_sns_standard,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
       ],
@@ -329,14 +329,14 @@ describe("GraphCompilerStack", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { functionName: "fixtureSnsSubFn" },
         },
         {
           id: "t1",
           serviceId: "sns_standard",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-lambda-topic" },
         },
@@ -347,7 +347,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "l1",
           targetNodeId: "t1",
           relationshipId: RelationshipIds.lambda_subscribes_sns_standard,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
       ],
@@ -371,14 +371,14 @@ describe("GraphCompilerStack", () => {
         {
           id: "q1",
           serviceId: "sqs",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { name: "fixture-fifo-q.fifo", queueType: "fifo" },
         },
         {
           id: "t1",
           serviceId: "sns_fifo",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             name: "fixture-fifo-topic.fifo",
@@ -392,7 +392,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "q1",
           targetNodeId: "t1",
           relationshipId: RelationshipIds.sqs_subscribes_sns_fifo,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
       ],
@@ -414,7 +414,7 @@ describe("GraphCompilerStack", () => {
         {
           id: "d1",
           serviceId: "dynamodb",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             name: "fixture-ddb-table",
@@ -445,14 +445,14 @@ describe("GraphCompilerStack", () => {
         {
           id: "l1",
           serviceId: "lambda",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: { functionName: "fixtureDdbFn" },
         },
         {
           id: "d1",
           serviceId: "dynamodb",
-          serviceVersion: "1.0.0",
+          serviceVersion: 1,
           position: { x: 0, y: 0 },
           config: {
             name: "fixture-ddb-access",
@@ -467,7 +467,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "l1",
           targetNodeId: "d1",
           relationshipId: RelationshipIds.lambda_reads_dynamodb,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
         {
@@ -475,7 +475,7 @@ describe("GraphCompilerStack", () => {
           sourceNodeId: "l1",
           targetNodeId: "d1",
           relationshipId: RelationshipIds.lambda_writes_dynamodb,
-          relationshipVersion: "1.0.0",
+          relationshipVersion: 1,
           config: {},
         },
       ],

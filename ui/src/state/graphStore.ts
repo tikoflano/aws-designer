@@ -11,9 +11,9 @@ import type {
   ServiceId,
 } from "../domain/types";
 import {
+  DEFINITION_VERSION_V1,
   getRelationship,
-  RELATIONSHIP_VERSION,
-  SERVICE_VERSION,
+  getService,
 } from "@compiler/catalog.ts";
 
 export type Selection =
@@ -257,10 +257,12 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
 
   addNode: (serviceId, position) => {
     const id = nanoid(10);
+    const svc = getService(serviceId, DEFINITION_VERSION_V1);
+    if (!svc) return;
     const node: GraphNode = {
       id,
       serviceId,
-      serviceVersion: SERVICE_VERSION,
+      serviceVersion: svc.version,
       position,
       config: defaultNodeConfig(serviceId),
     };
@@ -329,7 +331,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
   confirmRelationship: (relationshipId, config) => {
     const pending = get().pendingConnection;
     if (!pending) return;
-    const rel = getRelationship(relationshipId, RELATIONSHIP_VERSION);
+    const rel = getRelationship(relationshipId, DEFINITION_VERSION_V1);
     if (!rel) {
       set({ pendingConnection: null });
       return;
@@ -346,7 +348,7 @@ export const useGraphStore = create<GraphStateInner>((set, get) => ({
         ? { targetHandleId: pending.targetHandleId }
         : {}),
       relationshipId: rel.id as RelationshipId,
-      relationshipVersion: rel.version as typeof RELATIONSHIP_VERSION,
+      relationshipVersion: rel.version,
       config: parsedConfig,
     };
     set((s) => ({

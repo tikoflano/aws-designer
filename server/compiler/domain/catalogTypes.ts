@@ -2,12 +2,12 @@ import type { ZodType } from "zod";
 
 import type { ServiceId } from "./serviceId.ts";
 
-export const SERVICE_VERSION = "1.0.0";
-export const RELATIONSHIP_VERSION = "1.0.0" as const;
+/** Current integer version for all v1 service and relationship definitions. */
+export const DEFINITION_VERSION_V1 = 1 as const;
 
 export type ServiceDefinition = {
   id: ServiceId;
-  version: string;
+  version: number;
   displayName: string;
   description: string;
   configSchema: ZodType<Record<string, unknown>>;
@@ -15,7 +15,7 @@ export type ServiceDefinition = {
 
 export type RelationshipDefinition = {
   id: string;
-  version: string;
+  version: number;
   name: string;
   verb: string;
   description: string;

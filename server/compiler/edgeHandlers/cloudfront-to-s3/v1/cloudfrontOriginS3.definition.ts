@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
+  DEFINITION_VERSION_V1,
   type RelationshipDefinition,
-} from "../../domain/catalogTypes.ts";
+} from "../../../domain/catalogTypes.ts";
 
 export const cloudfrontOriginS3ConfigSchema = z.object({
   originPath: z.string().optional().default(""),
@@ -11,7 +11,7 @@ export const cloudfrontOriginS3ConfigSchema = z.object({
 
 export const cloudfrontOriginS3Definition: RelationshipDefinition = {
   id: "cloudfront_origin_s3",
-  version: RELATIONSHIP_VERSION,
+  version: DEFINITION_VERSION_V1,
   name: "CloudFront origin from S3",
   verb: "origin",
   description: "Uses the bucket as the default origin for this CloudFront distribution.",

@@ -8,9 +8,9 @@ import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
-export class LambdaSubscribesSnsStandardHandler implements EdgeRelationshipHandler {
+export class LambdaSubscribesSnsStandardHandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = lambdaSubscribesSnsStandardDefinition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

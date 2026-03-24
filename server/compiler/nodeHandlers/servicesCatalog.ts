@@ -1,15 +1,15 @@
 import type { ServiceDefinition } from "../domain/catalogTypes.ts";
 import { SERVICE_ID_VALUES, type ServiceId } from "../domain/serviceId.ts";
 
-import { dynamodbServiceDefinition } from "./dynamodb/dynamodbService.definition.ts";
-import { cloudfrontServiceDefinition } from "./cloudfront/cloudfrontService.definition.ts";
-import { lambdaServiceDefinition } from "./lambda/lambdaService.definition.ts";
-import { route53ServiceDefinition } from "./route53/route53Service.definition.ts";
-import { snsFifoServiceDefinition } from "./sns/snsFifoService.definition.ts";
-import { snsStandardServiceDefinition } from "./sns/snsStandardService.definition.ts";
-import { secretsManagerServiceDefinition } from "./secretsmanager/secretsManagerService.definition.ts";
-import { s3ServiceDefinition } from "./s3/s3Service.definition.ts";
-import { sqsServiceDefinition } from "./sqs/sqsService.definition.ts";
+import { dynamodbServiceDefinition } from "./dynamodb/v1/dynamodbService.definition.ts";
+import { cloudfrontServiceDefinition } from "./cloudfront/v1/cloudfrontService.definition.ts";
+import { lambdaServiceDefinition } from "./lambda/v1/lambdaService.definition.ts";
+import { route53ServiceDefinition } from "./route53/v1/route53Service.definition.ts";
+import { snsFifoServiceDefinition } from "./sns/v1/snsFifoService.definition.ts";
+import { snsStandardServiceDefinition } from "./sns/v1/snsStandardService.definition.ts";
+import { secretsManagerServiceDefinition } from "./secretsmanager/v1/secretsManagerService.definition.ts";
+import { s3ServiceDefinition } from "./s3/v1/s3Service.definition.ts";
+import { sqsServiceDefinition } from "./sqs/v1/sqsService.definition.ts";
 
 const SERVICE_ORDER: ServiceId[] = [...SERVICE_ID_VALUES];
 
@@ -31,7 +31,7 @@ export function listServices() {
   return ALL_SERVICES;
 }
 
-export function getService(id: ServiceId, version: string) {
+export function getService(id: ServiceId, version: number) {
   const def = BY_ID[id];
   if (!def || def.version !== version) return undefined;
   return def;

@@ -2,12 +2,11 @@ import type { CompileIssue, ValidateGraphResult } from "@shared/compile/types.ts
 import type { GraphDocument } from "@shared/domain/graph.ts";
 import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 
-import { RELATIONSHIP_VERSION } from "./domain/catalogTypes.ts";
 import { RelationshipIds } from "./edgeHandlers/relationshipIds.ts";
 import { getRelationship } from "./edgeHandlers/relationshipsCatalog.ts";
-import { logicalBucketId } from "./nodeHandlers/s3/s3Service.definition.ts";
-import { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/sqsService.definition.ts";
-import { domainInHostedZone } from "./nodeHandlers/route53/route53Service.definition.ts";
+import { logicalBucketId } from "./nodeHandlers/s3/v1/s3Service.definition.ts";
+import { sqsQueueNodeConfigSchema } from "./nodeHandlers/sqs/v1/sqsService.definition.ts";
+import { domainInHostedZone } from "./nodeHandlers/route53/v1/route53Service.definition.ts";
 import { getService } from "./nodeHandlers/servicesCatalog.ts";
 
 function nodeById(doc: GraphDocument, id: string) {
@@ -30,7 +29,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
     if (!svc) {
       issues.push({
         code: "unknown_service_version",
-        message: `Unknown service "${node.serviceId}" version "${node.serviceVersion}".`,
+        message: `Unknown service "${node.serviceId}" version ${String(node.serviceVersion)}.`,
         nodeId: node.id,
       });
       continue;
@@ -70,7 +69,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
     if (!rel) {
       issues.push({
         code: "unknown_relationship_version",
-        message: `Unknown relationship "${edge.relationshipId}" version "${edge.relationshipVersion}".`,
+        message: `Unknown relationship "${edge.relationshipId}" version ${String(edge.relationshipVersion)}.`,
         edgeId: edge.id,
       });
       continue;
@@ -156,7 +155,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
       (e) =>
         e.sourceNodeId === cfId &&
         e.relationshipId === RelationshipIds.cloudfront_origin_s3 &&
-        e.relationshipVersion === RELATIONSHIP_VERSION,
+        getRelationship(e.relationshipId, e.relationshipVersion) != null,
     );
     if (originEdges.length > 1) {
       issues.push({
@@ -171,7 +170,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
   for (const edge of doc.edges) {
     if (
       edge.relationshipId !== RelationshipIds.route53_alias_cloudfront ||
-      edge.relationshipVersion !== RELATIONSHIP_VERSION
+      getRelationship(edge.relationshipId, edge.relationshipVersion) == null
     ) {
       continue;
     }
@@ -183,7 +182,7 @@ export function validateGraph(doc: GraphDocument): ValidateGraphResult {
       (e) =>
         e.sourceNodeId === edge.targetNodeId &&
         e.relationshipId === RelationshipIds.cloudfront_origin_s3 &&
-        e.relationshipVersion === RELATIONSHIP_VERSION,
+        getRelationship(e.relationshipId, e.relationshipVersion) != null,
     );
     if (!hasOrigin) {
       issues.push({

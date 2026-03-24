@@ -9,9 +9,9 @@ import type { Construct } from "constructs";
 import type { GraphDocument } from "@shared/domain/graph.ts";
 import { migrateLegacyGraphDocument } from "@shared/domain/migrateLegacyGraph.ts";
 import { RelationshipIds } from "./edgeHandlers/relationshipIds.ts";
-import { edgeRelationshipHandlers } from "./edgeHandlers/registry.ts";
+import { getEdgeHandler } from "./edgeHandlers/registry.ts";
 import type { GraphCompileContext } from "./graphCompileContext.ts";
-import { nodeServiceHandlers } from "./nodeHandlers/registry.ts";
+import { getNodeHandler } from "./nodeHandlers/registry.ts";
 
 function nodeById(doc: GraphDocument, id: string) {
   return doc.nodes.find((n) => n.id === id);
@@ -26,7 +26,7 @@ function applyEdge(
   const targetNode = nodeById(graph, edge.targetNodeId);
   if (!sourceNode || !targetNode) return;
 
-  const handler = edgeRelationshipHandlers[edge.relationshipId];
+  const handler = getEdgeHandler(edge.relationshipId, edge.relationshipVersion);
   if (handler) {
     handler.apply(ctx, { edge, sourceNode, targetNode });
   }
@@ -69,7 +69,7 @@ export class GraphCompilerStack extends cdk.Stack {
     };
 
     for (const node of graph.nodes) {
-      nodeServiceHandlers[node.serviceId]?.apply(this, ctx, node);
+      getNodeHandler(node.serviceId, node.serviceVersion)?.apply(this, ctx, node);
     }
 
     const originEdges = graph.edges.filter(

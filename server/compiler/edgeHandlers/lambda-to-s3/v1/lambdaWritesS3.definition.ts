@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
+  DEFINITION_VERSION_V1,
   type RelationshipDefinition,
-} from "../../domain/catalogTypes.ts";
+} from "../../../domain/catalogTypes.ts";
 
 export const lambdaWritesS3ConfigSchema = z.object({
   objectKeyPrefix: z.string().optional().default(""),
@@ -11,7 +11,7 @@ export const lambdaWritesS3ConfigSchema = z.object({
 
 export const lambdaWritesS3Definition: RelationshipDefinition = {
   id: "lambda_writes_s3",
-  version: RELATIONSHIP_VERSION,
+  version: DEFINITION_VERSION_V1,
   name: "Lambda writes to S3",
   verb: "writes",
   description:

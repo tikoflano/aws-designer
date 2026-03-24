@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
+  DEFINITION_VERSION_V1,
   type RelationshipDefinition,
-} from "../../domain/catalogTypes.ts";
+} from "../../../domain/catalogTypes.ts";
 
 export const s3TriggersLambdaConfigSchema = z.object({
   events: z
@@ -16,7 +16,7 @@ export const s3TriggersLambdaConfigSchema = z.object({
 
 export const s3TriggersLambdaDefinition: RelationshipDefinition = {
   id: "s3_triggers_lambda",
-  version: RELATIONSHIP_VERSION,
+  version: DEFINITION_VERSION_V1,
   name: "S3 invokes Lambda",
   verb: "invokes",
   description:

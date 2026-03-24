@@ -1,16 +1,16 @@
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 
-import { NodeIds } from "../../nodeHandlers/nodeIds.ts";
-import { cloudfrontNodeConfigSchema } from "../../nodeHandlers/cloudfront/cloudfrontService.definition.ts";
+import { NodeIds } from "../../../nodeHandlers/nodeIds.ts";
+import { cloudfrontNodeConfigSchema } from "../../../nodeHandlers/cloudfront/v1/cloudfrontService.definition.ts";
 import { cloudfrontOriginS3ConfigSchema, cloudfrontOriginS3Definition } from "./cloudfrontOriginS3.definition.ts";
 import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
-export class CloudFrontOriginS3Handler implements EdgeRelationshipHandler {
+export class CloudFrontOriginS3HandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = cloudfrontOriginS3Definition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

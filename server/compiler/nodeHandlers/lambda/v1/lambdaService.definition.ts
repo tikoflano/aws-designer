@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
-import { NodeIds } from "../nodeIds.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
+import { NodeIds } from "../../nodeIds.ts";
 
 /** CloudFormation inline ZipFile limit is 4096 bytes; stay under for safety. */
 export const LAMBDA_INLINE_SOURCE_MAX = 4000 as const;
@@ -131,7 +131,7 @@ function sanitizeId(nodeId: string): string {
 
 export const lambdaServiceDefinition: ServiceDefinition = {
   id: "lambda" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "Lambda function",
   description: "AWS Lambda function with an execution role.",
   configSchema: lambdaNodeConfigSchema,

@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
-  SERVICE_VERSION,
+  DEFINITION_VERSION_V1,
   type ServiceDefinition,
-} from "../../domain/catalogTypes.ts";
-import type { ServiceId } from "../../domain/serviceId.ts";
+} from "../../../domain/catalogTypes.ts";
+import type { ServiceId } from "../../../domain/serviceId.ts";
 
 const attrName = z
   .string()
@@ -101,7 +101,7 @@ export type DynamodbTableNodeConfig = z.infer<typeof dynamodbTableNodeConfigSche
 
 export const dynamodbServiceDefinition: ServiceDefinition = {
   id: "dynamodb" satisfies ServiceId,
-  version: SERVICE_VERSION,
+  version: DEFINITION_VERSION_V1,
   displayName: "DynamoDB",
   description:
     "Single-table design with partition key and optional sort key; on-demand capacity and AWS-managed encryption.",

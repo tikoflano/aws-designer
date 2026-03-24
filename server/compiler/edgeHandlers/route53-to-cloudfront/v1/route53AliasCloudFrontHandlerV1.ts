@@ -3,11 +3,11 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
 
-import { NodeIds } from "../../nodeHandlers/nodeIds.ts";
+import { NodeIds } from "../../../nodeHandlers/nodeIds.ts";
 import {
   route53NodeConfigSchema,
   route53RecordNameFromDomain,
-} from "../../nodeHandlers/route53/route53Service.definition.ts";
+} from "../../../nodeHandlers/route53/v1/route53Service.definition.ts";
 import {
   route53AliasCloudFrontConfigSchema,
   route53AliasCloudFrontDefinition,
@@ -16,13 +16,13 @@ import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
 function normalizeFqdn(d: string): string {
   return d.replace(/\.$/, "").toLowerCase();
 }
 
-export class Route53AliasCloudFrontHandler implements EdgeRelationshipHandler {
+export class Route53AliasCloudFrontHandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = route53AliasCloudFrontDefinition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

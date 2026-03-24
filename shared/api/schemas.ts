@@ -1,17 +1,21 @@
 import { z } from "zod";
 
 import {
-  RELATIONSHIP_VERSION,
   relationshipIdZodSchema,
   serviceIdGraphSchema,
 } from "@compiler/catalog.ts";
 import type { GraphDocument } from "../domain/graph.ts";
 import { migrateLegacyGraphDocument } from "../domain/migrateLegacyGraph.ts";
 
+const definitionVersionWireSchema = z.union([
+  z.number().int().positive(),
+  z.string().min(1),
+]);
+
 const graphNodeSchema = z.object({
   id: z.string(),
   serviceId: serviceIdGraphSchema,
-  serviceVersion: z.string(),
+  serviceVersion: definitionVersionWireSchema,
   position: z.object({ x: z.number(), y: z.number() }),
   config: z.record(z.string(), z.unknown()),
 });
@@ -23,7 +27,7 @@ const graphEdgeSchema = z.object({
   sourceHandleId: z.string().optional(),
   targetHandleId: z.string().optional(),
   relationshipId: relationshipIdZodSchema,
-  relationshipVersion: z.literal(RELATIONSHIP_VERSION),
+  relationshipVersion: definitionVersionWireSchema,
   config: z.record(z.string(), z.unknown()),
 });
 

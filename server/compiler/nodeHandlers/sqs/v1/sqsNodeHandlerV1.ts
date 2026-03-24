@@ -2,9 +2,9 @@ import * as cdk from "aws-cdk-lib";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 
 import type { GraphNode } from "@shared/domain/graph.ts";
-import type { GraphCompileContext } from "../../graphCompileContext.ts";
-import { NodeIds } from "../nodeIds.ts";
-import type { NodeServiceHandler } from "../types.ts";
+import type { GraphCompileContext } from "../../../graphCompileContext.ts";
+import { NodeIds } from "../../nodeIds.ts";
+import type { NodeServiceHandler } from "../../types.ts";
 import { sqsQueueNodeConfigSchema, sqsServiceDefinition } from "./sqsService.definition.ts";
 
 /** Max message size 1024 KiB (within SQS 1 KiB–1 MiB range). */
@@ -14,7 +14,7 @@ function stripFifoSuffix(name: string): string {
   return name.replace(/\.fifo$/, "");
 }
 
-export class SqsNodeHandler implements NodeServiceHandler {
+export class SqsNodeHandlerV1 implements NodeServiceHandler {
   public readonly definition = sqsServiceDefinition;
 
   public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {

@@ -5,9 +5,9 @@ import type {
   EdgeHandlerArgs,
   EdgeRelationshipHandler,
   GraphCompileContext,
-} from "../types.ts";
+} from "../../types.ts";
 
-export class LambdaReadsS3Handler implements EdgeRelationshipHandler {
+export class LambdaReadsS3HandlerV1 implements EdgeRelationshipHandler {
   public readonly definition = lambdaReadsS3Definition;
 
   public apply(ctx: GraphCompileContext, args: EdgeHandlerArgs): void {

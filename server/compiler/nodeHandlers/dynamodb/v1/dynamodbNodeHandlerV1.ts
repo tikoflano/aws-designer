@@ -2,9 +2,9 @@ import * as cdk from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 
 import type { GraphNode } from "@shared/domain/graph.ts";
-import type { GraphCompileContext } from "../../graphCompileContext.ts";
-import { NodeIds } from "../nodeIds.ts";
-import type { NodeServiceHandler } from "../types.ts";
+import type { GraphCompileContext } from "../../../graphCompileContext.ts";
+import { NodeIds } from "../../nodeIds.ts";
+import type { NodeServiceHandler } from "../../types.ts";
 import {
   dynamodbServiceDefinition,
   dynamodbTableNodeConfigSchema,
@@ -23,7 +23,7 @@ function mapAttrType(
   }
 }
 
-export class DynamodbNodeHandler implements NodeServiceHandler {
+export class DynamodbNodeHandlerV1 implements NodeServiceHandler {
   public readonly definition = dynamodbServiceDefinition;
 
   public apply(stack: cdk.Stack, ctx: GraphCompileContext, node: GraphNode): void {
